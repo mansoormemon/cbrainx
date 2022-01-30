@@ -18,6 +18,7 @@
 #ifndef CBRAINX__CBRAINX_HH_
 #define CBRAINX__CBRAINX_HH_
 
+#include "shape.hh"
 #include "type_aliases.hh"
 #include "version.hh"
 

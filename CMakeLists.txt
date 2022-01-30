@@ -51,7 +51,19 @@ set(CBRAINX_RESOURCES_DIR "${PROJECT_SOURCE_DIR}/res")
 
 option(CBRAINX_INSTALL "Generate CBrainX install targets." "${CBRAINX_IS_MASTER_PROJECT}")
 
+set(CBRAINX_EXAMPLES_DIR "${PROJECT_SOURCE_DIR}/examples")
+set(CBRAINX_EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
+set(CBRAINX_SOURCES_DIR "${PROJECT_SOURCE_DIR}/src")
+
 add_subdirectory("${CBRAINX_INCLUDE_DIR}")
+add_subdirectory("${CBRAINX_SOURCES_DIR}")
+add_subdirectory("${CBRAINX_EXTERNAL_DIR}")
+
+option(CBRAINX_BUILD_EXAMPLES "Build CBrainX examples." "${CBRAINX_IS_MASTER_PROJECT}")
+
+if(CBRAINX_BUILD_EXAMPLES)
+    add_subdirectory("${CBRAINX_EXAMPLES_DIR}")
+endif()
 
 message("
 -----------------------------------
@@ -67,5 +79,6 @@ COMPILER                    : ${CMAKE_CXX_COMPILER_ID} => ${CMAKE_CXX_COMPILER} 
 MAKE_PROGRAM                : ${CMAKE_MAKE_PROGRAM}
 ---
 GENERATE_INSTALL_TARGETS    : ${CBRAINX_INSTALL}
+BUILD_EXAMPLES              : ${CBRAINX_BUILD_EXAMPLES}
 -----------------------------------
 ")

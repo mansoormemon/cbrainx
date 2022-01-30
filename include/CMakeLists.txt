@@ -1,5 +1,6 @@
 set(CBRAINX_INCLUDES
     "cbrainx/cbrainx.hh"
+    "cbrainx/shape.hh"
     "cbrainx/type_aliases.hh"
     "cbrainx/version.hh")
 
