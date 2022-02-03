@@ -1,7 +1,9 @@
 set(CBRAINX_INCLUDES
     "cbrainx/cbrainx.hh"
     "cbrainx/shape.hh"
+    "cbrainx/tensor.hh"
     "cbrainx/type_aliases.hh"
+    "cbrainx/type_concepts.hh"
     "cbrainx/version.hh")
 
 if(CBRAINX_INSTALL)

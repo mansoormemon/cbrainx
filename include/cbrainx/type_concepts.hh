@@ -15,13 +15,36 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#ifndef CBRAINX__TYPE_CONCEPTS_HH_
+#define CBRAINX__TYPE_CONCEPTS_HH_
 
-#include "shape.hh"
-#include "tensor.hh"
+#include <type_traits>
+
 #include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "version.hh"
+
+namespace cbx {
+
+template <typename T>
+concept Bool = std::is_same_v<bool, T>;
+
+template <typename T>
+concept Integer = std::is_integral_v<T>;
+
+template <typename T>
+concept Float = std::is_floating_point_v<T>;
+
+template <typename T>
+concept Number = std::is_arithmetic_v<T>;
+
+template <typename T>
+concept Void = std::is_void_v<T>;
+
+template <typename T>
+concept Reference = std::is_reference_v<T>;
+
+template <typename T>
+concept Pointer = std::is_pointer_v<T>;
+
+}
 
 #endif
