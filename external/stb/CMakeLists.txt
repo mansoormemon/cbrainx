@@ -1,0 +1,3 @@
+set(INCLUDES
+    "stb_image.h"
+    "stb_image_write.h")

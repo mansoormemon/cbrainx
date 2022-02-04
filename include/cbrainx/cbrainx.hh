@@ -18,6 +18,7 @@
 #ifndef CBRAINX__CBRAINX_HH_
 #define CBRAINX__CBRAINX_HH_
 
+#include "image.hh"
 #include "shape.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"

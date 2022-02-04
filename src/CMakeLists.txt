@@ -3,6 +3,7 @@ option(BUILD_SHARED_LIBS "Build shared/dynamic library." OFF)
 set(CBRAINX_ALIAS "cbrainx::cbrainx")
 
 set(CBRAINX_SOURCES
+    "image.cc"
     "shape.cc")
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")
@@ -15,10 +16,14 @@ set_target_properties(${CBRAINX} PROPERTIES
 set(LIBFMT "fmt")
 set(LIBFMT_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBFMT}/include")
 
+set(LIBSTB "stb")
+set(LIBSTB_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBSTB}")
+
 target_include_directories("${CBRAINX}"
                            PUBLIC
                            "${CBRAINX_INCLUDE_DIR}"
-                           "${LIBFMT_INCLUDE_DIR}")
+                           "${LIBFMT_INCLUDE_DIR}"
+                           "${LIBSTB_INCLUDE_DIR}")
 
 target_link_libraries("${CBRAINX}" PRIVATE "${LIBFMT}")
 
