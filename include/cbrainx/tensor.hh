@@ -246,15 +246,16 @@ class Tensor {
         std::conditional_t<std::is_integral_v<value_type>, std::uniform_int_distribution<value_type>,
                            std::uniform_real_distribution<value_type>>;
     auto distributer = distributer_type{lower_bound, upper_bound};
-    std::transform(tensor.begin(), tensor.end(), tensor.begin(),
-                   [&engine, &distributer](const auto &) { return distributer(engine); });
+    std::generate(tensor.begin(), tensor.end(), [&engine, &distributer]() {
+      return distributer(engine);
+    });
     return tensor;
   }
 
   template <typename Lambda>
   [[nodiscard]] static auto custom(const Shape &shape, Lambda func) -> Tensor {
     auto tensor = Tensor{shape};
-    std::transform(tensor.begin(), tensor.end(), tensor.begin(), func);
+    std::generate(tensor.begin(), tensor.end(), func);
     return tensor;
   }
 

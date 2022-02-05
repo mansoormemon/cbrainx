@@ -58,7 +58,7 @@ class Shape {
 
   auto range_check(size_type index) const -> void;
 
-  auto dimension_equality_check(size_type N) const -> void;
+  auto arg_count_check(size_type N) const -> void;
 
   static auto validity_check(value_type value) -> void;
 
@@ -127,7 +127,7 @@ class Shape {
  public:
   template <size_type N, typename T = value_type>
   constexpr auto unwrap() const {
-    this->dimension_equality_check(N);
+    this->arg_count_check(N);
     return unwrap_helper<T>(std::make_index_sequence<N>());
   }
 

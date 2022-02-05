@@ -39,7 +39,7 @@ auto main() -> cbx::i32 {
     return result;
   };
 
-  std::generate(t3.begin(), t3.end(), [&factorial, Tn = t3_value_t{}, n = cbx::i32{}]() mutable {
+  std::generate(t3.begin(), t3.end(), [&factorial, Tn = t3_value_t{}, n = 0]() mutable {
     auto y = std::pow(1.0, n) / factorial(n);
     return n += 1, Tn += y;
   });

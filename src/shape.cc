@@ -32,11 +32,11 @@ auto Shape::range_check(size_type index) const -> void {
   }
 }
 
-auto Shape::dimension_equality_check(size_type N) const -> void {
+auto Shape::arg_count_check(size_type N) const -> void {
   auto dims = this->dimensions();
-  if (N != dims) {
-    throw std::invalid_argument{fmt::format(
-        "cbx::Shape::dimension_equality_check: `N(={}) != this->dimensions()(={})` is true", N, dims)};
+  if (N > dims) {
+    throw std::invalid_argument{
+        fmt::format("cbx::Shape::arg_count_check: `N(={}) > this->dimensions()(={})` is true", N, dims)};
   }
 }
 
