@@ -1,6 +1,7 @@
 set(EXAMPLES
     "ex_shape.cc"
-    "ex_tensor.cc")
+    "ex_tensor.cc"
+    "ex_tensor_fun.cc")
 
 set(LIBFMT "fmt")
 set(LIBFMT_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBFMT}/include")

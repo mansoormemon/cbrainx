@@ -19,6 +19,7 @@
 #define CBRAINX__TENSOR_HH_
 
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -224,6 +225,44 @@ class Tensor {
   [[nodiscard]] auto meta_info() const -> std::string {
     return fmt::format("{{ total={}, rank={}, shape={}, is_scalar={} }}", this->total(), this->rank(),
                        this->shape().to_string(), this->is_scalar());
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+
+  [[nodiscard]] static constexpr auto zeros(const Shape &shape) -> Tensor { return Tensor{shape}; }
+
+  [[nodiscard]] static constexpr auto ones(const Shape &shape) -> Tensor { return Tensor{shape, 1}; }
+
+  [[nodiscard]] static constexpr auto fill(const Shape &shape, value_type value) -> Tensor {
+    return Tensor{shape, value};
+  }
+
+  [[nodiscard]] static auto random(const Shape &shape, u64 seed = 1, value_type lower_bound = 0,
+                                   value_type upper_bound = 1) -> Tensor {
+    auto tensor = Tensor{shape};
+    auto randomizer = std::default_random_engine{seed};
+    auto engine = std::mt19937_64{randomizer()};
+    using distributer_type =
+        std::conditional_t<std::is_integral_v<value_type>, std::uniform_int_distribution<value_type>,
+                           std::uniform_real_distribution<value_type>>;
+    auto distributer = distributer_type{lower_bound, upper_bound};
+    std::transform(tensor.begin(), tensor.end(), tensor.begin(),
+                   [&engine, &distributer](const auto &) { return distributer(engine); });
+    return tensor;
+  }
+
+  template <typename Lambda>
+  [[nodiscard]] static auto custom(const Shape &shape, Lambda func) -> Tensor {
+    auto tensor = Tensor{shape};
+    std::transform(tensor.begin(), tensor.end(), tensor.begin(), func);
+    return tensor;
+  }
+
+  template <std::input_iterator I_It>
+  [[nodiscard]] static auto copy(const Shape &shape, I_It src_first, I_It src_last) -> Tensor {
+    auto tensor = Tensor{shape};
+    std::copy(src_first, src_last, tensor.begin());
+    return tensor;
   }
 };
 
