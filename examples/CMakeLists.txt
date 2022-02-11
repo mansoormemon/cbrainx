@@ -1,4 +1,5 @@
 set(EXAMPLES
+    "ex_img_proc.cc"
     "ex_image.cc"
     "ex_shape.cc"
     "ex_tensor.cc"

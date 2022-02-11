@@ -1,6 +1,7 @@
 set(CBRAINX_INCLUDES
     "cbrainx/cbrainx.hh"
     "cbrainx/image.hh"
+    "cbrainx/img_proc.hh"
     "cbrainx/shape.hh"
     "cbrainx/tensor.hh"
     "cbrainx/type_aliases.hh"

@@ -4,6 +4,7 @@ set(CBRAINX_ALIAS "cbrainx::cbrainx")
 
 set(CBRAINX_SOURCES
     "image.cc"
+    "img_proc.cc"
     "shape.cc")
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")
