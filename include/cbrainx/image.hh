@@ -27,7 +27,7 @@
 namespace cbx {
 
 template <typename T>
-concept supported_image_datatype = std::disjunction_v<std::is_same<T, u8>, std::is_same<T, f32>>;
+concept image_datatype = std::disjunction_v<std::is_same<T, u8>, std::is_same<T, f32>>;
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,12 +36,12 @@ concept supported_image_datatype = std::disjunction_v<std::is_same<T, u8>, std::
  */
 class Image {
  private:
-  template <supported_image_datatype T>
+  template <image_datatype T>
   struct datatype_after_morph {
     using type = std::conditional_t<std::is_same_v<u8, T>, f32, u8>;
   };
 
-  template <supported_image_datatype T>
+  template <image_datatype T>
   using datatype_after_morph_t = typename datatype_after_morph<T>::type;
 
  public:
@@ -110,20 +110,20 @@ class Image {
 
   // /////////////////////////////////////////////////////////////
 
-  template <supported_image_datatype T>
+  template <image_datatype T>
   [[nodiscard]] static auto make(const Meta &meta) -> Tensor<T> {
     return Tensor<T>{meta.to_shape()};
   }
 
-  template <supported_image_datatype T>
+  template <image_datatype T>
   [[nodiscard]] static auto morph_datatype(const Tensor<T> &img) -> Tensor<datatype_after_morph_t<T>>;
 
   // /////////////////////////////////////////////////////////////
 
-  template <supported_image_datatype T = u8>
+  template <image_datatype T = u8>
   [[nodiscard]] static auto read(str img_path) -> Tensor<T>;
 
-  template <supported_image_datatype T>
+  template <image_datatype T>
   static auto write(const Tensor<T> &img, str img_path, Format fmt = Format::JPG) -> void;
 };
 

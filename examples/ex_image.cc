@@ -10,6 +10,6 @@ auto main() -> cbx::i32 {
     return n += 0.0001;
   });
   std::cout << "img=" << img.meta_info() << std::endl;
-  cbx::Image::write(img, "out.png");
+  cbx::Image::write(img, "out.jpg");
   return {};
 }

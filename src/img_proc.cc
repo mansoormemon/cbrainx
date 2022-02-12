@@ -60,9 +60,10 @@ auto ImgProc::invert(Tensor<u8> &img) -> Tensor<u8> & {
   for (auto &val : img) {
     val = lookup_table[val];
   }
-
   return img;
 }
+
+// /////////////////////////////////////////////////////////////
 
 auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   // Algorithm: Otsu's Method
@@ -101,16 +102,16 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
 
   // Calculate the sum of weights for all possible thresholds.
   // Formula: summation[i = 0, MAX_CHANNEL_VALUE] (t * hist[t])
-  auto sumT = f32{};
+  f32 sumT = {};
   for (auto t = 0; t < CHANNEL_SIZE; ++t) {
     sumT += static_cast<f32>(t * hist[t]);
   }
 
-  auto sumB = f32{}, sumF = f32{};     // Accumulated weights for background and foreground.
-  auto wB = f32{}, wF = f32{};         // Weight of threshold `t` for background and foreground.
-  auto mB = f32{}, mF = f32{};         // Mean for background and foreground.
-  auto BCV = f32{}, maxBCV = f32{};    // Between Class Variance and Maximum Between Class Variance.
-  auto optThresh = u8{};               // Optimal threshold.
+  f32 sumB = {}, sumF = {};     // Accumulated weights for background and foreground.
+  f32 wB = {}, wF = {};         // Weight of threshold `t` for background and foreground.
+  f32 mB = {}, mF = {};         // Mean for background and foreground.
+  f32 BCV = {}, maxBCV = {};    // Between Class Variance and Maximum Between Class Variance.
+  u8 optThresh = {};            // Optimal threshold.
 
   for (auto t = 0; t < CHANNEL_SIZE; t += 1) {
     // Calculate background weight for threshold `t`.
@@ -153,11 +154,13 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   return img;
 }
 
-template <supported_image_datatype T>
+// /////////////////////////////////////////////////////////////
+
+template <image_datatype T>
 auto ImgProc::resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T> {
   auto src_meta = Image::Meta::decode_shape(img.shape());
   auto resized_img = Image::make<T>({meta.width(), meta.height(), src_meta.channels()});
-  auto type = std::is_integral_v<T> ? STBIR_TYPE_UINT8 : STBIR_TYPE_FLOAT;
+  auto type = std::is_same_v<u8, T> ? STBIR_TYPE_UINT8 : STBIR_TYPE_FLOAT;
   stbir_resize(img.data(), src_meta.width(), src_meta.height(), 0, resized_img.data(), meta.width(),
                meta.height(), 0, type, src_meta.channels(), STBIR_ALPHA_CHANNEL_NONE, 0, STBIR_EDGE_CLAMP,
                STBIR_EDGE_CLAMP, STBIR_FILTER_BOX, STBIR_FILTER_BOX, STBIR_COLORSPACE_SRGB, nullptr);
@@ -172,7 +175,7 @@ template auto ImgProc::resize<f32>(const Tensor<f32> &img, const Image::Meta &me
 
 // /////////////////////////////////////////////////////////////
 
-template <supported_image_datatype T>
+template <image_datatype T>
 auto ImgProc::rescale(const Tensor<T> &img, f32 factor) -> Tensor<T> {
   auto meta = Image::Meta::decode_shape(img.shape());
   i32 new_width = meta.width() * factor, new_height = meta.height() * factor;

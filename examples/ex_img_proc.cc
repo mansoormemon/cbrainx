@@ -11,7 +11,7 @@ auto main() -> cbx::i32 {
   cbx::ImgProc::binarize(img);
   cbx::ImgProc::invert(img);
   img = cbx::ImgProc::rescale(img, 3);
-  cbx::Image::write(img, "binarized.png");
+  cbx::Image::write(img, "binarized.jpg");
 
   return {};
 }

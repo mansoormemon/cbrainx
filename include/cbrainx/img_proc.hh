@@ -37,20 +37,22 @@ class ImgProc {
   static auto model_compatibility_check(Image::Meta meta, Image::Model target) -> void;
 
  public:
-  template <supported_image_datatype T>
+  template <image_datatype T>
   [[nodiscard]] static auto extract_channel(const Tensor<T> &img, Image::Channel channel) -> Tensor<T> {
     auto meta = Image::Meta::decode_shape(img.shape());
     ImgProc::has_channel_check(meta, channel);
     auto mono_img = Image::make<T>({meta.width(), meta.height()});
-    for (auto it = mono_img.begin(), src_it = img.begin() + meta.position_of(channel), end = mono_img.end();
-         it != end; ++it, src_it += meta.channels()) {
+    auto src_it = img.begin() + meta.position_of(channel);
+    for (auto it = mono_img.begin(), end = mono_img.end(); it != end; ++it) {
       *it = *src_it;
+      src_it += meta.channels();
     }
-
     return mono_img;
   }
 
-  template <supported_image_datatype T>
+  // /////////////////////////////////////////////////////////////
+
+  template <image_datatype T>
   [[nodiscard]] static auto grayscale(const Tensor<T> &img) -> Tensor<T> {
     auto meta = Image::Meta::decode_shape(img.shape());
     if (not meta.is_compatible(Image::Model::RGB)) {
@@ -67,20 +69,24 @@ class ImgProc {
     return gray_img;
   }
 
-  template <supported_image_datatype T>
+  // /////////////////////////////////////////////////////////////
+
+  template <image_datatype T>
   static auto invert(Tensor<T> &img) -> Tensor<T> & {
-    auto max = std::is_integral_v<T> ? std::numeric_limits<T>::max() : 1.0;
+    const auto MAX_CHANNEL_VALUE = std::is_same_v<u8, T> ? std::numeric_limits<u8>::max() : 1.0;
     for (auto &value : img) {
-      value = max - value;
+      value = MAX_CHANNEL_VALUE - value;
     }
     return img;
   }
 
   static auto invert(Tensor<u8> &img) -> Tensor<u8> &;
 
-  template <supported_image_datatype T>
+  // /////////////////////////////////////////////////////////////
+
+  template <image_datatype T>
   static auto binarize(Tensor<T> &img) -> Tensor<T> & {
-    const auto MAX_CHANNEL_VALUE = std::is_integral_v<T> ? std::numeric_limits<T>::max() : 1.0;
+    const auto MAX_CHANNEL_VALUE = std::is_same_v<u8, T> ? std::numeric_limits<u8>::max() : 1.0;
     auto pivot = MAX_CHANNEL_VALUE / 2;
     for (auto &value : img) {
       value = value > pivot ? MAX_CHANNEL_VALUE : 0;
@@ -90,11 +96,15 @@ class ImgProc {
 
   static auto binarize(Tensor<u8> &img) -> Tensor<u8> &;
 
-  template <supported_image_datatype T>
-  static auto resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T>;
+  // /////////////////////////////////////////////////////////////
 
-  template <supported_image_datatype T>
-  static auto rescale(const Tensor<T> &img, f32 factor) -> Tensor<T>;
+  template <image_datatype T>
+  [[nodiscard]] static auto resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T>;
+
+  // /////////////////////////////////////////////////////////////
+
+  template <image_datatype T>
+  [[nodiscard]] static auto rescale(const Tensor<T> &img, f32 factor) -> Tensor<T>;
 };
 
 }

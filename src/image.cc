@@ -162,7 +162,7 @@ auto Image::Meta::decode_shape(const Shape &shape) -> Meta {
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
-template <supported_image_datatype T>
+template <image_datatype T>
 auto Image::morph_datatype(const Tensor<T> &img) -> Tensor<datatype_after_morph_t<T>> {
   using type = datatype_after_morph_t<T>;
 
@@ -182,7 +182,7 @@ template auto Image::morph_datatype<f32>(const Tensor<f32> &img) -> Tensor<u8>;
 
 // /////////////////////////////////////////////////////////////
 
-template <supported_image_datatype T>
+template <image_datatype T>
 auto Image::read(str img_path) -> Tensor<T> {
   using pointer = typename Tensor<T>::pointer;
 
