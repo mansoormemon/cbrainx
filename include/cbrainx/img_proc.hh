@@ -59,9 +59,10 @@ class ImgProc {
 
     const auto R = 0, G = 1, B = 2;
     auto gray_img = Image::make<T>({meta.width(), meta.height()});
-    for (auto it = gray_img.begin(), src_it = img.begin(), end = gray_img.end(); it != end;
-         ++it, src_it += meta.channels()) {
+    auto src_it = img.begin();
+    for (auto it = gray_img.begin(), end = gray_img.end(); it != end; ++it) {
       *it = (0.3 * src_it[R]) + (0.59 * src_it[G]) + (0.11 * src_it[B]);
+      src_it += meta.channels();
     }
     return gray_img;
   }
@@ -88,6 +89,12 @@ class ImgProc {
   }
 
   static auto binarize(Tensor<u8> &img) -> Tensor<u8> &;
+
+  template <supported_image_datatype T>
+  static auto resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T>;
+
+  template <supported_image_datatype T>
+  static auto rescale(const Tensor<T> &img, f32 factor) -> Tensor<T>;
 };
 
 }

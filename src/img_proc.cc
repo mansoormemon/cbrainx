@@ -20,6 +20,9 @@
 #include <array>
 #include <stdexcept>
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize.h>
+
 #include <fmt/format.h>
 
 namespace cbx {
@@ -38,6 +41,8 @@ auto ImgProc::model_compatibility_check(Image::Meta meta, Image::Model target) -
         meta.model(), target)};
   }
 }
+
+// /////////////////////////////////////////////////////////////
 
 auto ImgProc::invert(Tensor<u8> &img) -> Tensor<u8> & {
   const auto MAX_CHANNEL_VALUE = std::numeric_limits<u8>::max();
@@ -147,5 +152,37 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   }
   return img;
 }
+
+template <supported_image_datatype T>
+auto ImgProc::resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T> {
+  auto src_meta = Image::Meta::decode_shape(img.shape());
+  auto resized_img = Image::make<T>({meta.width(), meta.height(), src_meta.channels()});
+  auto type = std::is_integral_v<T> ? STBIR_TYPE_UINT8 : STBIR_TYPE_FLOAT;
+  stbir_resize(img.data(), src_meta.width(), src_meta.height(), 0, resized_img.data(), meta.width(),
+               meta.height(), 0, type, src_meta.channels(), STBIR_ALPHA_CHANNEL_NONE, 0, STBIR_EDGE_CLAMP,
+               STBIR_EDGE_CLAMP, STBIR_FILTER_BOX, STBIR_FILTER_BOX, STBIR_COLORSPACE_SRGB, nullptr);
+  return resized_img;
+}
+
+// /////////////////////////////////////////////////////////////
+
+template auto ImgProc::resize<u8>(const Tensor<u8> &img, const Image::Meta &meta) -> Tensor<u8>;
+
+template auto ImgProc::resize<f32>(const Tensor<f32> &img, const Image::Meta &meta) -> Tensor<f32>;
+
+// /////////////////////////////////////////////////////////////
+
+template <supported_image_datatype T>
+auto ImgProc::rescale(const Tensor<T> &img, f32 factor) -> Tensor<T> {
+  auto meta = Image::Meta::decode_shape(img.shape());
+  i32 new_width = meta.width() * factor, new_height = meta.height() * factor;
+  return ImgProc::resize(img, {new_width, new_height});
+}
+
+// /////////////////////////////////////////////////////////////
+
+template auto ImgProc::rescale<u8>(const Tensor<u8> &img, f32 factor) -> Tensor<u8>;
+
+template auto ImgProc::rescale<f32>(const Tensor<f32> &img, f32 factor) -> Tensor<f32>;
 
 }
