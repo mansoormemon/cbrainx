@@ -27,6 +27,9 @@
 
 namespace cbx {
 
+/**
+ * @brief The <b>ImgProc</b> class contains functionality for image processing.
+ */
 class ImgProc {
  private:
   static auto has_channel_check(Image::Meta meta, Image::Channel target) -> void;

@@ -31,6 +31,9 @@ concept supported_image_datatype = std::disjunction_v<std::is_same<T, u8>, std::
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief The <b>Image</b> class contains functionality to interpret a tensor as an image.
+ */
 class Image {
  private:
   template <supported_image_datatype T>
@@ -52,6 +55,9 @@ class Image {
 
   // /////////////////////////////////////////////////////////////
 
+  /**
+   * The <b>Meta</b> class is an adapter for switching between tensor metadata and image metadata.
+   */
   class Meta {
    private:
     i32 width_ = {};
