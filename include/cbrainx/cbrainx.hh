@@ -21,6 +21,7 @@
 #include "image.hh"
 #include "img_proc.hh"
 #include "shape.hh"
+#include "table.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"
 #include "type_concepts.hh"

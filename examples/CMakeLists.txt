@@ -2,6 +2,7 @@ set(EXAMPLES
     "ex_img_proc.cc"
     "ex_image.cc"
     "ex_shape.cc"
+    "ex_table.cc"
     "ex_tensor.cc"
     "ex_tensor_fun.cc")
 
