@@ -133,8 +133,8 @@ auto Shape::to_string() const noexcept -> std::string { return fmt::format("({})
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
-auto operator==(const Shape &a, const Shape &b) noexcept -> bool { return a.data() == b.data(); }
+auto operator==(const Shape &a, const Shape &b) noexcept -> bool { return a.data_ == b.data_; }
 
-auto operator!=(const Shape &a, const Shape &b) noexcept -> bool { return a.data() != b.data(); }
+auto operator!=(const Shape &a, const Shape &b) noexcept -> bool { return a.data_ != b.data_; }
 
 }

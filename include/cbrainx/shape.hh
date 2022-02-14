@@ -136,13 +136,13 @@ class Shape {
   [[nodiscard]] auto meta_info() const noexcept -> std::string;
 
   [[nodiscard]] auto to_string() const noexcept -> std::string;
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+
+  friend auto operator==(const Shape &a, const Shape &b) noexcept -> bool;
+
+  friend auto operator!=(const Shape &a, const Shape &b) noexcept -> bool;
 };
-
-// /////////////////////////////////////////////////////////////////////////////////////////////
-
-[[nodiscard]] auto operator==(const Shape &a, const Shape &b) noexcept -> bool;
-
-[[nodiscard]] auto operator!=(const Shape &a, const Shape &b) noexcept -> bool;
 
 }
 
