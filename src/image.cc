@@ -73,7 +73,7 @@ auto Image::Meta::model() const -> Model {
   }
 }
 
-auto Image::Meta::total() const -> size_t { return width_ * height_ * channels_; }
+auto Image::Meta::total() const -> std::size_t { return width_ * height_ * channels_; }
 
 auto Image::Meta::bitmask() const -> i32 {
   auto model = this->model();
@@ -138,7 +138,7 @@ auto Image::Meta::position_of(Channel target) const -> i32 {
 }
 
 auto Image::Meta::to_shape() const -> Shape {
-  auto [w, h, c] = this->unwrap<u32>();
+  auto [w, h, c] = this->unwrap<Shape::value_type>();
   return (c == Shape::UNIT_DIMENSION_SIZE) ? Shape{h, w} : Shape{h, w, c};
 }
 

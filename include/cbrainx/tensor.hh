@@ -245,9 +245,9 @@ class Tensor {
     using distributer_type =
         std::conditional_t<std::is_integral_v<value_type>, std::uniform_int_distribution<value_type>,
                            std::uniform_real_distribution<value_type>>;
-    auto distributer = distributer_type{lower_bound, upper_bound};
-    std::generate(tensor.begin(), tensor.end(), [&engine, &distributer]() {
-      return distributer(engine);
+    auto distributor = distributer_type{lower_bound, upper_bound};
+    std::generate(tensor.begin(), tensor.end(), [&engine, &distributor]() {
+      return distributor(engine);
     });
     return tensor;
   }

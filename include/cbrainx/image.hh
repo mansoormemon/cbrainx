@@ -91,7 +91,7 @@ class Image {
 
     [[nodiscard]] auto model() const -> Model;
 
-    [[nodiscard]] auto total() const -> size_t;
+    [[nodiscard]] auto total() const -> std::size_t;
 
     [[nodiscard]] auto bitmask() const -> i32;
 
