@@ -15,17 +15,22 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#include "cbrainx/matrix.hh"
 
-#include "image.hh"
-#include "img_proc.hh"
-#include "matrix.hh"
-#include "shape.hh"
-#include "table.hh"
-#include "tensor.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "version.hh"
+#include <fmt/format.h>
 
-#endif
+namespace cbx {
+
+auto Matrix::rank_check(Shape::size_type rank) -> void {
+  if (rank != DIMENSIONS) {
+    throw std::logic_error{fmt::format("cbx::Matrix::rank_check: incompatible dimensionality(rank={})", rank)};
+  }
+}
+
+auto Matrix::shape_equality_check(const Shape &a, const Shape &b) -> void {
+  if (a != b) {
+    throw std::invalid_argument{"cbx::Matrix::shape_equality_check: `a != b` is true"};
+  }
+}
+
+}

@@ -5,6 +5,7 @@ set(CBRAINX_ALIAS "cbrainx::cbrainx")
 set(CBRAINX_SOURCES
     "image.cc"
     "img_proc.cc"
+    "matrix.cc"
     "shape.cc"
     "table.cc")
 

@@ -2,6 +2,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/cbrainx.hh"
     "cbrainx/image.hh"
     "cbrainx/img_proc.hh"
+    "cbrainx/matrix.hh"
     "cbrainx/shape.hh"
     "cbrainx/table.hh"
     "cbrainx/tensor.hh"
