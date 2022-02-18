@@ -90,8 +90,8 @@ auto Image::Meta::bitmask() const -> i32 {
     case Model::RGBA: {
       return Channel::Red | Channel::Green | Channel::Blue | Channel::Alpha;
     }
-      [[unlikely]] default : { return {}; }
   }
+  return {};
 }
 
 auto Image::Meta::is_compatible(Model target) const -> bool {
@@ -109,8 +109,8 @@ auto Image::Meta::is_compatible(Model target) const -> bool {
     case Model::RGBA: {
       return target & (Model::RGB | Model::RGBA);
     }
-      [[unlikely]] default : { return false; }
   }
+  return false;
 }
 
 auto Image::Meta::has_channel(Channel channel) const -> bool { return this->bitmask() & channel; }
@@ -189,11 +189,13 @@ auto Image::read(str img_path) -> Tensor<T> {
   auto abs_path = std::filesystem::absolute(img_path);
   auto meta = Meta{};
   void *temp_buf = {};
-  // Choose function appropriately between u8 and f32 based on T.
+  // Choose appropriate function between u8 and f32 based on T.
   if constexpr (std::is_same_v<u8, T>) {
-    temp_buf = stbi_load(abs_path.c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
+    temp_buf =
+        stbi_load(abs_path.string().c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
   } else {
-    temp_buf = stbi_loadf(abs_path.c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
+    temp_buf =
+        stbi_loadf(abs_path.string().c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
   }
   if (not temp_buf) {
     throw std::invalid_argument{"cbx::Image::read: could not read image"};
@@ -217,15 +219,16 @@ auto Image::write<u8>(const Tensor<u8> &img, str img_path, Format fmt) -> void {
   auto meta = Meta::decode_shape(img.shape());
   switch (fmt) {
     case Format::BMP: {
-      stbi_write_bmp(abs_path.c_str(), meta.width(), meta.height(), meta.channels(), img.data());
+      stbi_write_bmp(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data());
       break;
     }
     case Format::JPG: {
-      stbi_write_jpg(abs_path.c_str(), meta.width(), meta.height(), meta.channels(), img.data(), JPG_QUALITY);
+      stbi_write_jpg(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data(),
+                     JPG_QUALITY);
       break;
     }
     case Format::PNG: {
-      stbi_write_png(abs_path.c_str(), meta.width(), meta.height(), meta.channels(), img.data(),
+      stbi_write_png(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data(),
                      meta.width() * meta.channels());
       break;
     }

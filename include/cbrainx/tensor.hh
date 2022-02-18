@@ -237,10 +237,10 @@ class Tensor {
     return Tensor{shape, value};
   }
 
-  [[nodiscard]] static auto random(const Shape &shape, u64 seed = 1, value_type lower_bound = 0,
+  [[nodiscard]] static auto random(const Shape &shape, u32 seed = 1U, value_type lower_bound = 0,
                                    value_type upper_bound = 1) -> Tensor {
     auto tensor = Tensor{shape};
-    auto randomizer = std::default_random_engine{seed};
+    auto randomizer = std::default_random_engine(seed);
     auto engine = std::mt19937_64{randomizer()};
     using distributer_type =
         std::conditional_t<std::is_integral_v<value_type>, std::uniform_int_distribution<value_type>,

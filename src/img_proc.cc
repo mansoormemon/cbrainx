@@ -48,7 +48,7 @@ auto ImgProc::invert(Tensor<u8> &img) -> Tensor<u8> & {
   const auto MAX_CHANNEL_VALUE = std::numeric_limits<u8>::max();
   const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
 
-  auto make_lookup_table = [CHANNEL_SIZE]() {
+  auto make_lookup_table = []() {
     auto table = std::array<u8, CHANNEL_SIZE>{};
     std::generate(table.begin(), table.end(), [n = MAX_CHANNEL_VALUE]() mutable {
       return n--;
@@ -89,7 +89,7 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   const auto MIN_CHANNEL_VALUE = std::numeric_limits<u8>::min();
   const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
 
-  auto make_histogram = [CHANNEL_SIZE](const auto &container) {
+  auto make_histogram = [](const auto &container) {
     auto hist = std::array<std::size_t, CHANNEL_SIZE>{};
     for (const auto &val : container) {
       hist[val] += 1;
