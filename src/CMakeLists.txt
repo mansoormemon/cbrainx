@@ -10,17 +10,22 @@ set(CBRAINX_SOURCES
     "table.cc")
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")
-add_library(${CBRAINX_ALIAS} ALIAS ${CBRAINX})
+add_library("${CBRAINX_ALIAS}" ALIAS "${CBRAINX}")
 
-set_target_properties(${CBRAINX} PROPERTIES
-                      VERSION ${PROJECT_VERSION}
-                      SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties("${CBRAINX}" PROPERTIES
+                      VERSION "${PROJECT_VERSION}"
+                      SOVERSION "${PROJECT_VERSION_MAJOR}")
 
 set(LIBFMT "fmt")
 set(LIBFMT_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBFMT}/include")
 
 set(LIBSTB "stb")
 set(LIBSTB_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBSTB}")
+
+if(UNIX)
+    set(PTHREAD_SWITCH "-pthread")
+    target_link_options("${CBRAINX}" PUBLIC "${PTHREAD_SWITCH}")
+endif()
 
 target_include_directories("${CBRAINX}"
                            PUBLIC

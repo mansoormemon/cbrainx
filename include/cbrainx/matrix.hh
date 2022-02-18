@@ -19,6 +19,9 @@
 #define CBRAINX__MATRIX_HH_
 
 #include <algorithm>
+#include <cmath>
+#include <thread>
+#include <vector>
 
 #include "shape.hh"
 #include "tensor.hh"
@@ -35,6 +38,8 @@ class Matrix {
   static auto rank_check(Shape::size_type rank) -> void;
 
   static auto shape_equality_check(const Shape &a, const Shape &b) -> void;
+
+  static auto multiplication_compatibility_check(Shape::value_type c1, Shape::value_type r2) -> void;
 
  public:
   template <typename T = f32>
@@ -143,6 +148,74 @@ class Matrix {
       return a_x * factor;
     });
     return a;
+  }
+
+  template <typename T, typename U>
+  static auto multiply(const Tensor<T> &a, const Tensor<U> &b, bool multithreading = true) -> Tensor<T> {
+    Matrix::rank_check(a.rank());
+    Matrix::rank_check(b.rank());
+
+    auto [r1, c1] = a.shape().template unwrap<2>();
+    auto [r2, c2] = b.shape().template unwrap<2>();
+
+    Matrix::multiplication_compatibility_check(c1, r2);
+
+    auto rows = r1, cols = c2, common_index = c1;
+    auto product = Matrix::make<T>(rows, cols);
+
+    // Estimates how many rows each thread will be assigned based on the number of rows in the product matrix.
+    auto calculate_rows_per_thread = [](auto rows) -> Shape::size_type {
+      const auto BITS_IN_BYTE = 8;
+      // Arbitrarily establish a relation between thread count and matrix size.
+      auto ARCHITECTURE_BITS = sizeof(std::ptrdiff_t) * BITS_IN_BYTE;
+      auto factor = ARCHITECTURE_BITS * std::log(rows + BITS_IN_BYTE);
+      return std::floor(factor);
+    };
+
+    // Calculates how many threads will be required based on the number of rows assigned to each thread.
+    auto calculate_threads_required = [](f32 rows, auto rows_per_thread) -> Shape::size_type {
+      return std::ceil(rows / rows_per_thread);
+    };
+
+    // The actual implementation for matrix multiplication without any multithreading witchcraft. It's a primary
+    // schoolbook algorithm disencumbered by any optimization.
+    auto impl = [&a, &b, &product, cols, common_index](auto row_start, auto row_count) {
+      auto row_end = row_start + row_count;
+      for (auto r = row_start; r < row_end; ++r) {
+        for (Shape::value_type c = {}; c < cols; ++c) {
+          for (Shape::value_type k = {}; k < common_index; ++k) {
+            product(r, c) += a(r, k) * b(k, c);
+          }
+        }
+      }
+    };
+
+    // If multithreading is unsought, ordinarily call the implementation lambda and return the product.
+    if (not multithreading) {
+      impl(Shape::size_type{}, rows);
+      return product;
+    }
+
+    auto rows_per_thread = calculate_rows_per_thread(rows);
+    auto threads_required = calculate_threads_required(rows, rows_per_thread);
+
+    // Bookkeeping threads to call later for joining into the main thread.
+    auto threads = std::vector<std::thread>{};
+    threads.reserve(threads_required);
+
+    // Construct each thread with implementation lambda, position, and span of the thread in the product matrix.
+    for (Shape::size_type current_row = {}; current_row < rows; current_row += rows_per_thread) {
+      auto distance = rows - current_row;
+      auto thread_rows_span = std::min(rows_per_thread, distance);
+      threads.emplace_back(impl, current_row, thread_rows_span);
+    }
+
+    // Call to join the main thread.
+    for (auto &thread : threads) {
+      thread.join();
+    }
+
+    return product;
   }
 };
 
