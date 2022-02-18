@@ -165,11 +165,11 @@ class Matrix {
 
     // Estimates how many rows each thread will be assigned based on the number of rows in the product matrix.
     auto calculate_rows_per_thread = [](auto rows) -> Shape::size_type {
-      const auto BITS_IN_BYTE = 8;
       // Arbitrarily establish a relation between thread count and matrix size.
-      auto ARCHITECTURE_BITS = sizeof(std::ptrdiff_t) * BITS_IN_BYTE;
-      auto factor = ARCHITECTURE_BITS * std::log(rows + BITS_IN_BYTE);
-      return std::floor(factor);
+      const auto ARBITRARY_CONSTANT_A = sizeof(std::int_least64_t);
+      const auto ARBITRARY_CONSTANT_B = sizeof(std::ptrdiff_t) * (ARBITRARY_CONSTANT_A);
+      auto factor = std::log(rows + ARBITRARY_CONSTANT_A);
+      return std::floor(factor) * (ARBITRARY_CONSTANT_B - ARBITRARY_CONSTANT_A);
     };
 
     // Calculates how many threads will be required based on the number of rows assigned to each thread.
@@ -206,8 +206,8 @@ class Matrix {
     // Construct each thread with implementation lambda, position, and span of the thread in the product matrix.
     for (Shape::size_type current_row = {}; current_row < rows; current_row += rows_per_thread) {
       auto distance = rows - current_row;
-      auto thread_rows_span = std::min(rows_per_thread, distance);
-      threads.emplace_back(impl, current_row, thread_rows_span);
+      auto num_of_rows = std::min(rows_per_thread, distance);
+      threads.emplace_back(impl, current_row, num_of_rows);
     }
 
     // Call to join the main thread.

@@ -7,6 +7,7 @@ set(CBRAINX_SOURCES
     "img_proc.cc"
     "matrix.cc"
     "shape.cc"
+    "stopwatch.cc"
     "table.cc")
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")

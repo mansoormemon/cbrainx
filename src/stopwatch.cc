@@ -15,18 +15,24 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#include "cbrainx/stopwatch.hh"
 
-#include "image.hh"
-#include "img_proc.hh"
-#include "matrix.hh"
-#include "shape.hh"
-#include "stopwatch.hh"
-#include "table.hh"
-#include "tensor.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "version.hh"
+namespace cbx {
 
-#endif
+auto Stopwatch::start(bool force_restart) -> void {
+  if (not ticking_ or force_restart) {
+    start_point_ = clock::now().time_since_epoch();
+    ticking_ = true;
+  }
+}
+
+auto Stopwatch::stop() -> void {
+  if (ticking_) {
+    end_point_ = clock::now().time_since_epoch();
+    ticking_ = false;
+  }
+}
+
+auto Stopwatch::is_ticking() const -> bool { return ticking_; }
+
+}

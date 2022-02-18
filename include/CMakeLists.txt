@@ -4,6 +4,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/img_proc.hh"
     "cbrainx/matrix.hh"
     "cbrainx/shape.hh"
+    "cbrainx/stopwatch.hh"
     "cbrainx/table.hh"
     "cbrainx/tensor.hh"
     "cbrainx/type_aliases.hh"
