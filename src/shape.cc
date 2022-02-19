@@ -99,6 +99,12 @@ auto Shape::set_dimension(size_type index, value_type value) -> Shape & {
 
 // /////////////////////////////////////////////////////////////
 
+auto Shape::front() const -> const_reference { return data_.front(); }
+
+auto Shape::back() const -> const_reference { return data_.back(); }
+
+// /////////////////////////////////////////////////////////////
+
 auto Shape::begin() const noexcept -> const_iterator { return data_.begin(); }
 
 auto Shape::end() const noexcept -> const_iterator { return data_.end(); }
@@ -117,10 +123,19 @@ auto Shape::total() const noexcept -> size_type {
 
 // /////////////////////////////////////////////////////////////
 
+auto Shape::resize(size_type dims) -> Shape & {
+  data_.resize(dims, UNIT_DIMENSION_SIZE);
+  return *this;
+}
+
 auto Shape::swap(Shape &other) noexcept -> Shape & {
   data_.swap(other.data_);
   return *this;
 }
+
+// /////////////////////////////////////////////////////////////
+
+auto Shape::clone() const -> Shape { return *this; }
 
 // /////////////////////////////////////////////////////////////
 

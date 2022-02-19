@@ -100,6 +100,12 @@ class Shape {
 
   // /////////////////////////////////////////////////////////////
 
+  [[nodiscard]] auto front() const -> const_reference;
+
+  [[nodiscard]] auto back() const -> const_reference;
+
+  // /////////////////////////////////////////////////////////////
+
   [[nodiscard]] auto begin() const noexcept -> const_iterator;
 
   [[nodiscard]] auto end() const noexcept -> const_iterator;
@@ -116,7 +122,13 @@ class Shape {
 
   // /////////////////////////////////////////////////////////////
 
+  auto resize(size_type dims) -> Shape &;
+
   auto swap(Shape &other) noexcept -> Shape &;
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] auto clone() const -> Shape;
 
  private:
   template <typename T, size_type... Indices>

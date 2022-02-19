@@ -18,6 +18,7 @@
 #ifndef CBRAINX__TENSOR_HH_
 #define CBRAINX__TENSOR_HH_
 
+#include <algorithm>
 #include <numeric>
 #include <random>
 #include <stdexcept>
@@ -55,6 +56,8 @@ class Tensor {
 
   using iterator = typename container::iterator;
   using const_iterator = typename container::const_iterator;
+
+  static constexpr size_type SCALAR_RANK = 0;
 
  private:
   Shape shape_ = {};
@@ -219,6 +222,36 @@ class Tensor {
     shape_ = shape;
     return *this;
   }
+
+  auto crampy_reshape(size_type new_rank) -> Tensor & {
+    auto cur_rank = this->rank();
+    if (cur_rank == new_rank) {
+      return *this;
+    }
+    if (new_rank == SCALAR_RANK) {
+      auto new_shape = Shape{};
+      this->shape_compatibility_check(new_shape);
+      shape_ = std::move(new_shape);
+    } else if (new_rank < cur_rank) {
+      auto new_shape = shape_.clone().resize(new_rank);
+      auto last_index = new_rank - 1;
+      auto cramped_dim_val = std::accumulate(shape_.begin() + last_index, shape_.end(),
+                                             Shape::UNIT_DIMENSION_SIZE, std::multiplies());
+      new_shape.set_dimension(last_index, cramped_dim_val);
+
+      this->shape_compatibility_check(new_shape);
+      shape_ = std::move(new_shape);
+    } else {
+      shape_.resize(new_rank);
+    }
+    return *this;
+  }
+
+  constexpr auto flatten() -> Tensor & { return this->crampy_reshape(1); }
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] constexpr auto clone() const -> Tensor { return *this; }
 
   // /////////////////////////////////////////////////////////////
 
