@@ -52,6 +52,21 @@ class Matrix {
     return Tensor<T>{{rows, cols}};
   }
 
+  template <typename T = f32>
+  [[nodiscard]] static auto make_row(Shape::value_type cols) -> Tensor<T> {
+    return Tensor<T>{{1, cols}};
+  }
+
+  template <typename T = f32>
+  [[nodiscard]] static auto make_column(Shape::value_type rows) -> Tensor<T> {
+    return Tensor<T>{{rows, 1}};
+  }
+
+  template <typename T = f32>
+  [[nodiscard]] static auto make_square(Shape::value_type size) -> Tensor<T> {
+    return Tensor<T>{{size, size}};
+  }
+
   // /////////////////////////////////////////////////////////////
 
   template <typename T = f32>
@@ -83,7 +98,7 @@ class Matrix {
   template <typename T = f32>
   [[nodiscard]] static auto scalar(Shape::value_type size, T value) -> Tensor<T> {
     const auto EXTRA_STEP = 1;
-    auto mat = Tensor<T>{{size, size}};
+    auto mat = Matrix::make_square<T>(size);
     for (auto it = mat.begin(), end = mat.end(); it < end; it += size + EXTRA_STEP) {
       *it = value;
     }
