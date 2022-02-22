@@ -135,6 +135,24 @@ class Matrix {
   // /////////////////////////////////////////////////////////////
 
   template <typename T, typename U>
+  static auto add_row_wise(Tensor<T> &a, const Tensor<U> &b) -> Tensor<T> & {
+    Matrix::rank_check(a.rank());
+
+    auto [_, cols] = a.shape().template unwrap<2>();
+    auto total = a.total();
+    for (Shape::value_type i = {}; i < total; i += cols) {
+      auto a_begin = a.begin() + i;
+      auto a_end = a_begin + cols;
+      std::transform(a_begin, a_end, b.begin(), a_begin, [](const auto &a_x, const auto &b_x) {
+        return a_x - b_x;
+      });
+    }
+    return a;
+  }
+
+  // /////////////////////////////////////////////////////////////
+
+  template <typename T, typename U>
   static auto subtract(Tensor<T> &a, const Tensor<U> &b) -> Tensor<T> & {
     Matrix::rank_check(a.rank());
     Matrix::rank_check(b.rank());
@@ -151,6 +169,24 @@ class Matrix {
     std::transform(a.begin(), a.end(), a.begin(), [b](const auto &a_x) {
       return a_x - b;
     });
+    return a;
+  }
+
+  // /////////////////////////////////////////////////////////////
+
+  template <typename T, typename U>
+  static auto subtract_row_wise(Tensor<T> &a, const Tensor<U> &b) -> Tensor<T> & {
+    Matrix::rank_check(a.rank());
+
+    auto [_, cols] = a.shape().template unwrap<2>();
+    auto total = a.total();
+    for (Shape::value_type i = {}; i < total; i += cols) {
+      auto a_begin = a.begin() + i;
+      auto a_end = a_begin + cols;
+      std::transform(a_begin, a_end, b.begin(), a_begin, [](const auto &a_x, const auto &b_x) {
+        return a_x - b_x;
+      });
+    }
     return a;
   }
 
