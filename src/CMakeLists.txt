@@ -3,9 +3,12 @@ option(BUILD_SHARED_LIBS "Build shared/dynamic library." OFF)
 set(CBRAINX_ALIAS "cbrainx::cbrainx")
 
 set(CBRAINX_SOURCES
+    "abstract_layer.cc"
+    "dense_layer.cc"
     "image.cc"
     "img_proc.cc"
     "matrix.cc"
+    "neural_network.cc"
     "shape.cc"
     "stopwatch.cc"
     "table.cc")

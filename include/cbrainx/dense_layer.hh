@@ -15,21 +15,40 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#ifndef CBRAINX__DENSE_LAYER_HH_
+#define CBRAINX__DENSE_LAYER_HH_
 
 #include "abstract_layer.hh"
-#include "dense_layer.hh"
-#include "image.hh"
-#include "img_proc.hh"
-#include "matrix.hh"
-#include "neural_network.hh"
-#include "shape.hh"
-#include "stopwatch.hh"
-#include "table.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "version.hh"
+
+namespace cbx {
+
+class DenseLayer : public AbstractLayer {
+ private:
+  Tensor<f32> weights_ = {};
+  Tensor<f32> biases_ = {};
+
+ public:
+  explicit DenseLayer(shape_value_t inputs, shape_value_t neurons);
+
+  ~DenseLayer() override = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] auto neurons() const -> size_type override;
+
+  [[nodiscard]] auto parameters() const -> size_type override;
+
+  [[nodiscard]] auto property() const -> std::string override;
+
+  [[nodiscard]] auto type() const -> LayerType override;
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) const -> Tensor<f32> override;
+};
+
+}
 
 #endif

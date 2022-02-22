@@ -1,9 +1,10 @@
 set(EXAMPLES
     "bm_matrix.cc"
-    "ex_img_proc.cc"
     "ex_image.cc"
+    "ex_img_proc.cc"
     "ex_matrix.cc"
     "ex_matrix_fun.cc"
+    "ex_net.cc"
     "ex_shape.cc"
     "ex_table.cc"
     "ex_tensor.cc"

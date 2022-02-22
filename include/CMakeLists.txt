@@ -1,8 +1,11 @@
 set(CBRAINX_INCLUDES
+    "cbrainx/abstract_layer.hh"
     "cbrainx/cbrainx.hh"
+    "cbrainx/dense_layer.hh"
     "cbrainx/image.hh"
     "cbrainx/img_proc.hh"
     "cbrainx/matrix.hh"
+    "cbrainx/neural_network.hh"
     "cbrainx/shape.hh"
     "cbrainx/stopwatch.hh"
     "cbrainx/table.hh"
