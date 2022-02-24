@@ -56,6 +56,9 @@ auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}"
     case LayerType::Activation: {
       return "Activation";
     }
+    case LayerType::SoftMax: {
+      return "SoftMax";
+    }
   }
   return {};
 }

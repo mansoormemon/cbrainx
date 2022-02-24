@@ -9,6 +9,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/matrix.hh"
     "cbrainx/neural_network.hh"
     "cbrainx/shape.hh"
+    "cbrainx/soft_max.hh"
     "cbrainx/stopwatch.hh"
     "cbrainx/table.hh"
     "cbrainx/tensor.hh"

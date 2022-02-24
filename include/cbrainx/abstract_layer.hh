@@ -26,7 +26,7 @@
 
 namespace cbx {
 
-enum class LayerType { Dense, Activation };
+enum class LayerType { Dense, Activation, SoftMax };
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 

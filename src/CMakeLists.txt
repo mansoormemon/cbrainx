@@ -12,6 +12,7 @@ set(CBRAINX_SOURCES
     "matrix.cc"
     "neural_network.cc"
     "shape.cc"
+    "soft_max.cc"
     "stopwatch.cc"
     "table.cc")
 

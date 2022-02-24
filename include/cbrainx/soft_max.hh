@@ -15,24 +15,39 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#ifndef CBRAINX__SOFT_MAX_HH_
+#define CBRAINX__SOFT_MAX_HH_
 
 #include "abstract_layer.hh"
-#include "activation_functions.hh"
-#include "activation_layer.hh"
-#include "dense_layer.hh"
-#include "image.hh"
-#include "img_proc.hh"
-#include "matrix.hh"
-#include "neural_network.hh"
-#include "shape.hh"
-#include "soft_max.hh"
-#include "stopwatch.hh"
-#include "table.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "version.hh"
+
+namespace cbx {
+
+class SoftMax : public AbstractLayer {
+ private:
+  shape_value_t neurons_ = {};
+
+ public:
+  explicit SoftMax(shape_value_t inputs);
+
+  ~SoftMax() override = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] auto neurons() const -> size_type override;
+
+  [[nodiscard]] auto parameters() const -> size_type override;
+
+  [[nodiscard]] auto property() const -> std::string override;
+
+  [[nodiscard]] auto type() const -> LayerType override;
+
+  // /////////////////////////////////////////////////////////////
+
+  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) const -> Tensor<f32> override;
+};
+
+}
 
 #endif
