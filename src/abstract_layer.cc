@@ -53,6 +53,9 @@ auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}"
     case LayerType::Dense: {
       return "Dense";
     }
+    case LayerType::Activation: {
+      return "Activation";
+    }
   }
   return {};
 }

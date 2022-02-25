@@ -4,6 +4,8 @@ set(CBRAINX_ALIAS "cbrainx::cbrainx")
 
 set(CBRAINX_SOURCES
     "abstract_layer.cc"
+    "activation_functions.cc"
+    "activation_layer.cc"
     "dense_layer.cc"
     "image.cc"
     "img_proc.cc"

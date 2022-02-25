@@ -19,6 +19,8 @@
 #define CBRAINX__CBRAINX_HH_
 
 #include "abstract_layer.hh"
+#include "activation_functions.hh"
+#include "activation_layer.hh"
 #include "dense_layer.hh"
 #include "image.hh"
 #include "img_proc.hh"

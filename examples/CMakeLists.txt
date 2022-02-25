@@ -1,5 +1,6 @@
 set(EXAMPLES
     "bm_matrix.cc"
+    "ex_act_funcs.cc"
     "ex_image.cc"
     "ex_img_proc.cc"
     "ex_matrix.cc"

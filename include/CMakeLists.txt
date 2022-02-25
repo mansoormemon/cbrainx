@@ -1,5 +1,7 @@
 set(CBRAINX_INCLUDES
     "cbrainx/abstract_layer.hh"
+    "cbrainx/activation_functions.hh"
+    "cbrainx/activation_layer.hh"
     "cbrainx/cbrainx.hh"
     "cbrainx/dense_layer.hh"
     "cbrainx/image.hh"
