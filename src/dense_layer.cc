@@ -27,6 +27,17 @@ DenseLayer::DenseLayer(shape_value_t inputs, shape_value_t neurons) : AbstractLa
   biases_ = Tensor<f32>::zeros({neurons});
 }
 
+DenseLayer::DenseLayer(DenseLayer &&other) noexcept
+    : weights_{std::move(other.weights_)}, biases_{std::move(other.biases_)} {}
+
+// /////////////////////////////////////////////////////////////
+
+auto DenseLayer::operator=(DenseLayer &&other) noexcept -> DenseLayer & {
+  weights_ = std::move(other.weights_);
+  biases_ = std::move(other.biases_);
+  return *this;
+}
+
 // /////////////////////////////////////////////////////////////
 
 auto DenseLayer::neurons() const -> size_type { return biases_.total(); }

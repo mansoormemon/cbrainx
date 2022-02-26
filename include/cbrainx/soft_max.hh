@@ -31,7 +31,17 @@ class SoftMax : public AbstractLayer {
  public:
   explicit SoftMax(shape_value_t inputs);
 
+  SoftMax(const SoftMax &other) = delete;
+
+  SoftMax(SoftMax &&other) noexcept;
+
   ~SoftMax() override = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  auto operator=(const SoftMax &other) -> SoftMax & = delete;
+
+  auto operator=(SoftMax &&other) noexcept -> SoftMax &;
 
   // /////////////////////////////////////////////////////////////
 

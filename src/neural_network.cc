@@ -18,6 +18,7 @@
 #include "cbrainx/neural_network.hh"
 
 #include <stdexcept>
+#include <utility>
 
 #include <fmt/format.h>
 
@@ -40,12 +41,12 @@ NeuralNetwork::NeuralNetwork(AbstractLayer::shape_value_t input_size) {
 }
 
 NeuralNetwork::NeuralNetwork(NeuralNetwork &&other) noexcept
-    : input_size_{other.input_size_}, layers_{std::move(other.layers_)} {}
+    : input_size_{std::exchange(other.input_size_, {})}, layers_{std::move(other.layers_)} {}
 
 // /////////////////////////////////////////////////////////////
 
 auto NeuralNetwork::operator=(NeuralNetwork &&other) noexcept -> NeuralNetwork & {
-  input_size_ = other.input_size_;
+  input_size_ = std::exchange(other.input_size_, {});
   layers_ = std::move(other.layers_);
   return *this;
 }

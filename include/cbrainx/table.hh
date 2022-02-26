@@ -84,9 +84,9 @@ class Table {
 
   [[nodiscard]] auto rows() const noexcept -> size_type;
 
-  auto set_caption(item_const_reference caption) -> Table &;
+  auto set_caption(item_type caption) -> Table &;
 
-  auto set_header(item_const_reference header_column, size_type index) -> Table &;
+  auto set_header(item_type header_column, size_type index) -> Table &;
 
   auto override_header(std::initializer_list<item_type> header) -> Table &;
 

@@ -30,9 +30,19 @@ class DenseLayer : public AbstractLayer {
   Tensor<f32> biases_ = {};
 
  public:
-  explicit DenseLayer(shape_value_t inputs, shape_value_t neurons);
+  DenseLayer(shape_value_t inputs, shape_value_t neurons);
+
+  DenseLayer(const DenseLayer &other) = delete;
+
+  DenseLayer(DenseLayer &&other) noexcept;
 
   ~DenseLayer() override = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  auto operator=(const DenseLayer &other) -> DenseLayer & = delete;
+
+  auto operator=(DenseLayer &&other) noexcept -> DenseLayer &;
 
   // /////////////////////////////////////////////////////////////
 

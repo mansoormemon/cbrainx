@@ -17,15 +17,28 @@
 
 #include "cbrainx/abstract_layer.hh"
 
+#include <utility>
+
 #include <fmt/format.h>
 
 namespace cbx {
 
+AbstractLayer::AbstractLayer(AbstractLayer &&other) noexcept
+    : id_{std::exchange(other.id_, {})}, name_{std::move(other.name_)} {}
+
 AbstractLayer::AbstractLayer(i32 id) : id_{id} {}
 
-AbstractLayer::AbstractLayer(const std::string &name) : name_{name} {}
+AbstractLayer::AbstractLayer(std::string name) : name_{std::move(name)} {}
 
-AbstractLayer::AbstractLayer(i32 id, const std::string &name) : id_{id}, name_{name} {}
+AbstractLayer::AbstractLayer(i32 id, std::string name) : id_{id}, name_{std::move(name)} {}
+
+// /////////////////////////////////////////////////////////////
+
+auto AbstractLayer::operator=(AbstractLayer &&other) noexcept -> AbstractLayer & {
+  id_ = std::exchange(other.id_, {});
+  name_ = std::move(other.name_);
+  return *this;
+}
 
 // /////////////////////////////////////////////////////////////
 
@@ -38,8 +51,8 @@ auto AbstractLayer::set_id(i32 id) -> AbstractLayer & {
 
 auto AbstractLayer::name() const -> std::string { return name_; }
 
-auto AbstractLayer::set_name(const std::string &name) -> AbstractLayer & {
-  name_ = name;
+auto AbstractLayer::set_name(std::string name) -> AbstractLayer & {
+  name_ = std::move(name);
   return *this;
 }
 

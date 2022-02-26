@@ -51,14 +51,14 @@ auto Table::columns() const noexcept -> size_type { return header_.size(); }
 
 auto Table::rows() const noexcept -> size_type { return data_.size(); }
 
-auto Table::set_caption(item_const_reference caption) -> Table & {
-  caption_ = caption;
+auto Table::set_caption(item_type caption) -> Table & {
+  caption_ = std::move(caption);
   return *this;
 }
 
-auto Table::set_header(item_const_reference header_column, size_type index) -> Table & {
+auto Table::set_header(item_type header_column, size_type index) -> Table & {
   this->range_check(index);
-  header_[index] = header_column;
+  header_[index] = std::move(header_column);
   return *this;
 }
 

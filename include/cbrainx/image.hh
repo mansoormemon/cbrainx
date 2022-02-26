@@ -18,6 +18,7 @@
 #ifndef CBRAINX__IMAGE_HH_
 #define CBRAINX__IMAGE_HH_
 
+#include <string>
 #include <tuple>
 #include <type_traits>
 
@@ -121,10 +122,10 @@ class Image {
   // /////////////////////////////////////////////////////////////
 
   template <image_datatype T = u8>
-  [[nodiscard]] static auto read(str img_path) -> Tensor<T>;
+  [[nodiscard]] static auto read(const std::string &img_path) -> Tensor<T>;
 
   template <image_datatype T>
-  static auto write(const Tensor<T> &img, str img_path, Format fmt = Format::JPG) -> void;
+  static auto write(const Tensor<T> &img, const std::string &img_path, Format fmt = Format::JPG) -> void;
 };
 
 }

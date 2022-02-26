@@ -43,13 +43,23 @@ class AbstractLayer {
  public:
   AbstractLayer() = default;
 
+  AbstractLayer(const AbstractLayer &other) = delete;
+
+  AbstractLayer(AbstractLayer &&other) noexcept;
+
   explicit AbstractLayer(i32 id);
 
-  explicit AbstractLayer(const std::string &name);
+  explicit AbstractLayer(std::string name);
 
-  AbstractLayer(i32 id, const std::string &name);
+  AbstractLayer(i32 id, std::string name);
 
   virtual ~AbstractLayer() = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  auto operator=(const AbstractLayer &other) -> AbstractLayer & = delete;
+
+  auto operator=(AbstractLayer &&other) noexcept -> AbstractLayer &;
 
   // /////////////////////////////////////////////////////////////
 
@@ -59,7 +69,7 @@ class AbstractLayer {
 
   [[nodiscard]] auto name() const -> std::string;
 
-  auto set_name(const std::string &name) -> AbstractLayer &;
+  auto set_name(std::string name) -> AbstractLayer &;
 
   // /////////////////////////////////////////////////////////////
 

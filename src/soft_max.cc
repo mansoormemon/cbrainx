@@ -19,10 +19,20 @@
 
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 namespace cbx {
 
 SoftMax::SoftMax(shape_value_t inputs) : AbstractLayer{"SFML"}, neurons_{inputs} {}
+
+SoftMax::SoftMax(SoftMax &&other) noexcept : neurons_{std::exchange(other.neurons_, {})} {}
+
+// /////////////////////////////////////////////////////////////
+
+auto SoftMax::operator=(SoftMax &&other) noexcept -> SoftMax & {
+  neurons_ = std::exchange(other.neurons_, {});
+  return *this;
+}
 
 // /////////////////////////////////////////////////////////////
 

@@ -26,6 +26,9 @@
 
 namespace cbx {
 
+template <typename T>
+concept ConcreteLayer = std::is_base_of_v<AbstractLayer, T> and not std::is_abstract_v<T>;
+
 class NeuralNetwork {
  public:
   using value_type = std::unique_ptr<AbstractLayer>;
@@ -55,7 +58,8 @@ class NeuralNetwork {
  public:
   explicit NeuralNetwork(AbstractLayer::shape_value_t input_size);
 
-  NeuralNetwork(const NeuralNetwork &other) = default;
+  // Deleting copy constructor because std::unique_ptr is not copy constructible.
+  NeuralNetwork(const NeuralNetwork &other) = delete;
 
   NeuralNetwork(NeuralNetwork &&other) noexcept;
 
@@ -63,13 +67,14 @@ class NeuralNetwork {
 
   // /////////////////////////////////////////////////////////////
 
-  auto operator=(const NeuralNetwork &other) -> NeuralNetwork & = default;
+  // Deleting copy assignment operator because std::unique_ptr is not copy assignable.
+  auto operator=(const NeuralNetwork &other) -> NeuralNetwork & = delete;
 
   auto operator=(NeuralNetwork &&other) noexcept -> NeuralNetwork &;
 
   // /////////////////////////////////////////////////////////////
 
-  template <typename LayerType, typename... Args>
+  template <ConcreteLayer LayerType, typename... Args>
   auto add(Args... args) -> NeuralNetwork & {
     size_type neurons_in_last_layer = layers_.empty() ? input_size_ : layers_.back()->neurons();
     layers_.emplace_back(std::make_unique<LayerType>(neurons_in_last_layer, args...));

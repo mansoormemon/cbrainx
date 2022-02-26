@@ -183,7 +183,7 @@ template auto Image::morph_datatype<f32>(const Tensor<f32> &img) -> Tensor<u8>;
 // /////////////////////////////////////////////////////////////
 
 template <image_datatype T>
-auto Image::read(str img_path) -> Tensor<T> {
+auto Image::read(const std::string &img_path) -> Tensor<T> {
   using pointer = typename Tensor<T>::pointer;
 
   auto abs_path = std::filesystem::absolute(img_path);
@@ -207,14 +207,14 @@ auto Image::read(str img_path) -> Tensor<T> {
 
 // /////////////////////////////////////////////////////////////
 
-template auto Image::read<u8>(str img_path) -> Tensor<u8>;
+template auto Image::read<u8>(const std::string &img_path) -> Tensor<u8>;
 
-template auto Image::read<f32>(str img_path) -> Tensor<f32>;
+template auto Image::read<f32>(const std::string &img_path) -> Tensor<f32>;
 
 // /////////////////////////////////////////////////////////////
 
 template <>
-auto Image::write<u8>(const Tensor<u8> &img, str img_path, Format fmt) -> void {
+auto Image::write<u8>(const Tensor<u8> &img, const std::string &img_path, Format fmt) -> void {
   auto abs_path = std::filesystem::absolute(img_path);
   auto meta = Meta::decode_shape(img.shape());
   switch (fmt) {
@@ -236,7 +236,7 @@ auto Image::write<u8>(const Tensor<u8> &img, str img_path, Format fmt) -> void {
 }
 
 template <>
-auto Image::write<f32>(const Tensor<f32> &img, str img_path, Format fmt) -> void {
+auto Image::write<f32>(const Tensor<f32> &img, const std::string &img_path, Format fmt) -> void {
   auto morphed_img = morph_datatype(img);
   Image::write<u8>(morphed_img, img_path, fmt);
 }

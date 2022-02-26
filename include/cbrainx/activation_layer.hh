@@ -49,7 +49,17 @@ class ActivationLayer : public AbstractLayer {
  public:
   ActivationLayer(shape_value_t inputs, Activation activation);
 
+  ActivationLayer(const ActivationLayer &other) = delete;
+
+  ActivationLayer(ActivationLayer &&other) noexcept;
+
   ~ActivationLayer() override = default;
+
+  // /////////////////////////////////////////////////////////////
+
+  auto operator=(const ActivationLayer &other) -> ActivationLayer & = delete;
+
+  auto operator=(ActivationLayer &&other) noexcept -> ActivationLayer &;
 
   // /////////////////////////////////////////////////////////////
 

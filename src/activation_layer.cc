@@ -17,6 +17,8 @@
 
 #include "cbrainx/activation_layer.hh"
 
+#include <utility>
+
 namespace cbx {
 
 ActivationLayer::ActivationLayer(shape_value_t inputs, Activation activation)
@@ -71,6 +73,17 @@ ActivationLayer::ActivationLayer(shape_value_t inputs, Activation activation)
       break;
     }
   }
+}
+
+ActivationLayer::ActivationLayer(ActivationLayer &&other) noexcept
+    : neurons_{std::exchange(other.neurons_, {})}, act_func_{std::move(other.act_func_)} {}
+
+// /////////////////////////////////////////////////////////////
+
+auto ActivationLayer::operator=(ActivationLayer &&other) noexcept -> ActivationLayer & {
+  neurons_ = std::exchange(other.neurons_, {});
+  act_func_ = std::move(other.act_func_);
+  return *this;
 }
 
 // /////////////////////////////////////////////////////////////
