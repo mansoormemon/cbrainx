@@ -18,9 +18,26 @@
 #ifndef CBRAINX__ACTIVATION_FUNCTIONS_HH_
 #define CBRAINX__ACTIVATION_FUNCTIONS_HH_
 
+#include <string>
+
 #include "type_aliases.hh"
 
 namespace cbx {
+
+enum class Activation {
+  ArcTan,
+  BinaryStep,
+  ELU,
+  Gaussian,
+  GELU,
+  LeakyReLU,
+  Linear,
+  ReLU,
+  Sigmoid,
+  SoftPlus,
+  Swish,
+  TanH
+};
 
 struct ActivationFunction {
   using value_type = f32;
@@ -31,7 +48,11 @@ struct ActivationFunction {
 
   [[nodiscard]] virtual auto derivative(value_type) const -> value_type = 0;
 
-  [[nodiscard]] virtual auto to_string() -> str = 0;
+  [[nodiscard]] virtual auto type() const -> Activation = 0;
+
+  [[nodiscard]] virtual auto to_string() const -> std::string = 0;
+
+  [[nodiscard]] virtual auto type_name() const -> std::string = 0;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -41,7 +62,11 @@ struct ArcTan : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -51,7 +76,11 @@ struct BinaryStep : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -65,7 +94,11 @@ struct ELU : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -75,7 +108,11 @@ struct Gaussian : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -89,7 +126,11 @@ struct GELU : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 // /////////////////////////////////////////////////////////////
 
@@ -100,7 +141,11 @@ struct LeakyReLU : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -110,7 +155,11 @@ struct Linear : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -120,7 +169,11 @@ struct ReLU : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -130,7 +183,11 @@ struct Sigmoid : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -140,7 +197,11 @@ struct SoftPlus : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -150,7 +211,11 @@ struct Swish : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -160,7 +225,11 @@ struct TanH : public ActivationFunction {
 
   [[nodiscard]] auto derivative(value_type) const -> value_type override;
 
-  [[nodiscard]] auto to_string() -> str override;
+  [[nodiscard]] auto type() const -> Activation override;
+
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  [[nodiscard]] auto type_name() const -> std::string override;
 };
 
 }

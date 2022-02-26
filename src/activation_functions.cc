@@ -28,7 +28,11 @@ auto ArcTan::derivative(value_type x) const -> value_type {
   return 1 / denominator;
 }
 
-auto ArcTan::to_string() -> str { return "Function: ArcTan"; }
+auto ArcTan::type() const -> Activation { return Activation::ArcTan; }
+
+auto ArcTan::to_string() const -> std::string { return "Function: ArcTan"; }
+
+auto ArcTan::type_name() const -> std::string { return "ArcTan"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -36,7 +40,11 @@ auto BinaryStep::operator()(value_type x) const -> value_type { return static_ca
 
 auto BinaryStep::derivative(value_type) const -> value_type { return 0; }
 
-auto BinaryStep::to_string() -> str { return "Function: Binary Step"; }
+auto BinaryStep::type() const -> Activation { return Activation::BinaryStep; }
+
+auto BinaryStep::to_string() const -> std::string { return "Function: Binary Step"; }
+
+auto BinaryStep::type_name() const -> std::string { return "BinaryStep"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -44,7 +52,11 @@ auto ELU::operator()(value_type x) const -> value_type { return x >= 0 ? x : ALP
 
 auto ELU::derivative(value_type x) const -> value_type { return x >= 0 ? 1 : ALPHA * std::exp(x); }
 
-auto ELU::to_string() -> str { return "Function: ELU"; }
+auto ELU::type() const -> Activation { return Activation::ELU; }
+
+auto ELU::to_string() const -> std::string { return "Function: ELU"; }
+
+auto ELU::type_name() const -> std::string { return "ELU"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -52,7 +64,11 @@ auto Gaussian::operator()(value_type x) const -> value_type { return std::exp(-x
 
 auto Gaussian::derivative(value_type x) const -> value_type { return -2 * x * this->operator()(x); }
 
-auto Gaussian::to_string() -> str { return "Function: Gaussian"; }
+auto Gaussian::type() const -> Activation { return Activation::Gaussian; }
+
+auto Gaussian::to_string() const -> std::string { return "Function: Gaussian"; }
+
+auto Gaussian::type_name() const -> std::string { return "Gaussian"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -67,7 +83,11 @@ auto GELU::derivative(value_type x) const -> value_type {
   return sigmoid(C * x) + swish(C * x) * (1 - sigmoid(C * x));
 }
 
-auto GELU::to_string() -> str { return "Function: GELU"; }
+auto GELU::type() const -> Activation { return Activation::GELU; }
+
+auto GELU::to_string() const -> std::string { return "Function: GELU"; }
+
+auto GELU::type_name() const -> std::string { return "GELU"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -75,7 +95,11 @@ auto LeakyReLU::operator()(value_type x) const -> value_type { return std::max(M
 
 auto LeakyReLU::derivative(value_type x) const -> value_type { return x >= 0 ? 1 : M; }
 
-auto LeakyReLU::to_string() -> str { return "Function: Leaky ReLU"; }
+auto LeakyReLU::type() const -> Activation { return Activation::LeakyReLU; }
+
+auto LeakyReLU::to_string() const -> std::string { return "Function: Leaky ReLU"; }
+
+auto LeakyReLU::type_name() const -> std::string { return "LeakyReLU"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -83,7 +107,11 @@ auto Linear::operator()(value_type x) const -> value_type { return x; }
 
 auto Linear::derivative(value_type) const -> value_type { return 1; }
 
-auto Linear::to_string() -> str { return "Function: Linear"; }
+auto Linear::type() const -> Activation { return Activation::Linear; }
+
+auto Linear::to_string() const -> std::string { return "Function: Linear"; }
+
+auto Linear::type_name() const -> std::string { return "Linear"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -91,7 +119,11 @@ auto ReLU::operator()(value_type x) const -> value_type { return std::max(0.0F, 
 
 auto ReLU::derivative(value_type x) const -> value_type { return static_cast<value_type>(x >= 0); }
 
-auto ReLU::to_string() -> str { return "Function: ReLU"; }
+auto ReLU::type() const -> Activation { return Activation::ReLU; }
+
+auto ReLU::to_string() const -> std::string { return "Function: ReLU"; }
+
+auto ReLU::type_name() const -> std::string { return "ReLU"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -104,7 +136,11 @@ auto Sigmoid::derivative(value_type x) const -> value_type {
   return this->operator()(x) * (1 - this->operator()(x));
 }
 
-auto Sigmoid::to_string() -> str { return "Function: Sigmoid"; }
+auto Sigmoid::type() const -> Activation { return Activation::Sigmoid; }
+
+auto Sigmoid::to_string() const -> std::string { return "Function: Sigmoid"; }
+
+auto Sigmoid::type_name() const -> std::string { return "Sigmoid"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -115,7 +151,11 @@ auto SoftPlus::derivative(value_type x) const -> value_type {
   return sigmoid(x);
 }
 
-auto SoftPlus::to_string() -> str { return "Function: Soft Plus"; }
+auto SoftPlus::type() const -> Activation { return Activation::SoftPlus; }
+
+auto SoftPlus::to_string() const -> std::string { return "Function: Soft Plus"; }
+
+auto SoftPlus::type_name() const -> std::string { return "SoftPlus"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -129,7 +169,11 @@ auto Swish::derivative(value_type x) const -> value_type {
   return this->operator()(x) + (sigmoid(x) * (1 - this->operator()(x)));
 }
 
-auto Swish::to_string() -> str { return "Function: Swish"; }
+auto Swish::type() const -> Activation { return Activation::Swish; }
+
+auto Swish::to_string() const -> std::string { return "Function: Swish"; }
+
+auto Swish::type_name() const -> std::string { return "Swish"; }
 
 // /////////////////////////////////////////////////////////////
 
@@ -139,6 +183,10 @@ auto TanH::derivative(value_type x) const -> value_type {
   return 1 - (this->operator()(x) * this->operator()(x));
 }
 
-auto TanH::to_string() -> str { return "Function: TanH"; }
+auto TanH::type() const -> Activation { return Activation::TanH; }
+
+auto TanH::to_string() const -> std::string { return "Function: TanH"; }
+
+auto TanH::type_name() const -> std::string { return "TanH"; }
 
 }

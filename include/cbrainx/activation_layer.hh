@@ -26,21 +26,6 @@
 
 namespace cbx {
 
-enum class Activation {
-  ArcTan,
-  BinaryStep,
-  ELU,
-  Gaussian,
-  GELU,
-  LeakyReLU,
-  Linear,
-  ReLU,
-  Sigmoid,
-  SoftPlus,
-  Swish,
-  TanH
-};
-
 class ActivationLayer : public AbstractLayer {
  private:
   shape_value_t neurons_ = {};
