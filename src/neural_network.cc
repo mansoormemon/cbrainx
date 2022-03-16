@@ -88,11 +88,12 @@ auto NeuralNetwork::pop() -> void { layers_.pop_back(); }
 
 // /////////////////////////////////////////////////////////////
 
-auto NeuralNetwork::forward_pass(Tensor<f32> tensor) const -> Tensor<f32> {
+auto NeuralNetwork::forward_pass(const Tensor<f32> &input) -> Tensor<f32> {
+  auto current = input;
   for (const auto &layer : layers_) {
-    tensor = layer->forward_pass(tensor);
+    current = layer->forward_pass(current).output();
   }
-  return tensor;
+  return current;
 }
 
 // /////////////////////////////////////////////////////////////

@@ -44,16 +44,18 @@ auto SoftMax::property() const -> std::string { return "-"; }
 
 auto SoftMax::type() const -> LayerType { return LayerType::SoftMax; }
 
+auto SoftMax::output() const -> const Tensor<f32> & { return output_; }
+
 // /////////////////////////////////////////////////////////////
 
-auto SoftMax::forward_pass(const Tensor<f32> &input) const -> Tensor<f32> {
-  auto out = Tensor<f32>::zeros(input.shape());
+auto SoftMax::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
+  output_ = Tensor<f32>::zeros(input.shape());
   auto [_, cols] = input.shape().template unwrap<2>();
   auto total = input.total();
   for (Shape::value_type i = {}; i < total; i += cols) {
     auto in_begin = input.begin() + i;
     auto in_end = in_begin + cols;
-    auto out_begin = out.begin() + i;
+    auto out_begin = output_.begin() + i;
     auto acc = std::accumulate(in_begin, in_end, 0.0F, [](const auto &acc, const auto &x) {
       return acc + std::exp(x);
     });
@@ -61,7 +63,7 @@ auto SoftMax::forward_pass(const Tensor<f32> &input) const -> Tensor<f32> {
       return std::exp(x) / acc;
     });
   }
-  return out;
+  return *this;
 }
 
 }

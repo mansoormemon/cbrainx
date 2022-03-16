@@ -31,7 +31,7 @@ concept ConcreteLayer = std::is_base_of_v<AbstractLayer, T> and not std::is_abst
 
 class NeuralNetwork {
  public:
-  using value_type = std::unique_ptr<AbstractLayer>;
+  using value_type = std::shared_ptr<AbstractLayer>;
 
   using reference = value_type &;
   using const_reference = const value_type &;
@@ -58,7 +58,7 @@ class NeuralNetwork {
  public:
   explicit NeuralNetwork(AbstractLayer::shape_value_t input_size);
 
-  // Deleting copy constructor because std::unique_ptr is not copy constructible.
+  // For future - Write a deep copy constructor.
   NeuralNetwork(const NeuralNetwork &other) = delete;
 
   NeuralNetwork(NeuralNetwork &&other) noexcept;
@@ -67,7 +67,7 @@ class NeuralNetwork {
 
   // /////////////////////////////////////////////////////////////
 
-  // Deleting copy assignment operator because std::unique_ptr is not copy assignable.
+  // For future - Write a deep copy assignment operator.
   auto operator=(const NeuralNetwork &other) -> NeuralNetwork & = delete;
 
   auto operator=(NeuralNetwork &&other) noexcept -> NeuralNetwork &;
@@ -75,11 +75,11 @@ class NeuralNetwork {
   // /////////////////////////////////////////////////////////////
 
   template <ConcreteLayer LayerType, typename... Args>
-  auto add(Args... args) -> NeuralNetwork & {
+  auto add(Args... args) -> const_reference {
     size_type neurons_in_last_layer = layers_.empty() ? input_size_ : layers_.back()->neurons();
-    layers_.emplace_back(std::make_unique<LayerType>(neurons_in_last_layer, args...));
+    layers_.emplace_back(std::make_shared<LayerType>(neurons_in_last_layer, args...));
     layers_.back()->set_id(layers_.size());
-    return *this;
+    return layers_.back();
   }
 
   // /////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ class NeuralNetwork {
 
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] auto forward_pass(Tensor<f32> input) const -> Tensor<f32>;
+  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) -> Tensor<f32>;
 
   // /////////////////////////////////////////////////////////////
 

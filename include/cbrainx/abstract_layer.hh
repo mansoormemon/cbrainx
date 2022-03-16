@@ -81,9 +81,11 @@ class AbstractLayer {
 
   [[nodiscard]] virtual auto type() const -> LayerType = 0;
 
+  [[nodiscard]] virtual auto output() const -> const Tensor<f32> & = 0;
+
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] virtual auto forward_pass(const Tensor<f32> &input) const -> Tensor<f32> = 0;
+  [[nodiscard]] virtual auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & = 0;
 
   // /////////////////////////////////////////////////////////////
 

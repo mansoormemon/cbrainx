@@ -96,14 +96,16 @@ auto ActivationLayer::property() const -> std::string { return act_func_->to_str
 
 auto ActivationLayer::type() const -> LayerType { return LayerType::Activation; }
 
+auto ActivationLayer::output() const -> const Tensor<f32> & { return output_; }
+
 // /////////////////////////////////////////////////////////////
 
-auto ActivationLayer::forward_pass(const Tensor<f32> &input) const -> Tensor<f32> {
-  auto out = Tensor<f32>::zeros(input.shape());
-  std::transform(input.begin(), input.end(), out.begin(), [this](const auto &x) {
+auto ActivationLayer::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
+  output_ = Tensor<f32>::zeros(input.shape());
+  std::transform(input.begin(), input.end(), output_.begin(), [this](const auto &x) {
     return act_func_->operator()(x);
   });
-  return out;
+  return *this;
 }
 
 }

@@ -50,15 +50,17 @@ auto DenseLayer::property() const -> std::string {
 
 auto DenseLayer::type() const -> LayerType { return LayerType::Dense; }
 
+auto DenseLayer::output() const -> const Tensor<f32> & { return output_; }
+
 // /////////////////////////////////////////////////////////////
 
-auto DenseLayer::forward_pass(const Tensor<f32> &input) const -> Tensor<f32> {
-  auto out = Matrix::multiply(input, weights_);
+auto DenseLayer::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
+  output_ = Matrix::multiply(input, weights_);
   auto [samples] = input.shape().unwrap<1>();
   for (shape_value_t i = {}; i < samples; ++i) {
-    Matrix::add_row_wise(out, biases_);
+    Matrix::add_row_wise(output_, biases_);
   }
-  return out;
+  return *this;
 }
 
 }
