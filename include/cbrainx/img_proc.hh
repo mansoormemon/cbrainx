@@ -59,7 +59,7 @@ class ImgProc {
       return img;
     }
 
-    const auto R = 0, G = 1, B = 2;
+    const u32 R = 0, G = 1, B = 2;
     auto gray_img = Image::make<T>({meta.width(), meta.height()});
     auto src_it = img.begin();
     for (auto it = gray_img.begin(), end = gray_img.end(); it != end; ++it) {

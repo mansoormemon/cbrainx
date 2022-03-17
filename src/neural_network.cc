@@ -26,7 +26,7 @@
 
 namespace cbx {
 
-auto NeuralNetwork::input_size_check(AbstractLayer::shape_value_t input_size) -> void {
+auto NeuralNetwork::input_size_check(shape_value_t input_size) -> void {
   if (input_size == 0) {
     throw std::invalid_argument{"cbx::NeuralNetwork::input_size_check: the number of neurons in the input "
                                 "layer must be greater than zero"};
@@ -35,7 +35,7 @@ auto NeuralNetwork::input_size_check(AbstractLayer::shape_value_t input_size) ->
 
 // /////////////////////////////////////////////////////////////
 
-NeuralNetwork::NeuralNetwork(AbstractLayer::shape_value_t input_size) {
+NeuralNetwork::NeuralNetwork(shape_value_t input_size) {
   NeuralNetwork::input_size_check(input_size);
   input_size_ = input_size;
 }
@@ -99,12 +99,13 @@ auto NeuralNetwork::forward_pass(const Tensor<f32> &input) -> Tensor<f32> {
 // /////////////////////////////////////////////////////////////
 
 auto NeuralNetwork::show_summary() const -> void {
-  auto table = Table{"Layer", "Type", "Neurons", "Property"};
+  auto table = Table{"Layer (Type)", "Neurons", "Property"};
   table.set_caption("Model Summary");
-  auto input_layer = std::initializer_list<std::string>{"INPL0", "Input", std::to_string(input_size_), "-"};
+  auto input_layer = std::initializer_list<std::string>{"INPL0 (Input)", std::to_string(input_size_), "-"};
   table.add(input_layer);
   for (const auto &layer : layers_) {
-    table.add({layer->to_string(), layer->type_name(), std::to_string(layer->neurons()), layer->property()});
+    table.add({fmt::format("{} ({})", layer->to_string(), layer->type_name()), std::to_string(layer->neurons()),
+               layer->property()});
   }
   table.show(true, Table::Large);
   fmt::print("Total Parameters: {}\n", this->total_parameters());

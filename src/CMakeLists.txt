@@ -7,6 +7,7 @@ set(CBRAINX_SOURCES
     "activation_functions.cc"
     "activation_layer.cc"
     "dense_layer.cc"
+    "exceptions.cc"
     "image.cc"
     "img_proc.cc"
     "matrix.cc"

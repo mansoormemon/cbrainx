@@ -31,9 +31,9 @@ namespace cbx {
  */
 class Shape {
  public:
-  using container = std::vector<u32>;
+  using value_type = u32;
 
-  using value_type = container::value_type;
+  using container = std::vector<value_type>;
 
   using reference = container::reference;
   using const_reference = container::const_reference;
@@ -155,6 +155,9 @@ class Shape {
 
   friend auto operator!=(const Shape &a, const Shape &b) noexcept -> bool;
 };
+
+using shape_value_t = typename Shape::value_type;
+using shape_size_t = typename Shape::size_type;
 
 }
 

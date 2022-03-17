@@ -22,6 +22,7 @@
 #include "activation_functions.hh"
 #include "activation_layer.hh"
 #include "dense_layer.hh"
+#include "exceptions.hh"
 #include "image.hh"
 #include "img_proc.hh"
 #include "matrix.hh"

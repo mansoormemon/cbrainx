@@ -46,7 +46,7 @@ class Image {
   using datatype_after_morph_t = typename datatype_after_morph<T>::type;
 
  public:
-  static constexpr auto const JPG_QUALITY = 72;
+  static constexpr auto const JPG_QUALITY = 84;
 
   // /////////////////////////////////////////////////////////////
 
@@ -75,12 +75,15 @@ class Image {
     // /////////////////////////////////////////////////////////////
 
     [[nodiscard]] auto width() const -> const i32 &;
+
     auto width() -> i32 &;
 
     [[nodiscard]] auto height() const -> const i32 &;
+
     auto height() -> i32 &;
 
     [[nodiscard]] auto channels() const -> const i32 &;
+
     auto channels() -> i32 &;
 
     // /////////////////////////////////////////////////////////////
@@ -92,7 +95,7 @@ class Image {
 
     [[nodiscard]] auto model() const -> Model;
 
-    [[nodiscard]] auto total() const -> std::size_t;
+    [[nodiscard]] auto total() const -> size_dt;
 
     [[nodiscard]] auto bitmask() const -> i32;
 

@@ -18,25 +18,26 @@
 #include "cbrainx/img_proc.hh"
 
 #include <array>
-#include <stdexcept>
 
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
 
 #include <fmt/format.h>
 
+#include "cbrainx/exceptions.hh"
+
 namespace cbx {
 
 auto ImgProc::has_channel_check(Image::Meta meta, Image::Channel target) -> void {
   if (not meta.has_channel(target)) {
-    throw std::logic_error{
+    throw IncompatibleColorModelError{
         fmt::format("cbx::ImgProc::has_channel_check: channel(={}) is not available", target)};
   }
 }
 
 auto ImgProc::model_compatibility_check(Image::Meta meta, Image::Model target) -> void {
   if (not meta.is_compatible(target)) {
-    throw std::logic_error{fmt::format(
+    throw IncompatibleColorModelError{fmt::format(
         "cbx::ImgProc::model_compatibility_check: color models are not compatible(current={}, target={})",
         meta.model(), target)};
   }
@@ -90,7 +91,7 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
 
   auto make_histogram = [](const auto &container) {
-    auto hist = std::array<std::size_t, CHANNEL_SIZE>{};
+    auto hist = std::array<size_dt, CHANNEL_SIZE>{};
     for (const auto &val : container) {
       hist[val] += 1;
     }
@@ -113,7 +114,7 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   f32 BCV = {}, maxBCV = {};    // Between Class Variance and Maximum Between Class Variance.
   u8 optThresh = {};            // Optimal threshold.
 
-  for (auto t = 0; t < CHANNEL_SIZE; t += 1) {
+  for (auto t = 0; t < CHANNEL_SIZE; ++t) {
     // Calculate background weight for threshold `t`.
     // Formula: wB = summation[i = 0, t] hist[i]
     wB += static_cast<f32>(hist[t]);

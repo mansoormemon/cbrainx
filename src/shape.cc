@@ -18,16 +18,17 @@
 #include "cbrainx/shape.hh"
 
 #include <numeric>
-#include <stdexcept>
 
 #include <fmt/format.h>
+
+#include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
 auto Shape::range_check(size_type index) const -> void {
   auto dims = this->dimensions();
   if (index >= dims) {
-    throw std::out_of_range{
+    throw RankError{
         fmt::format("cbx::Shape::range_check: `index(={}) >= this->dimensions()(={})` is true", index, dims)};
   }
 }
@@ -35,14 +36,14 @@ auto Shape::range_check(size_type index) const -> void {
 auto Shape::arg_count_check(size_type N) const -> void {
   auto dims = this->dimensions();
   if (N > dims) {
-    throw std::invalid_argument{
+    throw RankError{
         fmt::format("cbx::Shape::arg_count_check: `N(={}) > this->dimensions()(={})` is true", N, dims)};
   }
 }
 
 auto Shape::validity_check(value_type value) -> void {
   if (value <= 0) {
-    throw std::invalid_argument{"cbx::Shape::validity_check: dimension size must be greater than zero"};
+    throw ShapeError{"cbx::Shape::validity_check: dimension size must be greater than zero"};
   }
 }
 

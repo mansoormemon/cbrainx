@@ -19,17 +19,19 @@
 #define CBRAINX__TENSOR_HH_
 
 #include <algorithm>
+#include <iterator>
 #include <numeric>
 #include <random>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
+#include <fmt/format.h>
+
+#include "exceptions.hh"
 #include "shape.hh"
 #include "type_aliases.hh"
 #include "type_concepts.hh"
-
-#include <fmt/format.h>
 
 namespace cbx {
 
@@ -41,9 +43,9 @@ namespace cbx {
 template <Number T = f32>
 class Tensor {
  public:
-  using container = std::vector<T>;
+  using value_type = T;
 
-  using value_type = typename container::value_type;
+  using container = std::vector<value_type>;
 
   using reference = typename container::reference;
   using const_reference = typename container::const_reference;
@@ -57,7 +59,9 @@ class Tensor {
   using iterator = typename container::iterator;
   using const_iterator = typename container::const_iterator;
 
-  static constexpr size_type SCALAR_RANK = 0;
+  // /////////////////////////////////////////////////////////////
+
+  static constexpr shape_size_t SCALAR_RANK = 0;
 
  private:
   Shape shape_ = {};
@@ -76,8 +80,7 @@ class Tensor {
   constexpr auto shape_compatibility_check(const Shape &other) const -> void {
     // The total number of elements for both shapes must match.
     if (not shape_.is_compatible(other)) {
-      throw std::invalid_argument{
-          "cbx::Tensor::shape_compatibility_check: `this->shape().is_compatible(other)` is false"};
+      throw ShapeError{"cbx::Tensor::shape_compatibility_check: `this->shape().is_compatible(other)` is false"};
     }
   }
 
@@ -87,7 +90,7 @@ class Tensor {
     auto rank = this->rank();
     // The number of indices must be equal to the rank of the tensor.
     if (indices_count != rank) {
-      throw std::invalid_argument{fmt::format(
+      throw RankError{fmt::format(
           "cbx::Tensor::dimensionality_check: indices(count={}) contradict the rank(={}) of the tensor",
           indices_count, rank)};
     }
@@ -97,39 +100,32 @@ class Tensor {
   constexpr auto dimensional_range_check(Args... indices) const -> void {
     this->dimensionality_check(indices...);
 
-    [[maybe_unused]] auto dimension = Shape::size_type{};
-    // An anonymous lambda that checks the range of each dimension by recursively unpacking the parameter pack.
-    (
-        [this, &dimension](auto &dim_index) {
-          auto dimension_size = shape_[dimension];
-          if (auto i = static_cast<Shape::size_type>(dim_index); i >= dimension_size) {
-            throw std::out_of_range{fmt::format("cbx::Tensor::dimensional_range_check: `dim_index(={}) >= "
-                                                "this->shape()[dimension(={})](={})` is true",
-                                                i, dimension, dimension_size)};
-          }
-          dimension += 1;
-        }(indices),
-        ...);
+    auto ilist_indices = std::initializer_list<shape_value_t>{static_cast<shape_value_t>(indices)...};
+    for (auto shape_it = shape_.begin(); auto dim_index : ilist_indices) {
+      if (dim_index >= *shape_it) {
+        throw std::out_of_range{fmt::format("cbx::Tensor::dimensional_range_check: `dim_index(={}) >= "
+                                            "this->shape()[dimension(={})](={})` is true",
+                                            dim_index, std::distance(shape_.begin(), shape_it), *shape_it)};
+      }
+      ++shape_it;
+    }
   }
 
   template <Integer... Args>
   [[nodiscard]] constexpr auto get_linearized_index(Args... indices) const -> size_type {
     this->dimensional_range_check(indices...);
 
-    auto linearized_index = size_type{};
-
-    [[maybe_unused]] auto dimension = size_type{};
-    // An anonymous lambda that computes a linear index from the given non-linear indices by recursively
-    // expanding the parameter pack. The recursion propagates from the higher to lower dimensions.
-    (
-        [this, &linearized_index, &dimension](auto dim_index) {
-          linearized_index += dim_index
-                            * std::accumulate(shape_.begin() + dimension + 1, shape_.end(),
-                                              Shape::UNIT_DIMENSION_SIZE, std::multiplies());
-          dimension += 1;
-        }(indices),
-        ...);
-
+    auto ilist_indices = std::initializer_list<shape_value_t>{static_cast<shape_value_t>(indices)...};
+    size_type linearized_index = {};
+    auto stride = Shape::UNIT_DIMENSION_SIZE;
+    auto shape_r_it = std::reverse_iterator{shape_.end()};
+    for (auto indices_r_it = std::reverse_iterator{ilist_indices.end()},
+              indices_r_end = std::reverse_iterator{ilist_indices.begin()};
+         indices_r_it != indices_r_end; ++indices_r_it) {
+      linearized_index += *indices_r_it * stride;
+      stride *= *shape_r_it;
+      ++shape_r_it;
+    }
     return linearized_index;
   }
 
@@ -252,6 +248,12 @@ class Tensor {
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] constexpr auto clone() const -> Tensor { return *this; }
+
+  constexpr auto swap(Tensor &other) noexcept -> Tensor & {
+    shape_.swap(other.shape_);
+    data_.swap(other.data_);
+    return *this;
+  }
 
   // /////////////////////////////////////////////////////////////
 

@@ -39,12 +39,6 @@ concept Number = std::is_arithmetic_v<T>;
 template <typename T>
 concept Void = std::is_void_v<T>;
 
-template <typename T>
-concept Reference = std::is_reference_v<T>;
-
-template <typename T>
-concept Pointer = std::is_pointer_v<T>;
-
 }
 
 #endif

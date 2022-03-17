@@ -32,14 +32,14 @@ namespace cbx {
 
 class Matrix {
  public:
-  static constexpr Shape::size_type DIMENSIONS = 2;
+  static constexpr shape_size_t DIMENSIONS = 2;
 
  private:
-  static auto rank_check(Shape::size_type rank) -> void;
+  static auto rank_check(shape_size_t rank) -> void;
 
   static auto shape_equality_check(const Shape &a, const Shape &b) -> void;
 
-  static auto multiplication_compatibility_check(Shape::value_type c1, Shape::value_type r2) -> void;
+  static auto multiplication_compatibility_check(shape_value_t c1, shape_value_t r2) -> void;
 
  public:
   template <typename T = f32>
@@ -48,55 +48,55 @@ class Matrix {
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto make(Shape::value_type rows, Shape::value_type cols) -> Tensor<T> {
+  [[nodiscard]] static auto make(shape_value_t rows, shape_value_t cols) -> Tensor<T> {
     return Tensor<T>{{rows, cols}};
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto make_row(Shape::value_type cols) -> Tensor<T> {
+  [[nodiscard]] static auto make_row(shape_value_t cols) -> Tensor<T> {
     return Tensor<T>{{1, cols}};
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto make_column(Shape::value_type rows) -> Tensor<T> {
+  [[nodiscard]] static auto make_column(shape_value_t rows) -> Tensor<T> {
     return Tensor<T>{{rows, 1}};
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto make_square(Shape::value_type size) -> Tensor<T> {
+  [[nodiscard]] static auto make_square(shape_value_t size) -> Tensor<T> {
     return Tensor<T>{{size, size}};
   }
 
   // /////////////////////////////////////////////////////////////
 
   template <typename T = f32>
-  [[nodiscard]] static auto zeros(Shape::value_type rows, Shape::value_type cols) -> Tensor<T> {
+  [[nodiscard]] static auto zeros(shape_value_t rows, shape_value_t cols) -> Tensor<T> {
     return Tensor<T>::zeros({rows, cols});
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto ones(Shape::value_type rows, Shape::value_type cols) -> Tensor<T> {
+  [[nodiscard]] static auto ones(shape_value_t rows, shape_value_t cols) -> Tensor<T> {
     return Tensor<T>::ones({rows, cols});
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto fill(Shape::value_type rows, Shape::value_type cols, T value) -> Tensor<T> {
+  [[nodiscard]] static auto fill(shape_value_t rows, shape_value_t cols, T value) -> Tensor<T> {
     return Tensor<T>::fill({rows, cols}, value);
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto random(Shape::value_type rows, Shape::value_type cols, u64 seed = 1,
-                                   T lower_bound = 0, T upper_bound = 1) -> Tensor<T> {
+  [[nodiscard]] static auto random(shape_value_t rows, shape_value_t cols, u64 seed = 1, T lower_bound = 0,
+                                   T upper_bound = 1) -> Tensor<T> {
     return Tensor<T>::random({rows, cols}, seed, lower_bound, upper_bound);
   }
 
   template <typename T = f32, typename Lambda>
-  [[nodiscard]] static auto custom(Shape::value_type rows, Shape::value_type cols, Lambda func) -> Tensor<T> {
+  [[nodiscard]] static auto custom(shape_value_t rows, shape_value_t cols, Lambda func) -> Tensor<T> {
     return Tensor<T>::custom({rows, cols}, func);
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto scalar(Shape::value_type size, T value) -> Tensor<T> {
+  [[nodiscard]] static auto scalar(shape_value_t size, T value) -> Tensor<T> {
     const auto EXTRA_STEP = 1;
     auto mat = Matrix::make_square<T>(size);
     for (auto it = mat.begin(), end = mat.end(); it < end; it += size + EXTRA_STEP) {
@@ -106,7 +106,7 @@ class Matrix {
   }
 
   template <typename T = f32>
-  [[nodiscard]] static auto identity(Shape::value_type size) -> Tensor<T> {
+  [[nodiscard]] static auto identity(shape_value_t size) -> Tensor<T> {
     return Matrix::scalar<T>(size, 1);
   }
 
@@ -140,7 +140,7 @@ class Matrix {
 
     auto [_, cols] = a.shape().template unwrap<2>();
     auto total = a.total();
-    for (Shape::value_type i = {}; i < total; i += cols) {
+    for (shape_value_t i = {}; i < total; i += cols) {
       auto a_begin = a.begin() + i;
       auto a_end = a_begin + cols;
       std::transform(a_begin, a_end, b.begin(), a_begin, [](const auto &a_x, const auto &b_x) {
@@ -180,7 +180,7 @@ class Matrix {
 
     auto [_, cols] = a.shape().template unwrap<2>();
     auto total = a.total();
-    for (Shape::value_type i = {}; i < total; i += cols) {
+    for (shape_value_t i = {}; i < total; i += cols) {
       auto a_begin = a.begin() + i;
       auto a_end = a_begin + cols;
       std::transform(a_begin, a_end, b.begin(), a_begin, [](const auto &a_x, const auto &b_x) {
@@ -215,16 +215,16 @@ class Matrix {
     auto product = Matrix::make<T>(rows, cols);
 
     // Estimates how many rows each thread will be assigned based on the number of rows in the product matrix.
-    auto calculate_rows_per_thread = [](auto rows) -> Shape::size_type {
+    auto calculate_rows_per_thread = [](auto rows) -> shape_size_t {
       // Arbitrarily establish a relation between thread count and matrix size.
       const auto ARBITRARY_CONSTANT_A = sizeof(std::int_least64_t);
-      const auto ARBITRARY_CONSTANT_B = sizeof(std::ptrdiff_t) * (ARBITRARY_CONSTANT_A);
+      const auto ARBITRARY_CONSTANT_B = sizeof(ptrdiff_dt) * (ARBITRARY_CONSTANT_A);
       auto factor = std::log(rows + ARBITRARY_CONSTANT_A);
       return std::floor(factor) * (ARBITRARY_CONSTANT_B - ARBITRARY_CONSTANT_A);
     };
 
     // Calculates how many threads will be required based on the number of rows assigned to each thread.
-    auto calculate_threads_required = [](f32 rows, auto rows_per_thread) -> Shape::size_type {
+    auto calculate_threads_required = [](f32 rows, auto rows_per_thread) -> shape_size_t {
       return std::ceil(rows / rows_per_thread);
     };
 
@@ -233,8 +233,8 @@ class Matrix {
     auto impl = [&a, &b, &product, cols, common_index](auto row_start, auto row_count) {
       auto row_end = row_start + row_count;
       for (auto r = row_start; r < row_end; ++r) {
-        for (Shape::value_type c = {}; c < cols; ++c) {
-          for (Shape::value_type k = {}; k < common_index; ++k) {
+        for (shape_value_t c = {}; c < cols; ++c) {
+          for (shape_value_t k = {}; k < common_index; ++k) {
             product(r, c) += a(r, k) * b(k, c);
           }
         }
@@ -243,7 +243,7 @@ class Matrix {
 
     // If multithreading is unsought, ordinarily call the implementation lambda and return the product.
     if (not multithreading) {
-      impl(Shape::size_type{}, rows);
+      impl(shape_size_t{}, rows);
       return product;
     }
 
@@ -255,7 +255,7 @@ class Matrix {
     threads.reserve(threads_required);
 
     // Construct each thread with implementation lambda, position, and span of the thread in the product matrix.
-    for (Shape::size_type current_row = {}; current_row < rows; current_row += rows_per_thread) {
+    for (shape_size_t current_row = {}; current_row < rows; current_row += rows_per_thread) {
       auto distance = rows - current_row;
       auto num_of_rows = std::min(rows_per_thread, distance);
       threads.emplace_back(impl, current_row, num_of_rows);

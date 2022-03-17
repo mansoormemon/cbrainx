@@ -16,15 +16,18 @@
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/dense_layer.hh"
-#include "cbrainx/matrix.hh"
+
+#include <limits>
 
 #include <fmt/format.h>
+
+#include "cbrainx/matrix.hh"
 
 namespace cbx {
 
 DenseLayer::DenseLayer(shape_value_t inputs, shape_value_t neurons) : AbstractLayer{"DNSL"} {
   weights_ = Tensor<f32>::random({inputs, neurons}, {}, -1, 1);
-  biases_ = Tensor<f32>::zeros({neurons});
+  biases_ = Tensor<f32>::fill({neurons}, std::numeric_limits<f32>::epsilon());
 }
 
 DenseLayer::DenseLayer(DenseLayer &&other) noexcept

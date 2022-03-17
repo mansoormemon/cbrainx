@@ -48,15 +48,15 @@ class NeuralNetwork {
   using const_iterator = typename container::const_iterator;
 
  private:
-  AbstractLayer::shape_value_t input_size_ = {};
+  shape_value_t input_size_ = {};
   container layers_ = {};
 
   // /////////////////////////////////////////////////////////////
 
-  static auto input_size_check(AbstractLayer::shape_value_t input_size) -> void;
+  static auto input_size_check(shape_value_t input_size) -> void;
 
  public:
-  explicit NeuralNetwork(AbstractLayer::shape_value_t input_size);
+  explicit NeuralNetwork(shape_value_t input_size);
 
   // For future - Write a deep copy constructor.
   NeuralNetwork(const NeuralNetwork &other) = delete;
@@ -78,7 +78,7 @@ class NeuralNetwork {
   auto add(Args... args) -> const_reference {
     size_type neurons_in_last_layer = layers_.empty() ? input_size_ : layers_.back()->neurons();
     layers_.emplace_back(std::make_shared<LayerType>(neurons_in_last_layer, args...));
-    layers_.back()->set_id(layers_.size());
+    layers_.back()->set_id(static_cast<i32>((layers_.size())));
     return layers_.back();
   }
 
@@ -92,21 +92,21 @@ class NeuralNetwork {
 
   [[nodiscard]] auto front() const -> const_reference;
 
-  [[nodiscard]] auto front() -> reference;
+  auto front() -> reference;
 
   [[nodiscard]] auto back() const -> const_reference;
 
-  [[nodiscard]] auto back() -> reference;
+  auto back() -> reference;
 
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] auto begin() const -> const_iterator;
 
-  [[nodiscard]] auto begin() -> iterator;
+  auto begin() -> iterator;
 
   [[nodiscard]] auto end() const -> const_iterator;
 
-  [[nodiscard]] auto end() -> iterator;
+  auto end() -> iterator;
 
   // /////////////////////////////////////////////////////////////
 
@@ -120,6 +120,7 @@ class NeuralNetwork {
 
   auto show_summary() const -> void;
 };
+
 }
 
 #endif

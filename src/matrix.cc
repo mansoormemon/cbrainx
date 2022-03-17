@@ -21,23 +21,23 @@
 
 namespace cbx {
 
-auto Matrix::rank_check(Shape::size_type rank) -> void {
+auto Matrix::rank_check(shape_size_t rank) -> void {
   if (rank != DIMENSIONS) {
-    throw std::logic_error{fmt::format("cbx::Matrix::rank_check: incompatible dimensionality(rank={})", rank)};
+    throw RankError{fmt::format("cbx::Matrix::rank_check: incompatible dimensionality(rank={})", rank)};
   }
 }
 
 auto Matrix::shape_equality_check(const Shape &a, const Shape &b) -> void {
   if (a != b) {
-    throw std::invalid_argument{"cbx::Matrix::shape_equality_check: `a != b` is true"};
+    throw ShapeError{"cbx::Matrix::shape_equality_check: `a != b` is true"};
   }
 }
 
-auto Matrix::multiplication_compatibility_check(Shape::value_type c1, Shape::value_type r2) -> void {
+auto Matrix::multiplication_compatibility_check(shape_value_t c1, shape_value_t r2) -> void {
   if (c1 != r2) {
-    throw std::logic_error{fmt::format("cbx::Matrix::multiplication_compatibility_check: matrices are not "
-                                       "compatible for multiplication(c1={}, r2={})",
-                                       c1, r2)};
+    throw ShapeError{fmt::format("cbx::Matrix::multiplication_compatibility_check: matrices are not "
+                                 "compatible for multiplication(c1={}, r2={})",
+                                 c1, r2)};
   }
 }
 

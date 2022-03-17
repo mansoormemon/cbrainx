@@ -32,7 +32,6 @@ enum class LayerType { Dense, Activation, SoftMax };
 
 class AbstractLayer {
  public:
-  using shape_value_t = Shape::value_type;
   using size_type = Tensor<f32>::size_type;
   using difference_type = Tensor<f32>::difference_type;
 

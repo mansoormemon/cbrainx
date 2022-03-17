@@ -18,7 +18,6 @@
 #include "cbrainx/image.hh"
 
 #include <filesystem>
-#include <stdexcept>
 
 #define STBI_ONLY_BMP
 #define STBI_ONLY_JPEG
@@ -31,6 +30,8 @@
 #include <stb_image_write.h>
 
 #include <fmt/format.h>
+
+#include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
@@ -67,13 +68,13 @@ auto Image::Meta::model() const -> Model {
       return Model::RGBA;
     }
     default: {
-      throw std::out_of_range{
-          fmt::format("cbx::Image::Meta::model: Unknown color model(channels={})", channels_)};
+      throw UnrecognizedColorModelError{
+          fmt::format("cbx::Image::Meta::model: color model is not recognized(channels={})", channels_)};
     }
   }
 }
 
-auto Image::Meta::total() const -> std::size_t { return width_ * height_ * channels_; }
+auto Image::Meta::total() const -> size_dt { return width_ * height_ * channels_; }
 
 auto Image::Meta::bitmask() const -> i32 {
   auto model = this->model();
@@ -155,7 +156,7 @@ auto Image::Meta::decode_shape(const Shape &shape) -> Meta {
       return Meta{w, h, c};
     }
     default: {
-      throw std::out_of_range{"cbx::Image::Meta::decode_shape: unsuitable shape"};
+      throw ShapeError{"cbx::Image::Meta::decode_shape: unsuitable shape for image"};
     }
   }
 }
@@ -198,7 +199,7 @@ auto Image::read(const std::string &img_path) -> Tensor<T> {
         stbi_loadf(abs_path.string().c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
   }
   if (not temp_buf) {
-    throw std::invalid_argument{"cbx::Image::read: could not read image"};
+    throw ImageIOError{"cbx::Image::read: could not read image"};
   }
   auto img = Tensor<T>::copy(meta.to_shape(), pointer(temp_buf), pointer(temp_buf) + meta.total());
   stbi_image_free(temp_buf);
@@ -216,22 +217,32 @@ template auto Image::read<f32>(const std::string &img_path) -> Tensor<f32>;
 template <>
 auto Image::write<u8>(const Tensor<u8> &img, const std::string &img_path, Format fmt) -> void {
   auto abs_path = std::filesystem::absolute(img_path);
+  auto parent_path = abs_path.parent_path();
+  if (not std::filesystem::exists(parent_path)) {
+    std::filesystem::create_directories(parent_path);
+  }
+
   auto meta = Meta::decode_shape(img.shape());
+  i32 ret_val = {};
   switch (fmt) {
     case Format::BMP: {
-      stbi_write_bmp(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data());
+      ret_val =
+          stbi_write_bmp(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data());
       break;
     }
     case Format::JPG: {
-      stbi_write_jpg(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data(),
-                     JPG_QUALITY);
+      ret_val = stbi_write_jpg(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(),
+                               img.data(), JPG_QUALITY);
       break;
     }
     case Format::PNG: {
-      stbi_write_png(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data(),
-                     meta.width() * meta.channels());
+      ret_val = stbi_write_png(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(),
+                               img.data(), meta.width() * meta.channels());
       break;
     }
+  }
+  if (ret_val == 0) {
+    throw ImageIOError{"cbx::Image::write: could not write image"};
   }
 }
 
