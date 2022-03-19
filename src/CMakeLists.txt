@@ -6,6 +6,7 @@ set(CBRAINX_SOURCES
     "abstract_layer.cc"
     "activation_functions.cc"
     "activation_layer.cc"
+    "dataset.cc"
     "dense_layer.cc"
     "exceptions.cc"
     "image.cc"

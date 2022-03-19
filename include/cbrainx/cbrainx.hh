@@ -21,6 +21,7 @@
 #include "abstract_layer.hh"
 #include "activation_functions.hh"
 #include "activation_layer.hh"
+#include "dataset.hh"
 #include "dense_layer.hh"
 #include "exceptions.hh"
 #include "image.hh"

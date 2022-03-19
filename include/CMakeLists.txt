@@ -3,6 +3,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/activation_functions.hh"
     "cbrainx/activation_layer.hh"
     "cbrainx/cbrainx.hh"
+    "cbrainx/dataset.hh"
     "cbrainx/dense_layer.hh"
     "cbrainx/exceptions.hh"
     "cbrainx/image.hh"
