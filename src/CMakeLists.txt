@@ -11,6 +11,7 @@ set(CBRAINX_SOURCES
     "exceptions.cc"
     "image.cc"
     "img_proc.cc"
+    "loss_functions.cc"
     "matrix.cc"
     "neural_network.cc"
     "shape.cc"

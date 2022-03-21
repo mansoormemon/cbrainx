@@ -15,29 +15,25 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#ifndef CBRAINX__OPTIMIZERS_HH_
+#define CBRAINX__OPTIMIZERS_HH_
 
-#include "abstract_layer.hh"
-#include "activation_functions.hh"
-#include "activation_layer.hh"
-#include "dataset.hh"
-#include "dense_layer.hh"
-#include "exceptions.hh"
-#include "image.hh"
-#include "img_proc.hh"
-#include "loss_functions.hh"
-#include "matrix.hh"
-#include "neural_network.hh"
-#include "optimizers.hh"
-#include "shape.hh"
-#include "soft_max.hh"
-#include "stopwatch.hh"
-#include "table.hh"
-#include "tensor.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "utility.hh"
-#include "version.hh"
+namespace cbx {
+
+template <typename T>
+concept Optimizer = true;
+
+class GradientDescent {
+ private:
+  f64 learning_rate = {};
+
+ public:
+  GradientDescent() = default;
+  GradientDescent(f64 learning_rate) {}
+
+  auto update_gradients() -> void {}
+};
+
+}
 
 #endif

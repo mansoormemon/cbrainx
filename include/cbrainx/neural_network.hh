@@ -18,11 +18,16 @@
 #ifndef CBRAINX__NEURAL_NETWORK_HH_
 #define CBRAINX__NEURAL_NETWORK_HH_
 
+#include <cmath>
 #include <list>
 #include <memory>
 
 #include "abstract_layer.hh"
+#include "dataset.hh"
+#include "loss_functions.hh"
+#include "optimizers.hh"
 #include "type_aliases.hh"
+#include "utility.hh"
 
 namespace cbx {
 
@@ -119,6 +124,46 @@ class NeuralNetwork {
   // /////////////////////////////////////////////////////////////
 
   auto show_summary() const -> void;
+
+  // /////////////////////////////////////////////////////////////
+
+  auto train(const Dataset &dataset, Loss loss_type, const Optimizer auto &optimizer, size_dt batch_size,
+             size_dt epochs, Verbosity verbosity = Verbosity::L3) -> void {
+    decltype(auto) data = dataset.data();
+    decltype(auto) targets = dataset.targets();
+    size_dt sample_count = dataset.samples();
+    size_dt total_batches = std::ceil(static_cast<f32>(sample_count) / batch_size);
+    auto loss_func = LossFunctionFactory::make(loss_type);
+
+    verbose(Verbosity::L2, verbosity, "Initiating training...\n");
+    verbose(Verbosity::L2, verbosity, "Samples: {}\n", sample_count);
+    verbose(Verbosity::L2, verbosity, "Batch size: {}, Total batches: {}\n", batch_size, total_batches);
+    verbose(Verbosity::L2, verbosity, "{}\n", loss_func->to_string());
+
+    auto out = this->forward_pass(data);
+
+    for (size_dt epoch = {}; epoch < epochs; ++epoch) {
+      verbose(Verbosity::L3, verbosity, "Epoch {} of {}: [\n", epoch + 1, epochs);
+
+      for (size_dt batch = {}; batch < total_batches; ++batch) {
+        auto sample_stride = out.total() / sample_count;
+        auto offset = batch * batch_size;
+        auto n = std::min(batch_size, sample_count - offset);
+
+        auto out_begin = out.begin() + (offset * sample_stride);
+        auto out_end = out_begin + (n * sample_stride);
+
+        auto targets_begin = targets.begin() + (offset * sample_stride);
+        auto mean_loss = loss_func->calculate(out_begin, out_end, targets_begin);
+
+        verbose(Verbosity::L3, verbosity, "\tBatch # {}/{}: {{ ", batch + 1, total_batches);
+        verbose(Verbosity::L3, verbosity, "samples={}", n);
+        verbose(Verbosity::L3, verbosity, ", mean_loss: {} }}\n", mean_loss);
+      }
+      verbose(Verbosity::L3, verbosity, "]\n");
+    }
+    verbose(Verbosity::L2, verbosity, "Training complete!\n");
+  }
 };
 
 }

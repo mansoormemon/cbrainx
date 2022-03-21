@@ -1,6 +1,7 @@
 #include <cbrainx/cbrainx.hh>
 
 #include <iostream>
+#include <vector>
 
 #include "rapidcsv/rapidcsv.h"
 
@@ -68,6 +69,8 @@ auto measure_accuracy(const cbx::Dataset &dataset, const cbx::Tensor<cbx::f32> &
 }
 
 auto main() -> cbx::i32 {
+  auto stopwatch = cbx::Stopwatch{};
+
   auto train_dataset = read_dataset("res/train.ionosphere.data.csv");
   auto test_dataset = read_dataset("res/test.ionosphere.data.csv");
 
@@ -80,6 +83,12 @@ auto main() -> cbx::i32 {
   net.add<cbx::ActivationLayer>(cbx::Activation::Sigmoid);
   net.show_summary();
 
+  auto optimizer = cbx::GradientDescent{10e3};
+
+  stopwatch.start();
+  net.train(train_dataset, cbx::Loss::MeanSquaredError, optimizer, 64, 5);
+  stopwatch.stop();
+
   std::cout << "train_dataset: " << train_dataset.meta_info() << std::endl;
 
   auto test_out = net.forward_pass(test_dataset.data());
@@ -90,6 +99,8 @@ auto main() -> cbx::i32 {
   auto predictions = apply_threshold(test_out, 0.5);
   auto accuracy = measure_accuracy(test_dataset, predictions);
   std::cout << "Accuracy: " << std::round(accuracy * 100) << "%" << std::endl;
+  std::cout << "Time taken for training: " << stopwatch.get_interval<std::chrono::milliseconds>() << " ms."
+            << std::endl;
 
   return {};
 }

@@ -15,29 +15,25 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__CBRAINX_HH_
-#define CBRAINX__CBRAINX_HH_
+#ifndef CBRAINX__UTILITY_HH_
+#define CBRAINX__UTILITY_HH_
 
-#include "abstract_layer.hh"
-#include "activation_functions.hh"
-#include "activation_layer.hh"
-#include "dataset.hh"
-#include "dense_layer.hh"
-#include "exceptions.hh"
-#include "image.hh"
-#include "img_proc.hh"
-#include "loss_functions.hh"
-#include "matrix.hh"
-#include "neural_network.hh"
-#include "optimizers.hh"
-#include "shape.hh"
-#include "soft_max.hh"
-#include "stopwatch.hh"
-#include "table.hh"
-#include "tensor.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
-#include "utility.hh"
-#include "version.hh"
+#include <string_view>
+
+#include <fmt/format.h>
+
+namespace cbx {
+
+enum Verbosity { L0, L1, L2, L3 };
+
+template <typename... Args>
+auto verbose(Verbosity demand, Verbosity current, std::string_view fmt_str, Args &&...args) -> void {
+  if (demand > current) {
+    return;
+  }
+  fmt::vprint(fmt_str, fmt::make_format_args(std::forward<Args>(args)...));
+}
+
+}
 
 #endif
