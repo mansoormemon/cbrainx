@@ -44,11 +44,10 @@ auto SoftMax::property() const -> std::string { return "-"; }
 
 auto SoftMax::type() const -> LayerType { return LayerType::SoftMax; }
 
-auto SoftMax::output() const -> const Tensor<f32> & { return output_; }
-
 // /////////////////////////////////////////////////////////////
 
-auto SoftMax::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
+auto SoftMax::forward_pass(container_const_reference input) -> AbstractLayer & {
+  input_ = input;
   output_ = Tensor<f32>::zeros(input.shape());
   auto [_, cols] = input.shape().template unwrap<2>();
   auto total = input.total();

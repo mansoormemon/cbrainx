@@ -56,6 +56,10 @@ auto AbstractLayer::set_name(std::string name) -> AbstractLayer & {
   return *this;
 }
 
+auto AbstractLayer::input() const -> container_const_reference { return input_; }
+
+auto AbstractLayer::output() const -> container_const_reference { return output_; }
+
 // /////////////////////////////////////////////////////////////
 
 auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}", name_, id_); }

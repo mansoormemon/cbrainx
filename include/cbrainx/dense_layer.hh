@@ -28,7 +28,6 @@ class DenseLayer : public AbstractLayer {
  private:
   Tensor<f32> weights_ = {};
   Tensor<f32> biases_ = {};
-  Tensor<f32> output_ = {};
 
  public:
   DenseLayer(shape_value_t inputs, shape_value_t neurons);
@@ -55,11 +54,9 @@ class DenseLayer : public AbstractLayer {
 
   [[nodiscard]] auto type() const -> LayerType override;
 
-  [[nodiscard]] auto output() const -> const Tensor<f32> & override;
-
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & override;
+  [[nodiscard]] auto forward_pass(container_const_reference input) -> AbstractLayer & override;
 };
 
 }

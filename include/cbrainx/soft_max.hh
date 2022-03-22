@@ -27,7 +27,6 @@ namespace cbx {
 class SoftMax : public AbstractLayer {
  private:
   shape_value_t neurons_ = {};
-  Tensor<f32> output_ = {};
 
  public:
   explicit SoftMax(shape_value_t inputs);
@@ -54,11 +53,9 @@ class SoftMax : public AbstractLayer {
 
   [[nodiscard]] auto type() const -> LayerType override;
 
-  [[nodiscard]] auto output() const -> const Tensor<f32> & override;
-
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & override;
+  [[nodiscard]] auto forward_pass(container_const_reference input) -> AbstractLayer & override;
 };
 
 }

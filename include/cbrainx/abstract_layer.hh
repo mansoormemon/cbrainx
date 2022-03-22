@@ -32,12 +32,31 @@ enum class LayerType { Dense, Activation, SoftMax };
 
 class AbstractLayer {
  public:
-  using size_type = Tensor<f32>::size_type;
-  using difference_type = Tensor<f32>::difference_type;
+  using value_type = f32;
+  using container = Tensor<f32>;
+
+  using reference = container::reference;
+  using const_reference = container::const_reference;
+
+  using pointer = container::pointer;
+  using const_pointer = container::const_pointer;
+
+  using size_type = container::size_type;
+  using difference_type = container::difference_type;
+
+  using iterator = container::iterator;
+  using const_iterator = container::const_iterator;
+
+  using container_reference = container &;
+  using container_const_reference = const container &;
 
  private:
   i32 id_ = {};
   std::string name_ = "LYR";
+
+ protected:
+  container input_ = {};
+  container output_ = {};
 
  public:
   AbstractLayer() = default;
@@ -70,6 +89,10 @@ class AbstractLayer {
 
   auto set_name(std::string name) -> AbstractLayer &;
 
+  [[nodiscard]] auto input() const -> container_const_reference;
+
+  [[nodiscard]] auto output() const -> container_const_reference;
+
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] virtual auto neurons() const -> size_type = 0;
@@ -80,11 +103,9 @@ class AbstractLayer {
 
   [[nodiscard]] virtual auto type() const -> LayerType = 0;
 
-  [[nodiscard]] virtual auto output() const -> const Tensor<f32> & = 0;
-
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] virtual auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & = 0;
+  [[nodiscard]] virtual auto forward_pass(container_const_reference input) -> AbstractLayer & = 0;
 
   // /////////////////////////////////////////////////////////////
 

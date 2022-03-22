@@ -30,7 +30,6 @@ class ActivationLayer : public AbstractLayer {
  private:
   shape_value_t neurons_ = {};
   std::unique_ptr<ActivationFunction> act_func_ = {};
-  Tensor<f32> output_ = {};
 
  public:
   ActivationLayer(shape_value_t inputs, Activation activation);
@@ -57,11 +56,9 @@ class ActivationLayer : public AbstractLayer {
 
   [[nodiscard]] auto type() const -> LayerType override;
 
-  [[nodiscard]] auto output() const -> const Tensor<f32> & override;
-
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & override;
+  [[nodiscard]] auto forward_pass(container_const_reference input) -> AbstractLayer & override;
 };
 
 }
