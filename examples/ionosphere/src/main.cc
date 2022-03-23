@@ -83,24 +83,29 @@ auto main() -> cbx::i32 {
   net.add<cbx::ActivationLayer>(cbx::Activation::Sigmoid);
   net.show_summary();
 
-  auto optimizer = cbx::GradientDescent{10e3};
+  auto optimizer = cbx::OptimizerFactory::make<cbx::GradientDescent>(0.05);
 
   stopwatch.start();
-  net.train(train_dataset, cbx::Loss::MeanSquaredError, optimizer, 64, 5);
+  net.train(train_dataset, cbx::Loss::MeanSquaredError, optimizer, 1, 4);
   stopwatch.stop();
 
-  std::cout << "train_dataset: " << train_dataset.meta_info() << std::endl;
-
-  auto test_out = net.forward_pass(test_dataset.data());
-
-  std::cout << "test_dataset: " << test_dataset.meta_info() << std::endl;
-  std::cout << "test_out: " << test_out.meta_info() << std::endl;
-
-  auto predictions = apply_threshold(test_out, 0.5);
-  auto accuracy = measure_accuracy(test_dataset, predictions);
-  std::cout << "Accuracy: " << std::round(accuracy * 100) << "%" << std::endl;
   std::cout << "Time taken for training: " << stopwatch.get_interval<std::chrono::milliseconds>() << " ms."
             << std::endl;
+
+  auto test_out = net.forward_pass(test_dataset.data());
+  auto train_out = net.forward_pass(train_dataset.data());
+
+  std::cout << "test_out: " << test_out.meta_info() << std::endl;
+  std::cout << "train_out: " << train_out.meta_info() << std::endl;
+
+  auto test_predictions = apply_threshold(test_out, 0.5);
+  auto test_accuracy = measure_accuracy(test_dataset, test_predictions);
+
+  auto train_predictions = apply_threshold(train_out, 0.5);
+  auto train_accuracy = measure_accuracy(train_dataset, train_predictions);
+
+  std::cout << "Accuracy for testing data: " << std::round(test_accuracy * 100) << "%" << std::endl;
+  std::cout << "Accuracy for training data: " << std::round(train_accuracy * 100) << "%" << std::endl;
 
   return {};
 }

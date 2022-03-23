@@ -18,20 +18,41 @@
 #ifndef CBRAINX__OPTIMIZERS_HH_
 #define CBRAINX__OPTIMIZERS_HH_
 
+#include <memory>
+
+#include "tensor.hh"
+#include "type_aliases.hh"
+
 namespace cbx {
 
-template <typename T>
-concept Optimizer = true;
+class Optimizer {
+ public:
+  virtual auto update_params(Tensor<f32>::iterator dest_begin, Tensor<f32>::iterator dest_end,
+                             Tensor<f32>::const_iterator gradients_begin) -> void = 0;
+};
 
-class GradientDescent {
+class GradientDescent : public Optimizer {
  private:
-  f64 learning_rate = {};
+  f64 learning_rate_ = {};
 
  public:
   GradientDescent() = default;
-  GradientDescent(f64 learning_rate) {}
+  explicit GradientDescent(f64 learning_rate) : learning_rate_{learning_rate} {}
 
-  auto update_gradients() -> void {}
+  auto update_params(Tensor<f32>::iterator dest_begin, Tensor<f32>::iterator dest_end,
+                     Tensor<f32>::const_iterator gradients_begin) -> void override {
+    std::transform(dest_begin, dest_end, gradients_begin, dest_begin, [this](auto x, auto xd) {
+      return x - (learning_rate_ * xd);
+    });
+  }
+};
+
+class OptimizerFactory {
+ public:
+  template <typename T, typename... Args>
+  static auto make(Args... args) -> std::shared_ptr<Optimizer> {
+    return std::make_shared<T>(args...);
+  }
 };
 
 }

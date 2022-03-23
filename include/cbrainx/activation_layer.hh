@@ -22,6 +22,7 @@
 
 #include "abstract_layer.hh"
 #include "activation_functions.hh"
+#include "optimizers.hh"
 #include "type_aliases.hh"
 
 namespace cbx {
@@ -59,6 +60,9 @@ class ActivationLayer : public AbstractLayer {
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] auto forward_pass(container_const_reference input) -> AbstractLayer & override;
+
+  [[nodiscard]] auto backward_pass(container_const_reference dinput, std::shared_ptr<Optimizer> optimizer)
+      -> container override;
 };
 
 }

@@ -25,9 +25,9 @@ auto MeanSquaredError::calculate(x_iter_type x_begin, x_iter_type x_end, y_iter_
   auto n = std::distance(x_begin, x_end);
   f32 total_loss = {};
   while (x_begin != x_end) {
-    auto observed = *x_begin;
-    auto predicted = *y_begin;
-    total_loss += (predicted - observed) * (predicted - observed);
+    auto actual = *y_begin;
+    auto predicted = *x_begin;
+    total_loss += (predicted - actual) * (predicted - actual);
     ++x_begin, ++y_begin;
   }
   return total_loss / n;
@@ -37,9 +37,9 @@ auto MeanSquaredError::derivative(x_iter_type x_begin, x_iter_type x_end, y_iter
   auto n = std::distance(x_begin, x_end);
   f32 gradient = {};
   while (x_begin != x_end) {
-    auto observed = *x_begin;
-    auto predicted = *y_begin;
-    gradient += 2 * (predicted - observed);
+    auto actual = *y_begin;
+    auto predicted = *x_begin;
+    gradient += 2 * (predicted - actual);
     ++x_begin, ++y_begin;
   }
   return gradient / n;
@@ -66,7 +66,17 @@ auto BinaryCrossEntropy::calculate(x_iter_type x_begin, x_iter_type x_end, y_ite
   return total_loss / n;
 }
 
-auto BinaryCrossEntropy::derivative(x_iter_type x_begin, x_iter_type x_end, y_iter_type y_begin) const -> f32 {}
+auto BinaryCrossEntropy::derivative(x_iter_type x_begin, x_iter_type x_end, y_iter_type y_begin) const -> f32 {
+  auto n = std::distance(x_begin, x_end);
+  f32 gradient = {};
+  while (x_begin != x_end) {
+    auto probability = *x_begin;
+    auto label = *y_begin;
+    gradient -= (label / probability) + ((1 - label) / (1 - probability));
+    ++x_begin, ++y_begin;
+  }
+  return gradient / n;
+}
 
 auto BinaryCrossEntropy::type() const -> Loss { return Loss::BinaryCrossEntropy; }
 

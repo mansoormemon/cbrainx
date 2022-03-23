@@ -56,6 +56,9 @@ class SoftMax : public AbstractLayer {
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] auto forward_pass(container_const_reference input) -> AbstractLayer & override;
+
+  [[nodiscard]] auto backward_pass(container_const_reference dinput, std::shared_ptr<Optimizer> optimizer)
+      -> container override;
 };
 
 }

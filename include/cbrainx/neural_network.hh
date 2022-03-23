@@ -25,6 +25,7 @@
 #include "abstract_layer.hh"
 #include "dataset.hh"
 #include "loss_functions.hh"
+#include "matrix.hh"
 #include "optimizers.hh"
 #include "type_aliases.hh"
 #include "utility.hh"
@@ -127,7 +128,7 @@ class NeuralNetwork {
 
   // /////////////////////////////////////////////////////////////
 
-  auto train(const Dataset &dataset, Loss loss_type, const Optimizer auto &optimizer, size_dt batch_size,
+  auto train(const Dataset &dataset, Loss loss_type, std::shared_ptr<Optimizer> optimizer, size_dt batch_size,
              size_dt epochs, Verbosity verbosity = Verbosity::L3) -> void {
     decltype(auto) data = dataset.data();
     decltype(auto) targets = dataset.targets();
@@ -140,25 +141,54 @@ class NeuralNetwork {
     verbose(Verbosity::L2, verbosity, "Batch size: {}, Total batches: {}\n", batch_size, total_batches);
     verbose(Verbosity::L2, verbosity, "{}\n", loss_func->to_string());
 
-    auto out = this->forward_pass(data);
-
     for (size_dt epoch = {}; epoch < epochs; ++epoch) {
       verbose(Verbosity::L3, verbosity, "Epoch {} of {}: [\n", epoch + 1, epochs);
 
+      shape_value_t sample_stride = data.total() / sample_count;
+      shape_value_t target_stride = targets.total() / sample_count;
+
       for (size_dt batch = {}; batch < total_batches; ++batch) {
-        auto sample_stride = out.total() / sample_count;
-        auto offset = batch * batch_size;
-        auto n = std::min(batch_size, sample_count - offset);
+        shape_value_t offset = batch * batch_size;
+        shape_value_t n = std::min(batch_size, sample_count - offset);
 
-        auto out_begin = out.begin() + (offset * sample_stride);
-        auto out_end = out_begin + (n * sample_stride);
+        auto batch_begin = data.begin() + (offset * sample_stride);
+        auto batch_end = batch_begin + (n * sample_stride);
 
-        auto targets_begin = targets.begin() + (offset * sample_stride);
-        auto mean_loss = loss_func->calculate(out_begin, out_end, targets_begin);
+        auto targets_begin = targets.begin() + (offset * target_stride);
+
+        auto batch_in = Tensor<f32>::copy({n, sample_stride}, batch_begin, batch_end);
+        auto batch_out = this->forward_pass(batch_in);
+
+        auto mean_loss = loss_func->calculate(batch_out.begin(), batch_out.end(), targets_begin);
+        auto mean_derivative = loss_func->derivative(batch_out.begin(), batch_out.end(), targets_begin);
+
+        auto apply_threshold = [](const Tensor<f32> &in, f32 threshold) -> Tensor<f32> {
+          return Tensor<f32>::custom(in.shape(), [threshold, it = in.begin()]() mutable {
+            return *(it++) > threshold;
+          });
+        };
+
+        auto measure_accuracy = [](auto predictions_begin, auto predictions_end, auto labels_begin) -> f32 {
+          u32 correct = {};
+          for (auto it = predictions_begin; it != predictions_end; ++it) {
+            correct += *(labels_begin++) == (*it);
+          }
+          return static_cast<f32>(correct) / std::distance(predictions_begin, predictions_end);
+        };
+
+        auto preds = apply_threshold(batch_out, 0.5);
+
+        auto accuracy = measure_accuracy(preds.begin(), preds.end(), targets_begin);
 
         verbose(Verbosity::L3, verbosity, "\tBatch # {}/{}: {{ ", batch + 1, total_batches);
         verbose(Verbosity::L3, verbosity, "samples={}", n);
+        verbose(Verbosity::L3, verbosity, ", accuracy={}", accuracy);
         verbose(Verbosity::L3, verbosity, ", mean_loss: {} }}\n", mean_loss);
+
+        auto dinput = Matrix::multiply(batch_out, mean_derivative);
+        for (auto r_it = layers_.rbegin(), r_end = layers_.rend(); r_it != r_end; ++r_it) {
+          dinput = (*r_it)->backward_pass(dinput, optimizer);
+        }
       }
       verbose(Verbosity::L3, verbosity, "]\n");
     }

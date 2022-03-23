@@ -107,4 +107,15 @@ auto ActivationLayer::forward_pass(container_const_reference input) -> AbstractL
   return *this;
 }
 
+auto ActivationLayer::backward_pass(container_const_reference d_incoming, std::shared_ptr<Optimizer>)
+    -> container {
+  auto d_local = Tensor<f32>::zeros(input_.shape());
+  std::transform(input_.begin(), input_.end(), d_local.begin(), [this](const auto &x) {
+    return act_func_->derivative(x);
+  });
+  auto d_out = Tensor<f32>::zeros(d_local.shape());
+  std::transform(d_incoming.begin(), d_incoming.end(), d_local.begin(), d_out.begin(), std::multiplies());
+  return d_out;
+}
+
 }

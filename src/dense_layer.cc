@@ -65,4 +65,37 @@ auto DenseLayer::forward_pass(container_const_reference input) -> AbstractLayer 
   return *this;
 }
 
+auto DenseLayer::backward_pass(container_const_reference dinput, std::shared_ptr<Optimizer> optimizer)
+    -> container {
+  auto transpose = [](const Tensor<f32> &input) -> Tensor<f32> {
+    auto [row, col] = input.shape().unwrap<2>();
+    auto transposed = Tensor<f32>::zeros({col, row});
+    for (auto r = 0U; r < row; ++r) {
+      for (auto c = 0U; c < col; ++c) {
+        transposed(c, r) = input(r, c);
+      }
+    }
+    return transposed;
+  };
+
+  auto t_dinput = transpose(dinput);
+  auto d_weights = Matrix::multiply(t_dinput, input_);
+
+  optimizer->update_params(weights_.begin(), weights_.end(), d_weights.begin());
+
+  auto [rows, cols] = dinput.shape().unwrap<2>();
+  auto d_biases = Tensor<f32>::zeros(biases_.shape());
+
+  // Summing all the rows.
+  for (auto c = 0U; c < cols; ++c) {
+    for (auto r = 0U; r < rows; ++r) {
+      d_biases[c] += dinput(r, c);
+    }
+  }
+  optimizer->update_params(biases_.begin(), biases_.end(), d_biases.begin());
+
+  auto t_weights = transpose(weights_);
+  return Matrix::multiply(dinput, t_weights);
+}
+
 }

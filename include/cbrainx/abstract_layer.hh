@@ -18,8 +18,10 @@
 #ifndef CBRAINX__ABSTRACT_LAYER_HH_
 #define CBRAINX__ABSTRACT_LAYER_HH_
 
+#include <memory>
 #include <string>
 
+#include "optimizers.hh"
 #include "shape.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"
@@ -106,6 +108,9 @@ class AbstractLayer {
   // /////////////////////////////////////////////////////////////
 
   [[nodiscard]] virtual auto forward_pass(container_const_reference input) -> AbstractLayer & = 0;
+
+  [[nodiscard]] virtual auto backward_pass(container_const_reference dinput,
+                                           std::shared_ptr<Optimizer> optimizer) -> container = 0;
 
   // /////////////////////////////////////////////////////////////
 

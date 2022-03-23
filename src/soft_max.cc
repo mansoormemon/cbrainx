@@ -65,4 +65,9 @@ auto SoftMax::forward_pass(container_const_reference input) -> AbstractLayer & {
   return *this;
 }
 
+auto SoftMax::backward_pass(container_const_reference dinput, std::shared_ptr<Optimizer> optimizer)
+    -> container {
+  return {};
+}
+
 }
