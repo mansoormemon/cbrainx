@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/shape.hh"
 
@@ -25,32 +25,23 @@
 
 namespace cbx {
 
-auto Shape::range_check(size_type index) const -> void {
-  auto dims = this->dimensions();
-  if (index >= dims) {
-    throw RankError{
-        fmt::format("cbx::Shape::range_check: `index(={}) >= this->dimensions()(={})` is true", index, dims)};
+auto Shape::check_bounds(size_type index) const -> void {
+  auto rank = this->rank();
+  if (index >= rank) {
+    custom_throw<RankError>("cbx::Shape::check_bounds: `index(={}) >= this->rank()(={})` is true", index, rank);
   }
 }
 
-auto Shape::arg_count_check(size_type N) const -> void {
-  auto dims = this->dimensions();
-  if (N > dims) {
-    throw RankError{
-        fmt::format("cbx::Shape::arg_count_check: `N(={}) > this->dimensions()(={})` is true", N, dims)};
+auto Shape::check_rank(size_type N) const -> void {
+  auto rank = this->rank();
+  if (N > rank) {
+    custom_throw<RankError>("cbx::Shape::check_rank: `N(={}) > this->rank()(={})` is true", N, rank);
   }
 }
 
-auto Shape::validity_check(value_type value) -> void {
+auto Shape::validate_input(value_type value) -> void {
   if (value <= 0) {
-    throw ShapeError{"cbx::Shape::validity_check: dimension size must be greater than zero"};
-  }
-}
-
-template <std::input_iterator I_It>
-auto Shape::validity_check(I_It first, I_It last) -> void {
-  for (std::input_iterator auto it = first; it != last; ++it) {
-    Shape::validity_check(*it);
+    custom_throw<ShapeError>("cbx::Shape::validate_input: axis size must be greater than zero");
   }
 }
 
@@ -59,7 +50,7 @@ auto Shape::validity_check(I_It first, I_It last) -> void {
 Shape::Shape(Shape &&other) noexcept : data_{std::move(other.data_)} {}
 
 Shape::Shape(std::initializer_list<value_type> ilist) {
-  Shape::validity_check(ilist.begin(), ilist.end());
+  Shape::validate_input(ilist.begin(), ilist.end());
   data_ = ilist;
 }
 
@@ -70,18 +61,12 @@ auto Shape::operator=(Shape &&other) noexcept -> Shape & {
   return *this;
 }
 
-auto Shape::operator=(std::initializer_list<value_type> ilist) -> Shape & {
-  Shape::validity_check(ilist.begin(), ilist.end());
-  data_ = ilist;
-  return *this;
-}
-
 // /////////////////////////////////////////////////////////////
 
 auto Shape::operator[](size_type index) const noexcept -> const_reference { return data_[index]; }
 
 auto Shape::at(size_type index) const -> const_reference {
-  this->range_check(index);
+  this->check_bounds(index);
   return data_[index];
 }
 
@@ -89,11 +74,13 @@ auto Shape::at(size_type index) const -> const_reference {
 
 auto Shape::data() const noexcept -> const_pointer { return data_.data(); }
 
-auto Shape::dimensions() const noexcept -> size_type { return data_.size(); }
+auto Shape::underlying_container() const noexcept -> const container & { return data_; }
 
-auto Shape::set_dimension(size_type index, value_type value) -> Shape & {
-  this->range_check(index);
-  Shape::validity_check(value);
+auto Shape::rank() const noexcept -> size_type { return data_.size(); }
+
+auto Shape::set_axis(size_type index, value_type value) -> Shape & {
+  this->check_bounds(index);
+  Shape::validate_input(value);
   data_[index] = value;
   return *this;
 }
@@ -108,24 +95,32 @@ auto Shape::back() const -> const_reference { return data_.back(); }
 
 auto Shape::begin() const noexcept -> const_iterator { return data_.begin(); }
 
+auto Shape::rbegin() const noexcept -> const_reverse_iterator { return data_.rbegin(); }
+
 auto Shape::end() const noexcept -> const_iterator { return data_.end(); }
+
+auto Shape::rend() const noexcept -> const_reverse_iterator { return data_.rend(); }
 
 // /////////////////////////////////////////////////////////////
 
-auto Shape::is_scalar() const noexcept -> bool { return this->dimensions() == 0; }
+auto Shape::is_scalar() const noexcept -> bool { return this->rank() == SCALAR_RANK; }
 
-auto Shape::is_compatible(const Shape &other) const noexcept -> bool { return this->total() == other.total(); }
+auto Shape::is_vector() const noexcept -> bool { return this->rank() == VECTOR_RANK; }
+
+auto Shape::is_matrix() const noexcept -> bool { return this->rank() == MATRIX_RANK; }
+
+auto Shape::is_equivalent(const Shape &other) const noexcept -> bool { return this->total() == other.total(); }
 
 // /////////////////////////////////////////////////////////////
 
 auto Shape::total() const noexcept -> size_type {
-  return std::accumulate(this->begin(), this->end(), UNIT_DIMENSION_SIZE, std::multiplies());
+  return std::accumulate(this->begin(), this->end(), SCALAR_SIZE, std::multiplies());
 }
 
 // /////////////////////////////////////////////////////////////
 
-auto Shape::resize(size_type dims) -> Shape & {
-  data_.resize(dims, UNIT_DIMENSION_SIZE);
+auto Shape::resize(size_type rank) -> Shape & {
+  data_.resize(rank, SCALAR_SIZE);
   return *this;
 }
 
@@ -141,8 +136,7 @@ auto Shape::clone() const -> Shape { return *this; }
 // /////////////////////////////////////////////////////////////
 
 auto Shape::meta_info() const noexcept -> std::string {
-  return fmt::format("{{ dimensions={}, total={}, is_scalar={} }}", this->dimensions(), this->total(),
-                     this->is_scalar());
+  return fmt::format("{{ rank={}, total={} }}", this->rank(), this->total());
 }
 
 auto Shape::to_string() const noexcept -> std::string { return fmt::format("({})", fmt::join(data_, ", ")); }

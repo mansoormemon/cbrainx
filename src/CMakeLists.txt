@@ -42,7 +42,7 @@ target_include_directories("${CBRAINX}"
                            "${LIBFMT_INCLUDE_DIR}"
                            "${LIBSTB_INCLUDE_DIR}")
 
-target_link_libraries("${CBRAINX}" PRIVATE "${LIBFMT}")
+target_link_libraries("${CBRAINX}" PUBLIC "${LIBFMT}")
 
 if(CBRAINX_INSTALL)
     set(CBRAINX_INSTALL_LIBDIR "lib/${CBRAINX_DIR}")

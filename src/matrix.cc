@@ -23,7 +23,7 @@ namespace cbx {
 
 auto Matrix::rank_check(shape_size_t rank) -> void {
   if (rank != DIMENSIONS) {
-    throw RankError{fmt::format("cbx::Matrix::rank_check: incompatible dimensionality(rank={})", rank)};
+    throw RankError{fmt::format("cbx::Matrix::check_rank: incompatible dimensionality(rank={})", rank)};
   }
 }
 

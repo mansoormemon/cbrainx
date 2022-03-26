@@ -15,35 +15,37 @@
 
 // Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
 
+#include <utility>
+
 #include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
-ImageIOError::ImageIOError(std::string msg) : msg_{msg} {}
+ImageIOError::ImageIOError(std::string msg) : msg_{std::move(msg)} {}
 
 auto ImageIOError::what() const noexcept -> str { return msg_.c_str(); }
 
 // /////////////////////////////////////////////////////////////
 
-IncompatibleColorModelError::IncompatibleColorModelError(std::string msg) : msg_{msg} {}
+IncompatibleColorModelError::IncompatibleColorModelError(std::string msg) : msg_{std::move(msg)} {}
 
 auto IncompatibleColorModelError::what() const noexcept -> str { return msg_.c_str(); }
 
 // /////////////////////////////////////////////////////////////
 
-RankError::RankError(std::string msg) : msg_{msg} {}
+RankError::RankError(std::string msg) : msg_{std::move(msg)} {}
 
 auto RankError::what() const noexcept -> str { return msg_.c_str(); }
 
 // /////////////////////////////////////////////////////////////
 
-ShapeError::ShapeError(std::string msg) : msg_{msg} {}
+ShapeError::ShapeError(std::string msg) : msg_{std::move(msg)} {}
 
 auto ShapeError::what() const noexcept -> str { return msg_.c_str(); }
 
 // /////////////////////////////////////////////////////////////
 
-UnrecognizedColorModelError::UnrecognizedColorModelError(std::string msg) : msg_{msg} {}
+UnrecognizedColorModelError::UnrecognizedColorModelError(std::string msg) : msg_{std::move(msg)} {}
 
 auto UnrecognizedColorModelError::what() const noexcept -> str { return msg_.c_str(); }
 

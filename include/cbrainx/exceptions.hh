@@ -20,10 +20,19 @@
 
 #include <exception>
 #include <string>
+#include <string_view>
+
+#include <fmt/core.h>
 
 #include "type_aliases.hh"
 
 namespace cbx {
+
+template <typename E, typename... Args>
+auto custom_throw(std::string_view fmt_str, Args... args) {
+  auto msg = fmt::vformat(fmt_str, fmt::make_format_args(args...));
+  throw E{msg};
+}
 
 class ImageIOError : public std::exception {
  private:

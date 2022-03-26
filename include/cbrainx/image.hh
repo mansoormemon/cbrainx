@@ -95,7 +95,7 @@ class Image {
 
     [[nodiscard]] auto model() const -> Model;
 
-    [[nodiscard]] auto total() const -> size_dt;
+    [[nodiscard]] auto total() const -> usize;
 
     [[nodiscard]] auto bitmask() const -> i32;
 

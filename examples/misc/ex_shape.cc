@@ -17,8 +17,8 @@ auto main() -> cbx::i32 {
   auto s3 = cbx::Shape{1, 1, 1, 1, 1, 1, 1, 1};
   std::cout << s3.meta_info() << ", s3=" << s3.to_string() << std::endl;
 
-  std::cout << "s0 is compatible with s2: " << s0.is_compatible(s2) << std::endl;
-  std::cout << "s1 is compatible with s3: " << s1.is_compatible(s3) << std::endl;
+  std::cout << "s0 is equivalent to s2: " << s0.is_equivalent(s2) << std::endl;
+  std::cout << "s1 is equivalent with s3: " << s1.is_equivalent(s3) << std::endl;
 
   auto [rows, cols, channels] = cbx::Shape{4, 3, 3}.unwrap<3>();
   std::cout << "Rows: " << rows << ", Columns: " << cols << ", Channels: " << channels << std::endl;

@@ -218,7 +218,7 @@ class Matrix {
     auto calculate_rows_per_thread = [](auto rows) -> shape_size_t {
       // Arbitrarily establish a relation between thread count and matrix size.
       const auto ARBITRARY_CONSTANT_A = sizeof(std::int_least64_t);
-      const auto ARBITRARY_CONSTANT_B = sizeof(ptrdiff_dt) * (ARBITRARY_CONSTANT_A);
+      const auto ARBITRARY_CONSTANT_B = sizeof(isize) * (ARBITRARY_CONSTANT_A);
       auto factor = std::log(rows + ARBITRARY_CONSTANT_A);
       return std::floor(factor) * (ARBITRARY_CONSTANT_B - ARBITRARY_CONSTANT_A);
     };

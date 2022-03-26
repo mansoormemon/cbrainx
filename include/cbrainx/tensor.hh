@@ -79,8 +79,8 @@ class Tensor {
 
   constexpr auto shape_compatibility_check(const Shape &other) const -> void {
     // The total number of elements for both shapes must match.
-    if (not shape_.is_compatible(other)) {
-      throw ShapeError{"cbx::Tensor::shape_compatibility_check: `this->shape().is_compatible(other)` is false"};
+    if (not shape_.is_equivalent(other)) {
+      throw ShapeError{"cbx::Tensor::shape_compatibility_check: `this->shape().is_equivalent(other)` is false"};
     }
   }
 
@@ -117,7 +117,7 @@ class Tensor {
 
     auto ilist_indices = std::initializer_list<shape_value_t>{static_cast<shape_value_t>(indices)...};
     size_type linearized_index = {};
-    auto stride = Shape::UNIT_DIMENSION_SIZE;
+    auto stride = Shape::SCALAR_SIZE;
     auto shape_r_it = std::reverse_iterator{shape_.end()};
     for (auto indices_r_it = std::reverse_iterator{ilist_indices.end()},
               indices_r_end = std::reverse_iterator{ilist_indices.begin()};
@@ -195,7 +195,7 @@ class Tensor {
 
   [[nodiscard]] constexpr auto total() const noexcept -> size_type { return data_.size(); }
 
-  [[nodiscard]] constexpr auto rank() const noexcept -> size_type { return shape_.dimensions(); }
+  [[nodiscard]] constexpr auto rank() const noexcept -> size_type { return shape_.rank(); }
 
   // /////////////////////////////////////////////////////////////
 
@@ -232,8 +232,8 @@ class Tensor {
       auto new_shape = shape_.clone().resize(new_rank);
       auto last_index = new_rank - 1;
       auto cramped_dim_val = std::accumulate(shape_.begin() + last_index, shape_.end(),
-                                             Shape::UNIT_DIMENSION_SIZE, std::multiplies());
-      new_shape.set_dimension(last_index, cramped_dim_val);
+                                             Shape::SCALAR_SIZE, std::multiplies());
+      new_shape.set_axis(last_index, cramped_dim_val);
 
       this->shape_compatibility_check(new_shape);
       shape_ = std::move(new_shape);

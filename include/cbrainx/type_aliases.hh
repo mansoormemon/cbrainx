@@ -35,8 +35,8 @@ using i64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
-using size_dt = std::size_t;
-using ptrdiff_dt = std::ptrdiff_t;
+using usize = std::size_t;
+using isize = std::ptrdiff_t;
 
 using str = const char *;
 

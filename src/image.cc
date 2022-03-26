@@ -74,7 +74,7 @@ auto Image::Meta::model() const -> Model {
   }
 }
 
-auto Image::Meta::total() const -> size_dt { return width_ * height_ * channels_; }
+auto Image::Meta::total() const -> usize { return width_ * height_ * channels_; }
 
 auto Image::Meta::bitmask() const -> i32 {
   auto model = this->model();
@@ -140,16 +140,16 @@ auto Image::Meta::position_of(Channel target) const -> i32 {
 
 auto Image::Meta::to_shape() const -> Shape {
   auto [w, h, c] = this->unwrap<Shape::value_type>();
-  return (c == Shape::UNIT_DIMENSION_SIZE) ? Shape{h, w} : Shape{h, w, c};
+  return (c == Shape::SCALAR_SIZE) ? Shape{h, w} : Shape{h, w, c};
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
 auto Image::Meta::decode_shape(const Shape &shape) -> Meta {
-  switch (shape.dimensions()) {
+  switch (shape.rank()) {
     case 2: {
       auto [h, w] = shape.unwrap<2, i32>();
-      return Meta{w, h, Shape::UNIT_DIMENSION_SIZE};
+      return Meta{w, h, Shape::SCALAR_SIZE};
     }
     case 3: {
       auto [h, w, c] = shape.unwrap<3, i32>();

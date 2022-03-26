@@ -91,7 +91,7 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
 
   auto make_histogram = [](const auto &container) {
-    auto hist = std::array<size_dt, CHANNEL_SIZE>{};
+    auto hist = std::array<usize, CHANNEL_SIZE>{};
     for (const auto &val : container) {
       hist[val] += 1;
     }
