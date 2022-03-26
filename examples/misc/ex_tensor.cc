@@ -45,5 +45,20 @@ auto main() -> cbx::i32 {
   });
   std::cout << "t3 => { " << fmt::format("{}", fmt::join(t3, ", ")) << " }" << std::endl;
 
+  auto t4 = cbx::Tensor<cbx::f32>::custom({3, 2}, [n = 0]() mutable {
+    return n += 1;
+  });
+
+  auto t5 = cbx::Tensor<cbx::f32>::custom({3, 2}, [n = 0]() mutable {
+    n += 1;
+    return n * n;
+  });
+
+  fmt::print("{}\n", fmt::join(t4, ", "));
+  fmt::print("{}\n", fmt::join(t5, ", "));
+
+  auto t6 = t4.transformed<bool>(t5, std::equal_to{});
+  fmt::print("{}\n", fmt::join(t6, ", "));
+
   return {};
 }

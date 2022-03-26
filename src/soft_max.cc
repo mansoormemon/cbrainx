@@ -49,7 +49,7 @@ auto SoftMax::output() const -> const Tensor<f32> & { return output_; }
 // /////////////////////////////////////////////////////////////
 
 auto SoftMax::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
-  output_ = Tensor<f32>::zeros(input.shape());
+  output_ = Tensor<f32>{input.shape()};
   auto [_, cols] = input.shape().template unwrap<2>();
   auto total = input.total();
   for (Shape::value_type i = {}; i < total; i += cols) {

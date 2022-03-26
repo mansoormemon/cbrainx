@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #ifndef CBRAINX__TENSOR_HH_
 #define CBRAINX__TENSOR_HH_
@@ -22,6 +22,7 @@
 #include <iterator>
 #include <numeric>
 #include <random>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -36,9 +37,24 @@
 namespace cbx {
 
 /**
- * @brief The <b>Tensor</b> class is a convenient structure to represent an n-dimensional tensor.
+ * @brief The Tensor class represents an n-dimensional vector (or array).
+ * @tparam T Data type (must be arithmetic).
  *
- * @tparam T The datatype of the tensor (must be arithmetic).
+ * @details A tensor is a multidimensional array or an abstraction of vectors and matrices. In practice, it is a
+ * container that can harbor identical numeric data in an N-dimensional space. Its shape describes the
+ * dimensionality of the data. The shape must be defined at the time of instantiation.
+ *
+ * Consider the following code snippet:
+ *
+ * @code
+ * cbx::Tensor<cbx::i32>{{}, 3};             // { total=1, rank=0, shape=() }
+ * cbx::Tensor<cbx::f32>{{8}, 1.34};         // { total=8, rank=1, shape=(8) }
+ * cbx::Tensor<cbx::f32>{{3, 4}, 4.2};       // { total=12, rank=2, shape=(3, 4) }
+ * cbx::Tensor<cbx::f32>{{3, 4, 8}, 4.2};    // { total=96, rank=3, shape=(3, 4, 8) }
+ * @endcode
+ *
+ * @note The words `dimension (plural: dimensions)` and `axis (plural: axes)` are used interchangeably
+ * throughout this documentation.
  */
 template <Number T = f32>
 class Tensor {
@@ -59,183 +75,499 @@ class Tensor {
   using iterator = typename container::iterator;
   using const_iterator = typename container::const_iterator;
 
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+  // /////////////////////////////////////////////////////////////
+  // Constants
   // /////////////////////////////////////////////////////////////
 
-  static constexpr shape_size_t SCALAR_RANK = 0;
+  /**
+   * @brief Rank of a scalar.
+   */
+  static constexpr size_type SCALAR_RANK = 0;
+
+  /**
+   * @brief Rank of a vector (or array).
+   */
+  static constexpr size_type VECTOR_RANK = 1;
+
+  /**
+   * @brief Rank of a matrix.
+   */
+  static constexpr size_type MATRIX_RANK = 2;
 
  private:
+  /**
+   * @brief A flag for enabling or disabling bounds checking.
+   */
+  bool bounds_checking_ = true;
+
+  /**
+   * @brief Shape of data.
+   */
   Shape shape_ = {};
+
+  /**
+   * @brief Container to hold the data.
+   */
   container data_ = container(shape_.total());
 
   // /////////////////////////////////////////////////////////////
+  // Helpers
+  // /////////////////////////////////////////////////////////////
 
-  constexpr auto linear_range_check(size_type index) const -> void {
-    auto total = this->total();
-    if (index >= total) {
-      throw std::out_of_range{fmt::format(
-          "cbx::Tensor::linear_range_check: `index(={}) >= this->total()(={})` is true", index, total)};
+  /**
+   * @brief Checks if two shapes are equivalent i.e. they have the same number of total elements.
+   * @param a, b The shapes to be compared.
+   *
+   * @details This function will throw an exception only if @p b is not equivalent to @p a.
+   */
+  static constexpr auto _s_check_shape_equivalency(const Shape &a, const Shape &b) -> void {
+    if (not a.is_equivalent(b)) {
+      custom_throw<ShapeError>(
+          "cbx::Tensor::_s_check_shape_equivalency: a (total={}) must be equivalent to b (total={})", a.total(),
+          b.total());
     }
   }
 
-  constexpr auto shape_compatibility_check(const Shape &other) const -> void {
-    // The total number of elements for both shapes must match.
-    if (not shape_.is_equivalent(other)) {
-      throw ShapeError{"cbx::Tensor::shape_compatibility_check: `this->shape().is_equivalent(other)` is false"};
+  /**
+   * @brief Checks if two shapes are equal.
+   * @param a, b The shapes to be compared.
+   *
+   * @details This function will throw an exception only if @p a is not equal to @p b.
+   */
+  static constexpr auto _s_check_shape_equality(const Shape &a, const Shape &b) -> void {
+    if (a != b) {
+      custom_throw<ShapeError>("cbx::Tensor::_s_check_shape_equality: a (={}) must be equal to b (={})",
+                               a.to_string(), b.to_string());
     }
   }
 
+  /**
+   * @brief Performs bounds checking w.r.t. total elements.
+   * @param index The index to be checked.
+   *
+   * @details This function will throw an exception only if @p index is out of range.
+   */
+  constexpr auto _m_check_linear_bounds(size_type index) const -> void {
+    auto total_elements = total();
+    if (index >= total_elements) {
+      custom_throw<std::out_of_range>(
+          "cbx::Tensor::_m_check_linear_bounds: index (={}) >= this->total() (={}) ", index, total_elements);
+    }
+  }
+
+  /**
+   * @brief Checks if the number of the given indices is equal to the rank.
+   * @tparam Args Type of indices (must be integral).
+   * @param indices Co-ordinates of element in an n-dimensional space.
+   *
+   * @details This function will throw an exception only if the number of indices is not equal to the rank.
+   */
   template <Integer... Args>
-  constexpr auto dimensionality_check(Args... indices) const -> void {
+  constexpr auto _m_check_rank(Args... indices) const -> void {
     auto indices_count = sizeof...(indices);
-    auto rank = this->rank();
-    // The number of indices must be equal to the rank of the tensor.
-    if (indices_count != rank) {
-      throw RankError{fmt::format(
-          "cbx::Tensor::dimensionality_check: indices(count={}) contradict the rank(={}) of the tensor",
-          indices_count, rank)};
+    auto cur_rank = rank();
+    if (indices_count != cur_rank) {
+      custom_throw<RankError>(
+          "cbx::Tensor::_m_check_rank: indices (count={}) are in contradiction with the rank (={})",
+          indices_count, cur_rank);
     }
   }
 
+  /**
+   * @brief Performs bounds checking for the given location in an n-dimensional space.
+   * @tparam Args Type of indices (must be integral).
+   * @param indices Co-ordinates of element in an n-dimensional space.
+   *
+   * @details This function will throw an exception only if:
+   * * Any index is out of range w.r.t to its axis, provided that bounds checking is enabled.
+   * * Rank contradicts with the number of indices.
+   */
   template <Integer... Args>
-  constexpr auto dimensional_range_check(Args... indices) const -> void {
-    this->dimensionality_check(indices...);
-
-    auto ilist_indices = std::initializer_list<shape_value_t>{static_cast<shape_value_t>(indices)...};
-    for (auto shape_it = shape_.begin(); auto dim_index : ilist_indices) {
-      if (dim_index >= *shape_it) {
-        throw std::out_of_range{fmt::format("cbx::Tensor::dimensional_range_check: `dim_index(={}) >= "
-                                            "this->shape()[dimension(={})](={})` is true",
-                                            dim_index, std::distance(shape_.begin(), shape_it), *shape_it)};
+  auto _m_check_axes_bounds(Args... indices) const -> void {
+    _m_check_rank(indices...);
+    if (not bounds_checking_) {
+      return;
+    }
+    auto il_indices = std::initializer_list<usize>{usize(indices)...};
+    for (auto shape_it = shape_.begin(); auto axis_index : il_indices) {
+      if (axis_index >= (*shape_it)) {
+        custom_throw<std::out_of_range>(
+            "cbx::Tensor::_m_check_axes_bounds: axis_index (={}) >= this->shape()[axis (={})] (={})",
+            axis_index, std::distance(shape_.begin(), shape_it), *shape_it);
       }
       ++shape_it;
     }
   }
 
+  /**
+   * @brief Calculates the linear index from the given indices.
+   * @tparam Args Type of indices (must be integral).
+   * @param indices A variable number of indices representing the location of element in an n-dimensional space.
+   *
+   * @details This function will throw an exception only if any index is out of range w.r.t to its axes length.
+   */
   template <Integer... Args>
-  [[nodiscard]] constexpr auto get_linearized_index(Args... indices) const -> size_type {
-    this->dimensional_range_check(indices...);
+  [[nodiscard]] auto _m_linear_index(Args... indices) const -> size_type {
+    _m_check_axes_bounds(indices...);
 
-    auto ilist_indices = std::initializer_list<shape_value_t>{static_cast<shape_value_t>(indices)...};
-    size_type linearized_index = {};
+    auto il_indices = std::initializer_list<usize>{usize(indices)...};
+    size_type linear_index = {};
     auto stride = Shape::SCALAR_SIZE;
-    auto shape_r_it = std::reverse_iterator{shape_.end()};
-    for (auto indices_r_it = std::reverse_iterator{ilist_indices.end()},
-              indices_r_end = std::reverse_iterator{ilist_indices.begin()};
+    auto shape_r_it = shape_.rbegin();
+    for (auto indices_r_it = std::rbegin(il_indices), indices_r_end = std::rend(il_indices);
          indices_r_it != indices_r_end; ++indices_r_it) {
-      linearized_index += *indices_r_it * stride;
-      stride *= *shape_r_it;
+      linear_index += (*indices_r_it) * stride;
+      stride *= (*shape_r_it);
       ++shape_r_it;
     }
-    return linearized_index;
+    return linear_index;
   }
 
  public:
+  // /////////////////////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////////////////////
+
   constexpr Tensor() = default;
 
   constexpr Tensor(const Tensor &other) = default;
 
-  constexpr Tensor(Tensor &&other) noexcept : shape_{std::move(other.shape_)}, data_(std::move(other.data_)) {}
+  constexpr Tensor(Tensor &&other) noexcept
+      : bounds_checking_{other.bounds_checking_}, shape_{std::move(other.shape_)},
+        data_(std::move(other.data_)) {}
 
   explicit Tensor(Shape shape, value_type value = {})
       : shape_{std::move(shape)}, data_(shape_.total(), value) {}
 
+  template <std::input_iterator I_It>
+  Tensor(Shape shape, I_It first, I_It last) : shape_{std::move(shape)}, data_{first, last} {}
+
+  Tensor(Shape shape, const std::ranges::range auto &range)
+      : shape_{std::move(shape)}, data_{range.begin(), range.end()} {}
+
   constexpr ~Tensor() = default;
 
+  // /////////////////////////////////////////////////////////////
+  // Assignment Operators
   // /////////////////////////////////////////////////////////////
 
   constexpr auto operator=(const Tensor &other) -> Tensor & = default;
 
   constexpr auto operator=(Tensor &&other) noexcept -> Tensor & {
+    bounds_checking_ = std::exchange(other.bounds_checking_, true);
     shape_ = std::move(other.shape_);
     data_ = std::move(other.data_);
     return *this;
   }
 
-  auto operator=(Shape shape) -> Tensor & {
-    shape_ = std::move(shape);
-    data_ = container(shape_.total());
-    return *this;
-  }
-
+  // /////////////////////////////////////////////////////////////
+  // Element Access
   // /////////////////////////////////////////////////////////////
 
+  /**
+   * @brief Accesses element in a linear fashion at the specified index.
+   * @param index The index to be accessed.
+   * @return A const-qualified reference to the element at the specified index.
+   *
+   * @note This function neither respects dimensionality of data nor performs bounds checking.
+   */
   [[nodiscard]] constexpr auto operator[](size_type index) const noexcept -> const_reference {
     return data_[index];
   }
 
+  /**
+   * @brief Accesses element in a linear fashion at the specified index.
+   * @param index The index to be accessed.
+   * @return A reference to the element at the specified index.
+   *
+   * @note This function neither respects dimensionality of data nor performs bounds checking.
+   */
   constexpr auto operator[](size_type index) noexcept -> reference { return data_[index]; }
 
+  /**
+   * @brief Accesses element in a linear fashion at the specified index.
+   * @param index The index to be accessed.
+   * @return A const-qualified to the element at the specified index.
+   *
+   * @note This function does not respect dimensionality of data but performs bounds checking w.r.t. total
+   * elements.
+   */
   [[nodiscard]] constexpr auto at(size_type index) const -> const_reference {
-    this->linear_range_check(index);
+    _m_check_linear_bounds(index);
     return data_[index];
   }
 
+  /**
+   * @brief Accesses element in a linear fashion at the specified index.
+   * @param index The index to be accessed.
+   * @return A reference to the element at the specified index.
+   *
+   * @note This function does not respect dimensionality of data but performs bounds checking w.r.t. total
+   * elements.
+   */
   constexpr auto at(size_type index) -> reference {
-    this->linear_range_check(index);
+    _m_check_linear_bounds(index);
     return data_[index];
   }
 
+  /**
+   * @brief Accesses element in an n-dimensional space at the specified location.
+   * @tparam Args Type of indices (must be integral).
+   * @param indices A variable number of indices representing the location of element in an n-dimensional space.
+   * @return A const-qualified reference to the element at the specified location.
+   *
+   * @note This function performs bounds checking if bounds checking is enabled.
+   */
   template <Integer... Args>
-  auto operator()(Args... indices) const -> const_reference {
-    return data_[get_linearized_index(indices...)];
+  [[nodiscard]] constexpr auto operator()(Args... indices) const -> const_reference {
+    return data_[_m_linear_index(indices...)];
   }
 
+  /**
+   * @brief Accesses element in an n-dimensional space at the specified location.
+   * @tparam Args Type of indices (must be integral).
+   * @param indices A variable number of indices representing the location of element in an n-dimensional space.
+   * @return A reference to the element at the specified location.
+   *
+   * @note This function performs bounds checking if bounds checking is enabled.
+   */
   template <Integer... Args>
-  auto operator()(Args... indices) -> reference {
-    return data_[get_linearized_index(indices...)];
+  constexpr auto operator()(Args... indices) -> reference {
+    return data_[_m_linear_index(indices...)];
   }
 
   // /////////////////////////////////////////////////////////////
+  // Accessors and Mutators
+  // /////////////////////////////////////////////////////////////
 
+  /**
+   * @brief Tell the state of bounds checking flag.
+   * @return State of bounds checking flag.
+   */
+  [[nodiscard]] constexpr auto is_bounds_checking_enabled() const noexcept -> bool { return bounds_checking_; }
+
+  /**
+   * @brief Enables bounds checking.
+   */
+  constexpr auto enable_bounds_checking() noexcept -> void { bounds_checking_ = true; }
+
+  /**
+   * @brief Disables bounds checking.
+   */
+  constexpr auto disable_bounds_checking() noexcept -> void { bounds_checking_ = false; }
+
+  /**
+   * @brief Returns the shape of data.
+   * @return A const-qualified reference to shape of data.
+   */
   [[nodiscard]] constexpr auto shape() const noexcept -> const Shape & { return shape_; }
 
+  /**
+   * @brief Returns the underlying pointer to data in memory.
+   * @return A const-qualified pointer to data.
+   */
   [[nodiscard]] constexpr auto data() const noexcept -> const_pointer { return data_.data(); }
 
+  /**
+   * @brief Returns the underlying pointer to data in memory.
+   * @return A pointer to data.
+   */
   constexpr auto data() noexcept -> pointer { return data_.data(); }
 
+  /**
+   * @brief Returns the underlying container holding the data.
+   * @return A const-qualified reference to container.
+   */
+  [[nodiscard]] constexpr auto underlying_container() const noexcept -> const container & { return data_; }
+
+  /**
+   * @brief Returns the total number of elements.
+   * @return Total number of elements.
+   */
   [[nodiscard]] constexpr auto total() const noexcept -> size_type { return data_.size(); }
 
+  /**
+   * @brief Returns the rank of the tensor i.e. the dimensionality of data.
+   * @return Rank of shape.
+   */
   [[nodiscard]] constexpr auto rank() const noexcept -> size_type { return shape_.rank(); }
 
   // /////////////////////////////////////////////////////////////
+  // Iterators
+  // /////////////////////////////////////////////////////////////
 
+  /**
+   * @brief Returns an iterator pointing to the beginning of the data in memory.
+   * @return A const-qualified iterator to the beginning of the data.
+   */
+  [[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator { return data_.cbegin(); }
+
+  /**
+   * @brief Returns an iterator pointing to the beginning of the data in memory.
+   * @return A const-qualified iterator to the beginning of the data.
+   */
   [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return data_.begin(); }
 
+  /**
+   * @brief Returns an iterator pointing to the beginning of the data in memory.
+   * @return An iterator to the beginning of the data.
+   */
   constexpr auto begin() noexcept -> iterator { return data_.begin(); }
 
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse beginning of the data in memory.
+   * @return A const-qualified reverse iterator to the reverse beginning of the data.
+   */
+  [[nodiscard]] constexpr auto crbegin() const noexcept -> const_reverse_iterator { return data_.crbegin(); }
+
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse beginning of the data in memory.
+   * @return A const-qualified reverse iterator to the reverse beginning of the data.
+   */
+  [[nodiscard]] constexpr auto rbegin() const noexcept -> const_reverse_iterator { return data_.rbegin(); }
+
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse beginning of the data in memory.
+   * @return A reverse iterator to the reverse beginning of the data.
+   */
+  constexpr auto rbegin() noexcept -> reverse_iterator { return data_.rbegin(); }
+
+  /**
+   * @brief Returns an iterator pointing to the ending of the data in memory.
+   * @return A const-qualified iterator to the ending of the data.
+   */
+  [[nodiscard]] constexpr auto cend() const noexcept -> const_iterator { return data_.cend(); }
+
+  /**
+   * @brief Returns an iterator pointing to the ending of the data in memory.
+   * @return A const-qualified iterator to the ending of the data.
+   */
   [[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return data_.end(); }
 
+  /**
+   * @brief Returns an iterator pointing to the ending of the data in memory.
+   * @return A iterator to the ending of the data.
+   */
   constexpr auto end() noexcept -> iterator { return data_.end(); }
 
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse ending of the data in memory.
+   * @return A const-qualified reverse iterator to the reverse ending of the data.
+   */
+  [[nodiscard]] constexpr auto crend() const noexcept -> const_reverse_iterator { return data_.crend(); }
+
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse ending of the data in memory.
+   * @return A const-qualified reverse iterator to the reverse ending of the data.
+   */
+  [[nodiscard]] constexpr auto rend() const noexcept -> const_reverse_iterator { return data_.rend(); }
+
+  /**
+   * @brief Returns a reverse iterator pointing to the reverse ending of the data in memory.
+   * @return A reverse iterator to the reverse ending of the data.
+   */
+  constexpr auto rend() noexcept -> reverse_iterator { return data_.rend(); }
+
+  // /////////////////////////////////////////////////////////////
+  // Query Functions
   // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] constexpr auto is_scalar() const noexcept -> bool { return shape_.is_scalar(); }
+  /**
+   * @brief Checks if the tensor represents a scalar.
+   * @return
+   * @code
+   * this->rank() == SCALAR_RANK
+   * @endcode
+   */
+  [[nodiscard]] constexpr auto is_scalar() const noexcept -> bool { return rank() == SCALAR_RANK; }
+
+  /**
+   * @brief Checks if the tensor represents a vector (or array).
+   * @return
+   * @code
+   * this->rank() == VECTOR_RANK
+   * @endcode
+   */
+  [[nodiscard]] constexpr auto is_vector() const noexcept -> bool { return rank() == VECTOR_RANK; }
+
+  /**
+   * @brief Checks if the tensor represents a matrix.
+   * @return
+   * @code
+   * this->rank() == MATRIX_RANK
+   * @endcode
+   */
+  [[nodiscard]] constexpr auto is_matrix() const noexcept -> bool { return rank() == MATRIX_RANK; }
 
   // /////////////////////////////////////////////////////////////
+  // Informative
+  // /////////////////////////////////////////////////////////////
 
-  constexpr auto reshape(const Shape &shape) -> Tensor & {
-    this->shape_compatibility_check(shape);
-    shape_ = shape;
+  /**
+   * @brief Returns a string containing meta information.
+   * @return A meta information string.
+   */
+  [[nodiscard]] auto meta_info() const -> std::string {
+    return fmt::format("{{ total={}, shape={} }}", total(), shape_.to_string());
+  }
+
+  // /////////////////////////////////////////////////////////////
+  // Modifiers
+  // /////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Reshapes the tensor.
+   * @param new_shape The new shape of the tensor.
+   * @return A reference to self.
+   *
+   * @note This function throws an exception if the new shape is not equivalent to the current shape.
+   */
+  constexpr auto reshape(const Shape &new_shape) -> Tensor & {
+    _s_check_shape_equivalency(shape_, new_shape);
+    shape_ = new_shape;
     return *this;
   }
 
-  auto crampy_reshape(size_type new_rank) -> Tensor & {
-    auto cur_rank = this->rank();
+  /**
+   * @brief Reshapes the tensor to have the specified rank.
+   * @param new_rank The new rank of the tensor.
+   * @return A reference to self.
+   *
+   * @details
+   * Consider the following code snippet:
+   *
+   * @code
+   * // A tensor of shape (3, 4, 5, 7, 8, 9, 3, 2, 1, 1, 1)
+   * auto tensor = cbx::Tensor{{3, 4, 5, 7, 8, 9, 3, 2, 1, 1, 1}};
+   *
+   * // When new rank is lower than the current rank, the shape is cramped.
+   * tensor.reshape(4); // New shape becomes (3, 4, 5, 3024)
+   *
+   * // When new rank is higher than the current rank, the shape is stretched.
+   * tensor.reshape(6); // New shape becomes (3, 4, 5, 3024, 1, 1)
+   *
+   * // When new rank is equal to the current rank, nothing happens.
+   * tensor.reshape(6); // Shape remains (3, 4, 5, 3024, 1, 1)
+   * @endcode
+   */
+  auto reshape(size_type new_rank) -> Tensor & {
+    auto cur_rank = rank();
     if (cur_rank == new_rank) {
       return *this;
     }
     if (new_rank == SCALAR_RANK) {
       auto new_shape = Shape{};
-      this->shape_compatibility_check(new_shape);
+      _s_check_shape_equivalency(shape_, new_shape);
       shape_ = std::move(new_shape);
     } else if (new_rank < cur_rank) {
       auto new_shape = shape_.clone().resize(new_rank);
-      auto last_index = new_rank - 1;
-      auto cramped_dim_val = std::accumulate(shape_.begin() + last_index, shape_.end(),
-                                             Shape::SCALAR_SIZE, std::multiplies());
-      new_shape.set_axis(last_index, cramped_dim_val);
-
-      this->shape_compatibility_check(new_shape);
+      auto back_index = new_rank - 1;
+      auto cramped_axis_length =
+          std::accumulate(shape_.begin() + back_index, shape_.end(), Shape::SCALAR_SIZE, std::multiplies());
+      new_shape.set_axis(back_index, cramped_axis_length);
       shape_ = std::move(new_shape);
     } else {
       shape_.resize(new_rank);
@@ -243,35 +575,183 @@ class Tensor {
     return *this;
   }
 
-  constexpr auto flatten() -> Tensor & { return this->crampy_reshape(1); }
+  /**
+   * @brief Flattens the data i.e. rank = 1.
+   * @return A reference to self.
+   */
+  constexpr auto flatten() -> Tensor & { return reshape(1); }
+
+  /**
+   * @brief Applies the given transformation to all elements.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return A reference to self.
+   */
+  template <typename Func>
+  constexpr auto transform(Func func) noexcept -> Tensor & {
+    std::transform(begin(), end(), begin(), func);
+    return *this;
+  }
+
+  /**
+   * @brief Applies the given transformation to all elements.
+   * @tparam Func The type of function.
+   * @param iter An input iterator for parallel iteration with `this->begin()`
+   * @param func Transformation function.
+   * @return A reference to self.
+   */
+  template <std::input_iterator I_It, typename Func>
+  constexpr auto transform(I_It iter, Func func) noexcept -> Tensor & {
+    std::transform(begin(), end(), iter, begin(), func);
+    return *this;
+  }
+
+  /**
+   * @brief Applies the given transformation to all elements.
+   * @tparam Func The type of function.
+   * @param iter An input iterator for parallel iteration with `this->begin()`
+   * @param func Transformation function.
+   * @return A reference to self.
+   */
+  template <std::ranges::range R, typename Func>
+  constexpr auto transform(const R &range, Func func) noexcept -> Tensor & {
+    std::transform(begin(), end(), range.begin(), begin(), func);
+    return *this;
+  }
+
+  /**
+   * @brief Applies the given transformation to all elements.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return A reference to self.
+   */
+  template <typename Func>
+  constexpr auto operator|=(Func func) noexcept -> Tensor & {
+    return transform(func);
+  }
+
+  /**
+   * @brief Returns a transformed tensor.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return The transformed tensor.
+   */
+  template <typename Func, typename U = value_type>
+  [[nodiscard]] constexpr auto transformed(Func func) const -> Tensor<U> {
+    auto result = zeros_like<U>();
+    std::transform(begin(), end(), result, func);
+    return result;
+  }
+
+  /**
+   * @brief Returns a transformed tensor.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return The transformed tensor.
+   */
+  template <typename U = value_type, std::input_iterator I_It, typename Func>
+  [[nodiscard]] constexpr auto transformed(I_It iter, Func func) const -> Tensor<U> {
+    auto result = zeros_like<U>();
+    std::transform(begin(), end(), iter, result.begin(), func);
+    return result;
+  }
+
+  /**
+   * @brief Returns a transformed tensor.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return The transformed tensor.
+   */
+  template <typename U = value_type, std::ranges::range R, typename Func>
+  [[nodiscard]] constexpr auto transformed(R range, Func func) const -> Tensor<U> {
+    auto result = zeros_like<U>();
+    std::transform(begin(), end(), range.begin(), result.begin(), func);
+    return result;
+  }
+
+  /**
+   * @brief Returns a transformed tensor.
+   * @tparam Func The type of function.
+   * @param func Transformation function.
+   * @return The transformed tensor.
+   */
+  template <typename Func>
+  [[nodiscard]] constexpr auto operator|(Func func) const -> Tensor {
+    return transformed(func);
+  }
+
+  /**
+   * @brief Clamps values outside the interval to its boundaries.
+   * @param lower_bound The lower bound of the interval.
+   * @param upper_bound The upper bound of the interval.
+   * @return A reference to self.
+   */
+  constexpr auto clamp(value_type lower_bound, value_type upper_bound) noexcept -> Tensor & {
+    return transform([lower_bound, upper_bound](auto x) {
+      return std::clamp(x, lower_bound, upper_bound);
+    });
+  }
+
+  /**
+   * @brief Clamps values outside the interval to its boundaries and returns the result.
+   * @param lower_bound The lower bound of the interval.
+   * @param upper_bound The upper bound of the interval.
+   * @return The clamped tensor.
+   */
+  [[nodiscard]] constexpr auto clamped(value_type lower_bound, value_type upper_bound) noexcept -> Tensor {
+    return transformed([lower_bound, upper_bound](auto x) {
+      return std::clamp(x, lower_bound, upper_bound);
+    });
+  }
 
   // /////////////////////////////////////////////////////////////
+  // Utility
+  // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] constexpr auto clone() const -> Tensor { return *this; }
-
+  /**
+   * @brief Swaps this tensor with the other.
+   * @param other The tensor with which the swap will be performed.
+   * @return A reference to self.
+   */
   constexpr auto swap(Tensor &other) noexcept -> Tensor & {
+    std::swap(bounds_checking_, other.bounds_checking_);
     shape_.swap(other.shape_);
     data_.swap(other.data_);
     return *this;
   }
 
-  // /////////////////////////////////////////////////////////////
+  /**
+   * @brief Clones the tensor.
+   * @return A clone of the original tensor.
+   */
+  [[nodiscard]] constexpr auto clone() const -> Tensor { return *this; }
 
-  [[nodiscard]] auto meta_info() const -> std::string {
-    return fmt::format("{{ total={}, rank={}, shape={}, is_scalar={} }}", this->total(), this->rank(),
-                       this->shape().to_string(), this->is_scalar());
+  /**
+   * @brief Returns a zero-initialized tensor of the same shape.
+   * @tparam U Type of tensor
+   * @return Tensor of similar shape
+   */
+  template <typename U = value_type>
+  [[nodiscard]] constexpr auto zeros_like() const -> Tensor<U> {
+    return Tensor<U>{shape_};
   }
 
   // /////////////////////////////////////////////////////////////////////////////////////////////
+  // Static Functions
+  // /////////////////////////////////////////////////////////////////////////////////////////////
 
-  [[nodiscard]] static constexpr auto zeros(const Shape &shape) -> Tensor { return Tensor{shape}; }
+  // /////////////////////////////////////////////////////////////
+  // Factory Functions
+  // /////////////////////////////////////////////////////////////
 
-  [[nodiscard]] static constexpr auto ones(const Shape &shape) -> Tensor { return Tensor{shape, 1}; }
-
-  [[nodiscard]] static constexpr auto fill(const Shape &shape, value_type value) -> Tensor {
-    return Tensor{shape, value};
-  }
-
+  /**
+   * @brief Creates a randomly filled tensor of the specified shape.
+   * @param shape The shape of the tensor.
+   * @param seed The seed of randomness.
+   * @param lower_bound The lower bound of the random values.
+   * @param upper_bound The upper bound of the random values.
+   * @return A random tensor of the specified shape.
+   */
   [[nodiscard]] static auto random(const Shape &shape, u32 seed = 1U, value_type lower_bound = 0,
                                    value_type upper_bound = 1) -> Tensor {
     auto tensor = Tensor{shape};
@@ -287,17 +767,24 @@ class Tensor {
     return tensor;
   }
 
-  template <typename Lambda>
-  [[nodiscard]] static auto custom(const Shape &shape, Lambda func) -> Tensor {
+  /**
+   * @brief Creates a custom filled tensor of the specified shape.
+   * @tparam Func The Type of function.
+   * @param shape The shape of the tensor.
+   * @param func The function for filling tensor.
+   * @return A custom tensor of the specified shape.
+   *
+   * @code
+   * // The following tensor contains the sequence: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+   * auto tensor = cbx::Tensor<cbx::f32>::custom({3, 4}, [n = 0]() mutable {
+   *    return n += 1;
+   * });
+   * @endcode
+   */
+  template <typename Func>
+  [[nodiscard]] static auto custom(const Shape &shape, Func func) -> Tensor {
     auto tensor = Tensor{shape};
     std::generate(tensor.begin(), tensor.end(), func);
-    return tensor;
-  }
-
-  template <std::input_iterator I_It>
-  [[nodiscard]] static auto copy(const Shape &shape, I_It src_first, I_It src_last) -> Tensor {
-    auto tensor = Tensor{shape};
-    std::copy(src_first, src_last, tensor.begin());
     return tensor;
   }
 };

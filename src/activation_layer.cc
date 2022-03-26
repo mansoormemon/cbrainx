@@ -101,7 +101,7 @@ auto ActivationLayer::output() const -> const Tensor<f32> & { return output_; }
 // /////////////////////////////////////////////////////////////
 
 auto ActivationLayer::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
-  output_ = Tensor<f32>::zeros(input.shape());
+  output_ = Tensor<f32>{input.shape()};
   std::transform(input.begin(), input.end(), output_.begin(), [this](const auto &x) {
     return act_func_->operator()(x);
   });

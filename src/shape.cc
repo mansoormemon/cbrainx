@@ -25,35 +25,43 @@
 
 namespace cbx {
 
-auto Shape::check_bounds(size_type index) const -> void {
-  auto rank = this->rank();
-  if (index >= rank) {
-    custom_throw<RankError>("cbx::Shape::check_bounds: `index(={}) >= this->rank()(={})` is true", index, rank);
+// /////////////////////////////////////////////////////////////
+// Helpers
+// /////////////////////////////////////////////////////////////
+
+auto Shape::_m_check_bounds(size_type index) const -> void {
+  auto cur_rank = rank();
+  if (index >= cur_rank) {
+    custom_throw<RankError>("cbx::Shape::_m_check_bounds: index (={}) >= this->rank() (={})", index, cur_rank);
   }
 }
 
-auto Shape::check_rank(size_type N) const -> void {
-  auto rank = this->rank();
-  if (N > rank) {
-    custom_throw<RankError>("cbx::Shape::check_rank: `N(={}) > this->rank()(={})` is true", N, rank);
+auto Shape::_m_check_rank(size_type N) const -> void {
+  auto cur_rank = rank();
+  if (N > cur_rank) {
+    custom_throw<RankError>("cbx::Shape::_m_check_rank: N (={}) > this->rank() (={})", N, cur_rank);
   }
 }
 
-auto Shape::validate_input(value_type value) -> void {
+auto Shape::_s_validate_input(value_type value) -> void {
   if (value <= 0) {
-    custom_throw<ShapeError>("cbx::Shape::validate_input: axis size must be greater than zero");
+    custom_throw<ShapeError>("cbx::Shape::_s_validate_input: axis size must be greater than zero (={})", value);
   }
 }
 
+// /////////////////////////////////////////////////////////////
+// Constructors (and Destructors)
 // /////////////////////////////////////////////////////////////
 
 Shape::Shape(Shape &&other) noexcept : data_{std::move(other.data_)} {}
 
 Shape::Shape(std::initializer_list<value_type> ilist) {
-  Shape::validate_input(ilist.begin(), ilist.end());
+  _validate_input(ilist.begin(), ilist.end());
   data_ = ilist;
 }
 
+// /////////////////////////////////////////////////////////////
+// Assignment Operator(s)
 // /////////////////////////////////////////////////////////////
 
 auto Shape::operator=(Shape &&other) noexcept -> Shape & {
@@ -62,65 +70,91 @@ auto Shape::operator=(Shape &&other) noexcept -> Shape & {
 }
 
 // /////////////////////////////////////////////////////////////
+// Element Access
+// /////////////////////////////////////////////////////////////
 
 auto Shape::operator[](size_type index) const noexcept -> const_reference { return data_[index]; }
 
 auto Shape::at(size_type index) const -> const_reference {
-  this->check_bounds(index);
+  _m_check_bounds(index);
   return data_[index];
 }
-
-// /////////////////////////////////////////////////////////////
-
-auto Shape::data() const noexcept -> const_pointer { return data_.data(); }
-
-auto Shape::underlying_container() const noexcept -> const container & { return data_; }
-
-auto Shape::rank() const noexcept -> size_type { return data_.size(); }
-
-auto Shape::set_axis(size_type index, value_type value) -> Shape & {
-  this->check_bounds(index);
-  Shape::validate_input(value);
-  data_[index] = value;
-  return *this;
-}
-
-// /////////////////////////////////////////////////////////////
 
 auto Shape::front() const -> const_reference { return data_.front(); }
 
 auto Shape::back() const -> const_reference { return data_.back(); }
 
 // /////////////////////////////////////////////////////////////
-
-auto Shape::begin() const noexcept -> const_iterator { return data_.begin(); }
-
-auto Shape::rbegin() const noexcept -> const_reverse_iterator { return data_.rbegin(); }
-
-auto Shape::end() const noexcept -> const_iterator { return data_.end(); }
-
-auto Shape::rend() const noexcept -> const_reverse_iterator { return data_.rend(); }
-
+// Accessors and Mutators
 // /////////////////////////////////////////////////////////////
 
-auto Shape::is_scalar() const noexcept -> bool { return this->rank() == SCALAR_RANK; }
+auto Shape::underlying_container() const noexcept -> const container & { return data_; }
 
-auto Shape::is_vector() const noexcept -> bool { return this->rank() == VECTOR_RANK; }
+auto Shape::rank() const noexcept -> size_type { return data_.size(); }
 
-auto Shape::is_matrix() const noexcept -> bool { return this->rank() == MATRIX_RANK; }
-
-auto Shape::is_equivalent(const Shape &other) const noexcept -> bool { return this->total() == other.total(); }
-
-// /////////////////////////////////////////////////////////////
-
-auto Shape::total() const noexcept -> size_type {
-  return std::accumulate(this->begin(), this->end(), SCALAR_SIZE, std::multiplies());
+auto Shape::set_axis(size_type index, value_type value) -> Shape & {
+  _m_check_bounds(index);
+  _s_validate_input(value);
+  data_[index] = value;
+  return *this;
 }
 
 // /////////////////////////////////////////////////////////////
+// Iterators
+// /////////////////////////////////////////////////////////////
 
-auto Shape::resize(size_type rank) -> Shape & {
-  data_.resize(rank, SCALAR_SIZE);
+auto Shape::begin() const noexcept -> const_iterator { return data_.begin(); }
+
+auto Shape::cbegin() const noexcept -> const_iterator { return data_.cbegin(); }
+
+auto Shape::rbegin() const noexcept -> const_reverse_iterator { return data_.rbegin(); }
+
+auto Shape::crbegin() const noexcept -> const_reverse_iterator { return data_.crbegin(); }
+
+auto Shape::end() const noexcept -> const_iterator { return data_.end(); }
+
+auto Shape::cend() const noexcept -> const_iterator { return data_.cend(); }
+
+auto Shape::rend() const noexcept -> const_reverse_iterator { return data_.rend(); }
+
+auto Shape::crend() const noexcept -> const_reverse_iterator { return data_.crend(); }
+
+// /////////////////////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////////////////////
+
+auto Shape::is_equivalent(const Shape &other) const noexcept -> bool { return total() == other.total(); }
+
+auto Shape::total() const noexcept -> size_type {
+  return std::accumulate(begin(), end(), SCALAR_SIZE, std::multiplies{});
+}
+
+// /////////////////////////////////////////////////////////////
+// Informative
+// /////////////////////////////////////////////////////////////
+
+auto Shape::meta_info() const noexcept -> std::string {
+  return fmt::format("{{ rank={}, total={} }}", rank(), total());
+}
+
+auto Shape::to_string() const noexcept -> std::string { return fmt::format("({})", fmt::join(data_, ", ")); }
+
+// /////////////////////////////////////////////////////////////
+// Capacity
+// /////////////////////////////////////////////////////////////
+
+auto Shape::resize(size_type new_rank, bool modify_from_front) -> Shape & {
+  if (modify_from_front) {
+    auto cur_rank = rank();
+    auto diff = isize(new_rank - cur_rank);
+    if (diff > 0) {
+      data_.insert(data_.begin(), diff, SCALAR_SIZE);
+    } else {
+      data_.erase(data_.begin(), data_.begin() - diff);
+    }
+  } else {
+    data_.resize(new_rank, SCALAR_SIZE);
+  }
   return *this;
 }
 
@@ -130,17 +164,13 @@ auto Shape::swap(Shape &other) noexcept -> Shape & {
 }
 
 // /////////////////////////////////////////////////////////////
+// Miscellaneous
+// /////////////////////////////////////////////////////////////
 
 auto Shape::clone() const -> Shape { return *this; }
 
-// /////////////////////////////////////////////////////////////
-
-auto Shape::meta_info() const noexcept -> std::string {
-  return fmt::format("{{ rank={}, total={} }}", this->rank(), this->total());
-}
-
-auto Shape::to_string() const noexcept -> std::string { return fmt::format("({})", fmt::join(data_, ", ")); }
-
+// /////////////////////////////////////////////////////////////////////////////////////////////
+// Friends
 // /////////////////////////////////////////////////////////////////////////////////////////////
 
 auto operator==(const Shape &a, const Shape &b) noexcept -> bool { return a.data_ == b.data_; }

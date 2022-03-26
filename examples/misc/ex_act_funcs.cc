@@ -18,7 +18,7 @@ auto main() -> cbx::i32 {
   std::cout << std::boolalpha;
 
   auto v0 = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
-  auto in = cbx::Tensor<cbx::f32>::copy({2, 8}, v0.begin(), v0.end());
+  auto in = cbx::Tensor<cbx::f32>{{2, 8}, v0.begin(), v0.end()};
 
   // A cute little neural network.
   auto net = cbx::NeuralNetwork{8};

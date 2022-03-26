@@ -201,7 +201,7 @@ auto Image::read(const std::string &img_path) -> Tensor<T> {
   if (not temp_buf) {
     throw ImageIOError{"cbx::Image::read: could not read image"};
   }
-  auto img = Tensor<T>::copy(meta.to_shape(), pointer(temp_buf), pointer(temp_buf) + meta.total());
+  auto img = Tensor<T>{meta.to_shape(), pointer(temp_buf), pointer(temp_buf) + meta.total()};
   stbi_image_free(temp_buf);
   return img;
 }

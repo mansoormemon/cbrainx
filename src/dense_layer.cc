@@ -27,7 +27,7 @@ namespace cbx {
 
 DenseLayer::DenseLayer(shape_value_t inputs, shape_value_t neurons) : AbstractLayer{"DNSL"} {
   weights_ = Tensor<f32>::random({inputs, neurons}, {}, -1, 1);
-  biases_ = Tensor<f32>::fill({neurons}, std::numeric_limits<f32>::epsilon());
+  biases_ = Tensor<f32>{{neurons}, std::numeric_limits<f32>::epsilon()};
 }
 
 DenseLayer::DenseLayer(DenseLayer &&other) noexcept
