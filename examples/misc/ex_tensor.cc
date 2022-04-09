@@ -45,20 +45,27 @@ auto main() -> cbx::i32 {
   });
   std::cout << "t3 => { " << fmt::format("{}", fmt::join(t3, ", ")) << " }" << std::endl;
 
-  auto t4 = cbx::Tensor<cbx::f32>::custom({3, 2}, [n = 0]() mutable {
-    return n += 1;
+  auto t4 = cbx::Tensor<cbx::f32>::custom({2, 3}, [n = 0.0]() mutable {
+    return n -= 2;
   });
 
-  auto t5 = cbx::Tensor<cbx::f32>::custom({3, 2}, [n = 0]() mutable {
-    n += 1;
-    return n * n;
+  auto t5 = cbx::Tensor<cbx::f32>::custom({3}, [n = 0.0]() mutable {
+    return n -= 1.5;
   });
 
-  fmt::print("{}\n", fmt::join(t4, ", "));
-  fmt::print("{}\n", fmt::join(t5, ", "));
+  fmt::print("t4={}\n", fmt::join(t4, ", "));
+  fmt::print("t5={}\n", fmt::join(t5, ", "));
 
-  auto t6 = t4.transformed<bool>(t5, std::equal_to{});
-  fmt::print("{}\n", fmt::join(t6, ", "));
+  try {
+    auto t6 = t4 % t5;
+    auto t7 = t5 % t4;
+
+
+    fmt::print("t6={}\n", fmt::join(t6, ", "));
+    fmt::print("t7={}\n", fmt::join(t7, ", "));
+  } catch (cbx::ShapeError &error) {
+    std::cout << error.what() << std::endl;
+  }
 
   return {};
 }

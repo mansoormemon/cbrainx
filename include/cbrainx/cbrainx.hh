@@ -21,6 +21,8 @@
 #include "abstract_layer.hh"
 #include "activation_functions.hh"
 #include "activation_layer.hh"
+#include "custom_iterators.hh"
+#include "custom_views.hh"
 #include "dataset.hh"
 #include "dense_layer.hh"
 #include "exceptions.hh"

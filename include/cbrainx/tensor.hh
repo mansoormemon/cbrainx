@@ -29,6 +29,7 @@
 
 #include <fmt/format.h>
 
+#include "custom_iterators.hh"
 #include "exceptions.hh"
 #include "shape.hh"
 #include "type_aliases.hh"
@@ -141,6 +142,14 @@ class Tensor {
     if (a != b) {
       custom_throw<ShapeError>("cbx::Tensor::_s_check_shape_equality: a (={}) must be equal to b (={})",
                                a.to_string(), b.to_string());
+    }
+  }
+
+  static constexpr auto _s_check_broadcastability(const Shape &a, const Shape &b) -> void {
+    if (b.rank() > a.rank() or not std::equal(b.rbegin(), b.rend(), a.rbegin())) {
+      custom_throw<ShapeError>(
+          "cbx::Tensor::_s_check_broadcastability: b (={}) is not broadcastable to a (={})", b.to_string(),
+          a.to_string());
     }
   }
 
@@ -636,10 +645,10 @@ class Tensor {
    * @param func Transformation function.
    * @return The transformed tensor.
    */
-  template <typename Func, typename U = value_type>
+  template <typename U = value_type, typename Func>
   [[nodiscard]] constexpr auto transformed(Func func) const -> Tensor<U> {
     auto result = zeros_like<U>();
-    std::transform(begin(), end(), result, func);
+    std::transform(begin(), end(), result.begin(), func);
     return result;
   }
 
@@ -701,6 +710,127 @@ class Tensor {
   [[nodiscard]] constexpr auto clamped(value_type lower_bound, value_type upper_bound) noexcept -> Tensor {
     return transformed([lower_bound, upper_bound](auto x) {
       return std::clamp(x, lower_bound, upper_bound);
+    });
+  }
+
+  // /////////////////////////////////////////////////////////////
+  // Arithmetic Operators
+  // /////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Performs an in-place addition operation.
+   * @param num The number to be added.
+   * @return A reference to self.
+   */
+  constexpr auto operator+=(Number auto num) noexcept -> Tensor & {
+    return transform([num](auto x) {
+      return x + num;
+    });
+  }
+
+  /**
+   * @brief Performs an in-place subtraction operation.
+   * @param num The number to be subtracted.
+   * @return A reference to self.
+   */
+  constexpr auto operator-=(Number auto num) noexcept -> Tensor & {
+    return transform([num](auto x) {
+      return x - num;
+    });
+  }
+
+  /**
+   * @brief Performs an in-place multiplication operation.
+   * @param num The number to be multiplied.
+   * @return A reference to self.
+   */
+  constexpr auto operator*=(Number auto num) noexcept -> Tensor & {
+    return transform([num](auto x) {
+      return x * num;
+    });
+  }
+
+  /**
+   * @brief Performs an in-place division operation.
+   * @param num The number by which the tensor is to be divided.
+   * @return A reference to self.
+   */
+  constexpr auto operator/=(Number auto num) noexcept -> Tensor & {
+    return transform([num](auto x) {
+      return x / num;
+    });
+  }
+
+  /**
+   * @brief Performs an in-place modulo (or remainder) operation.
+   * @param num The operand on the right hand side of modulo operator.
+   * @return A reference to self.
+   */
+  constexpr auto operator%=(Number auto num) noexcept -> Tensor & {
+    return transform([num](auto x) {
+      return x % num;
+    });
+  }
+
+  /**
+   * @brief Adds the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return A reference to self.
+   */
+  template <typename U>
+  constexpr auto operator+=(const Tensor<U> &rhs) -> Tensor & {
+    _s_check_broadcastability(shape_, rhs.shape());
+    return transform(CyclicIterator{rhs.begin(), rhs.end()}, std::plus{});
+  }
+
+  /**
+   * @brief Subtracts the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return A reference to self.
+   */
+  template <typename U>
+  constexpr auto operator-=(const Tensor<U> &rhs) -> Tensor & {
+    _s_check_broadcastability(shape_, rhs.shape());
+    return transform(CyclicIterator{rhs.begin(), rhs.end()}, std::minus{});
+  }
+
+  /**
+   * @brief Multiplies the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return A reference to self.
+   */
+  template <typename U>
+  constexpr auto operator*=(const Tensor<U> &rhs) -> Tensor & {
+    _s_check_broadcastability(shape_, rhs.shape());
+    return transform(CyclicIterator{rhs.begin(), rhs.end()}, std::multiplies{});
+  }
+
+  /**
+   * @brief Divides the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return A reference to self.
+   */
+  template <typename U>
+  constexpr auto operator/=(const Tensor<U> &rhs) -> Tensor & {
+    _s_check_broadcastability(shape_, rhs.shape());
+    return transform(CyclicIterator{rhs.begin(), rhs.end()}, std::divides{});
+  }
+
+  /**
+   * @brief Applies Modulus on the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return A reference to self.
+   */
+  template <Number U>
+  constexpr auto operator%=(const Tensor<U> &rhs) -> Tensor & {
+    _s_check_broadcastability(shape_, rhs.shape());
+    return transform(CyclicIterator{rhs.begin(), rhs.end()}, [](auto x, auto y) {
+      return std::fmod(x, y);
     });
   }
 
@@ -787,7 +917,283 @@ class Tensor {
     std::generate(tensor.begin(), tensor.end(), func);
     return tensor;
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // Friend Functions
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+
+  // /////////////////////////////////////////////////////////////
+  // Arithmetic Operators
+  // /////////////////////////////////////////////////////////////
+
+  /**
+   * @brief Adds the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param lhs Tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return Result of addition as a tensor.
+   */
+  template <typename U>
+  friend constexpr auto operator+(const Tensor &lhs, const Tensor<U> &rhs) -> Tensor {
+    if (lhs.rank() > rhs.rank()) {
+      _s_check_broadcastability(lhs.shape_, rhs.shape_);
+      return lhs.transformed(CyclicIterator{rhs.begin(), rhs.end()}, std::plus{});
+    } else {
+      _s_check_broadcastability(rhs.shape_, lhs.shape_);
+      return rhs.transformed(CyclicIterator{lhs.begin(), lhs.end()}, std::plus{});
+    }
+  }
+
+  /**
+   * @brief Subtracts the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param lhs Tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return Result of subtraction as a tensor.
+   */
+  template <typename U>
+  friend constexpr auto operator-(const Tensor &lhs, const Tensor<U> &rhs) -> Tensor {
+    if (lhs.rank() > rhs.rank()) {
+      _s_check_broadcastability(lhs.shape_, rhs.shape_);
+      return lhs.transformed(CyclicIterator{rhs.begin(), rhs.end()}, std::minus{});
+    } else {
+      _s_check_broadcastability(rhs.shape_, lhs.shape_);
+      return rhs.transformed(CyclicIterator{lhs.begin(), lhs.end()}, [](auto y, auto x) {
+        return x - y;
+      });
+    }
+  }
+
+  /**
+   * @brief Multiplies the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param lhs Tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return Result of multiplication as a tensor.
+   */
+  template <typename U>
+  friend constexpr auto operator*(const Tensor &lhs, const Tensor<U> &rhs) -> Tensor {
+    if (lhs.rank() > rhs.rank()) {
+      _s_check_broadcastability(lhs.shape_, rhs.shape_);
+      return lhs.transformed(CyclicIterator{rhs.begin(), rhs.end()}, std::multiplies{});
+    } else {
+      _s_check_broadcastability(rhs.shape_, lhs.shape_);
+      return rhs.transformed(CyclicIterator{lhs.begin(), lhs.end()}, std::multiplies{});
+    }
+  }
+
+  /**
+   * @brief Divides the given tensors and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param lhs Tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return Result of division as a tensor.
+   */
+  template <typename U>
+  friend constexpr auto operator/(const Tensor &lhs, const Tensor<U> &rhs) -> Tensor {
+    if (lhs.rank() > rhs.rank()) {
+      _s_check_broadcastability(lhs.shape_, rhs.shape_);
+      return lhs.transformed(CyclicIterator{rhs.begin(), rhs.end()}, std::divides{});
+    } else {
+      _s_check_broadcastability(rhs.shape_, lhs.shape_);
+      return rhs.transformed(CyclicIterator{lhs.begin(), lhs.end()}, [](auto y, auto x) {
+        return x / y;
+      });
+    }
+  }
+
+  /**
+   * @brief Performs modulo (or remainder) operation and returns the result.
+   * @tparam U Type of tensor on the left-hand side.
+   * @param lhs Tensor on the left-hand side.
+   * @param rhs Tensor on the right-hand side.
+   * @return Result of remainder operation as a tensor.
+   */
+  template <typename U>
+  friend constexpr auto operator%(const Tensor &lhs, const Tensor<U> &rhs) -> Tensor {
+    if (lhs.rank() > rhs.rank()) {
+      _s_check_broadcastability(lhs.shape_, rhs.shape_);
+      return lhs.transformed(CyclicIterator{rhs.begin(), rhs.end()}, [](auto x, auto y) {
+        return std::fmod(x, y);
+      });
+    } else {
+      _s_check_broadcastability(rhs.shape_, lhs.shape_);
+      return rhs.transformed(CyclicIterator{lhs.begin(), lhs.end()}, [](auto y, auto x) {
+        return std::fmod(x, y);
+      });
+    }
+  }
 };
+
+// /////////////////////////////////////////////////////////////////////////////////////////////
+// External Functions
+// /////////////////////////////////////////////////////////////////////////////////////////////
+
+// /////////////////////////////////////////////////////////////
+// Arithmetic Operators
+// /////////////////////////////////////////////////////////////
+
+// /////////////////////////////////////////////////////////////
+// Unary Operators
+// /////////////////////////////////////////////////////////////
+
+/**
+ * @brief Unary plus operator.
+ * @return Result tensor.
+ */
+template <typename T>
+constexpr auto operator+(const Tensor<T> &tensor) noexcept -> Tensor<T> {
+  return tensor;
+}
+
+/**
+ * @brief Unary minus operator - Negates all the elements of a tensor.
+ * @return Negated tensor.
+ */
+template <typename T>
+constexpr auto operator-(const Tensor<T> &tensor) noexcept -> Tensor<T> {
+  return tensor | std::negate{};
+}
+
+// /////////////////////////////////////////////////////////////
+// Binary Operators
+// /////////////////////////////////////////////////////////////
+
+/**
+ * @brief Adds the given scalar to the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param tensor Source tensor.
+ * @param num The number to be added.
+ * @return Result of addition as a tensor.
+ */
+template <typename T>
+constexpr auto operator+(const Tensor<T> &tensor, Number auto num) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return x + num;
+  };
+}
+
+/**
+ * @brief Adds the given scalar to the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param num The number to be added.
+ * @param tensor Source tensor.
+ * @return Result of addition as a tensor.
+ */
+template <typename T>
+constexpr auto operator+(Number auto num, const Tensor<T> &tensor) -> Tensor<T> {
+  return tensor + num;
+}
+
+/**
+ * @brief Subtracts the given scalar from the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param tensor Source tensor.
+ * @param num The number to be subtracted.
+ * @return Result of subtraction as a tensor.
+ */
+template <typename T>
+constexpr auto operator-(const Tensor<T> &tensor, Number auto num) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return x - num;
+  };
+}
+
+/**
+ * @brief Subtracts the given scalar from the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param num The number to be subtracted.
+ * @param tensor Source tensor.
+ * @return Result of subtraction as a tensor.
+ */
+template <typename T>
+constexpr auto operator-(Number auto num, const Tensor<T> &tensor) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return num - x;
+  };
+}
+
+/**
+ * @brief Multiplies the given scalar with the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param tensor Source tensor.
+ * @param num The number to be multiplied.
+ * @return Result of multiplication as a tensor.
+ */
+template <typename T>
+constexpr auto operator*(const Tensor<T> &tensor, Number auto num) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return x * num;
+  };
+}
+
+/**
+ * @brief Multiplies the given scalar with the tensor and returns the result.
+ * @tparam T Type of tensor.
+ * @param num The number to be multiplied.
+ * @param tensor Source tensor.
+ * @return Result of multiplication as a tensor.
+ */
+template <typename T>
+constexpr auto operator*(Number auto num, const Tensor<T> &tensor) -> Tensor<T> {
+  return tensor * num;
+}
+
+/**
+ * @brief Divides the tensor with the given scalar and returns the result.
+ * @tparam T Type of tensor.
+ * @param tensor Source tensor.
+ * @param num The number by which the tensor is to be divided.
+ * @return Result of division as a tensor.
+ */
+template <typename T>
+constexpr auto operator/(const Tensor<T> &tensor, Number auto num) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return x / num;
+  };
+}
+
+/**
+ * @brief Divides the tensor with the given scalar and returns the result.
+ * @tparam T Type of tensor.
+ * @param num The number by which the tensor is to be divided.
+ * @param tensor Source tensor.
+ * @return Result of division as a tensor.
+ */
+template <typename T>
+constexpr auto operator/(Number auto num, const Tensor<T> &tensor) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return num / x;
+  };
+}
+
+/**
+ * @brief Performs modulo (or remainder) operation and returns the result.
+ * @tparam T Type of tensor.
+ * @param tensor Source tensor.
+ * @param num The operand on the right hand side of modulo operator.
+ * @return Result of remainder operation as a tensor.
+ */
+template <typename T>
+constexpr auto operator%(const Tensor<T> &tensor, Number auto num) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return x % num;
+  };
+}
+
+/**
+ * @brief Performs modulo (or remainder) operation and returns the result.
+ * @tparam T Type of tensor.
+ * @param num The operand on the right hand side of modulo operator.
+ * @param tensor Source tensor.
+ * @return Result of remainder operation as a tensor.
+ */
+template <typename T>
+constexpr auto operator%(Number auto num, const Tensor<T> &tensor) -> Tensor<T> {
+  return tensor | [num](auto x) {
+    return num % x;
+  };
+}
 
 }
 
