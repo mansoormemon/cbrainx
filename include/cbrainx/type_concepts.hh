@@ -39,6 +39,15 @@ concept Number = std::is_arithmetic_v<T>;
 template <typename T>
 concept Void = std::is_void_v<T>;
 
+template <typename T>
+concept NullaryOperation = true;
+
+template <typename T>
+concept UnaryOperation = true;
+
+template <typename T>
+concept BinaryOperation = true;
+
 }
 
 #endif

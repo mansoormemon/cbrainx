@@ -23,49 +23,5 @@ auto main() -> cbx::i32 {
   std::cout << "Reducing t2 to scalar..." << std::endl;
   std::cout << "Before: " << t2.meta_info() << ", After: " << t2.reshape({}).meta_info() << std::endl;
 
-  // /////////////////////////////////////////////////////////////
-
-  auto t3 = cbx::Tensor{{3, 4}};
-  std::cout << "t3=" << t3.meta_info() << std::endl;
-  std::cout << "Demonstrating Taylor expansion using t3 for: f(x) = e" << std::endl;
-
-  using t3_value_t = decltype(t3)::value_type;
-
-  auto factorial = [](auto x) {
-    auto result = 1;
-    for (auto i = x; i > 1; i -= 1) {
-      result *= i;
-    }
-    return result;
-  };
-
-  std::generate(t3.begin(), t3.end(), [&factorial, Tn = t3_value_t{}, n = 0]() mutable {
-    auto y = std::pow(1.0, n) / factorial(n);
-    return n += 1, Tn += y;
-  });
-  std::cout << "t3 => { " << fmt::format("{}", fmt::join(t3, ", ")) << " }" << std::endl;
-
-  auto t4 = cbx::Tensor<cbx::f32>::custom({2, 3}, [n = 0.0]() mutable {
-    return n -= 2;
-  });
-
-  auto t5 = cbx::Tensor<cbx::f32>::custom({3}, [n = 0.0]() mutable {
-    return n -= 1.5;
-  });
-
-  fmt::print("t4={}\n", fmt::join(t4, ", "));
-  fmt::print("t5={}\n", fmt::join(t5, ", "));
-
-  try {
-    auto t6 = t4 % t5;
-    auto t7 = t5 % t4;
-
-
-    fmt::print("t6={}\n", fmt::join(t6, ", "));
-    fmt::print("t7={}\n", fmt::join(t7, ", "));
-  } catch (cbx::ShapeError &error) {
-    std::cout << error.what() << std::endl;
-  }
-
   return {};
 }

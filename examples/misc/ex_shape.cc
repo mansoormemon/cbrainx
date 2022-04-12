@@ -23,5 +23,10 @@ auto main() -> cbx::i32 {
   auto [rows, cols, channels] = cbx::Shape{4, 3, 3}.unwrap<3>();
   std::cout << "Rows: " << rows << ", Columns: " << cols << ", Channels: " << channels << std::endl;
 
+  auto s4 = cbx::Shape{1, 2, 3};
+  auto s5 = cbx::Shape{1, 2, 3, 4};
+
+  std::cout << s4.to_string() << " != " << s5.to_string() << ": " << (s3 != s4) << std::endl;
+
   return {};
 }

@@ -45,8 +45,10 @@ auto ShapeError::what() const noexcept -> str { return msg_.c_str(); }
 
 // /////////////////////////////////////////////////////////////
 
-UnrecognizedColorModelError::UnrecognizedColorModelError(std::string msg) : msg_{std::move(msg)} {}
+UnrecognizedColorModelError::UnrecognizedColorModelError(const std::string &msg) : std::logic_error{msg} {}
 
-auto UnrecognizedColorModelError::what() const noexcept -> str { return msg_.c_str(); }
+// /////////////////////////////////////////////////////////////
+
+ValueError::ValueError(const std::string &msg) : std::logic_error{msg} {}
 
 }

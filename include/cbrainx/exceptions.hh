@@ -82,14 +82,14 @@ class ShapeError : public std::exception {
 
 // /////////////////////////////////////////////////////////////
 
-class UnrecognizedColorModelError : public std::exception {
- private:
-  std::string msg_ = {};
-
+class UnrecognizedColorModelError : public std::logic_error {
  public:
-  explicit UnrecognizedColorModelError(std::string msg);
+  explicit UnrecognizedColorModelError(const std::string &msg);
+};
 
-  [[nodiscard]] auto what() const noexcept -> str override;
+class ValueError : public std::logic_error {
+ public:
+  explicit ValueError(const std::string &msg);
 };
 
 }
