@@ -289,8 +289,7 @@ class Tensor {
   /// \brief Constructs a tensor of the specified shape with the initial value \p value for all its elements.
   /// \param[in] shape The shape of the tensor.
   /// \param[in] value The initializing value for all the elements.
-  explicit Tensor(Shape shape, value_type value = {})
-      : shape_{std::move(shape)}, data_(shape_.total(), value) {}
+  explicit Tensor(const Shape &shape, value_type value = {}) : shape_{shape}, data_(shape.total(), value) {}
 
   /// \brief Constructs a tensor of the specified shape with the contents of the range [\p first, `last`).
   /// \param[in] shape The shape of the tensor.
@@ -298,13 +297,13 @@ class Tensor {
   ///
   /// \note The ending of the range, i.e., `last`, will be calculated from \p shape.
   template <std::input_iterator I_It>
-  Tensor(Shape shape, I_It first) : shape_{std::move(shape)}, data_{first, first + shape.total()} {}
+  Tensor(const Shape &shape, I_It first) : shape_{shape}, data_{first, first + shape.total()} {}
 
   /// \brief Constructs a tensor of the specified shape with the contents of \p range.
   /// \param[in] shape The shape of the tensor.
   /// \param[in] range The range to copy the data from.
-  Tensor(Shape shape, const std::ranges::range auto &range)
-      : shape_{std::move(shape)}, data_{range.begin(), range.begin() + shape.total()} {}
+  Tensor(const Shape &shape, const std::ranges::range auto &range)
+      : shape_{shape}, data_{range.begin(), range.begin() + shape.total()} {}
 
   /// \brief Default destructor.
   constexpr ~Tensor() = default;
