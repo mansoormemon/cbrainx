@@ -8,10 +8,10 @@ auto main() -> cbx::i32 {
   auto stopwatch = cbx::Stopwatch{};
 
   // Extremely large matrices.
-  auto mat_a = cbx::Matrix::custom<cbx::i32>(2048, 512, [n = 0]() mutable {
+  auto mat_a = cbx::Matrix::custom<cbx::i32>(128, 64, [n = 0]() mutable {
     return n += 1;
   });
-  auto mat_b = cbx::Matrix::custom<cbx::i32>(512, 4096, [n = 0]() mutable {
+  auto mat_b = cbx::Matrix::custom<cbx::i32>(64, 256, [n = 0]() mutable {
     return n += 2;
   });
 
@@ -24,7 +24,7 @@ auto main() -> cbx::i32 {
   auto product_wm = cbx::Matrix::multiply(mat_a, mat_b);
   stopwatch.stop();
   std::cout << "product_wm=" << product_wm.meta_info() << std::endl;
-  std::cout << "Time taken: " << stopwatch.get_interval<std::chrono::seconds>() << " seconds." << std::endl;
+  std::cout << "Time taken: " << stopwatch.get_duration<std::chrono::seconds>() << " seconds." << std::endl;
   std::cout << std::endl;
 
   std::cout << "[ WITHOUT MULTITHREADING ]" << std::endl;
@@ -32,7 +32,7 @@ auto main() -> cbx::i32 {
   auto product_wom = cbx::Matrix::multiply(mat_a, mat_b, false);
   stopwatch.stop();
   std::cout << "product_wom=" << product_wom.meta_info() << std::endl;
-  std::cout << "Time taken: " << stopwatch.get_interval<std::chrono::seconds>() << " seconds." << std::endl;
+  std::cout << "Time taken: " << stopwatch.get_duration<std::chrono::seconds>() << " seconds." << std::endl;
   std::cout << std::endl;
 
   return {};

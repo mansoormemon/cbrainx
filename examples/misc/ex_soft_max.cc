@@ -43,7 +43,7 @@ auto main() -> cbx::i32 {
   std::cout << "l1: " << l1->to_string() << " = ";
   print_mat(l1->output());
 
-  std::cout << "Time taken: " << stopwatch.get_interval<std::chrono::microseconds>() << " microseconds."
+  std::cout << "Time taken: " << stopwatch.get_duration<std::chrono::microseconds>() << " microseconds."
             << std::endl;
 
   return {};

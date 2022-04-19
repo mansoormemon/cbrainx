@@ -18,7 +18,6 @@
 #include "cbrainx/shape.hh"
 
 #include <numeric>
-#include <stdexcept>
 
 #include <fmt/format.h>
 
@@ -33,21 +32,20 @@ namespace cbx {
 auto Shape::_m_check_bounds(size_type index) const -> void {
   auto cur_rank = rank();
   if (index >= cur_rank) {
-    custom_throw<std::out_of_range>("cbx::Shape::_m_check_bounds: index = {} >= this->rank() = {}", index,
-                                    cur_rank);
+    throw IndexOutOfBoundsError{"cbx::Shape::_m_check_bounds: index = {} >= this->rank() = {}", index, cur_rank};
   }
 }
 
 auto Shape::_m_check_rank(size_type N) const -> void {
   auto cur_rank = rank();
   if (N > cur_rank) {
-    custom_throw<RankError>("cbx::Shape::_m_check_rank: N = {} > this->rank() = {}", N, cur_rank);
+    throw RankError{"cbx::Shape::_m_check_rank: N = {} > this->rank() = {}", N, cur_rank};
   }
 }
 
 auto Shape::_s_validate_dimension(value_type value) -> void {
   if (value == 0) {
-    custom_throw<ValueError>("cbx::Shape::_s_validate_dimension: dimension can not be equal than zero", value);
+    throw ValueError{"cbx::Shape::_s_validate_dimension: dimension can not be equal than zero", value};
   }
 }
 

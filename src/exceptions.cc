@@ -13,42 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
-
-#include <utility>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
-ImageIOError::ImageIOError(std::string msg) : msg_{std::move(msg)} {}
-
 auto ImageIOError::what() const noexcept -> str { return msg_.c_str(); }
-
-// /////////////////////////////////////////////////////////////
-
-IncompatibleColorModelError::IncompatibleColorModelError(std::string msg) : msg_{std::move(msg)} {}
 
 auto IncompatibleColorModelError::what() const noexcept -> str { return msg_.c_str(); }
 
-// /////////////////////////////////////////////////////////////
-
-RankError::RankError(std::string msg) : msg_{std::move(msg)} {}
+auto IndexOutOfBoundsError::what() const noexcept -> str { return msg_.c_str(); }
 
 auto RankError::what() const noexcept -> str { return msg_.c_str(); }
 
-// /////////////////////////////////////////////////////////////
-
-ShapeError::ShapeError(std::string msg) : msg_{std::move(msg)} {}
-
 auto ShapeError::what() const noexcept -> str { return msg_.c_str(); }
 
-// /////////////////////////////////////////////////////////////
+auto UnrecognizedColorModelError::what() const noexcept -> str { return msg_.c_str(); }
 
-UnrecognizedColorModelError::UnrecognizedColorModelError(const std::string &msg) : std::logic_error{msg} {}
-
-// /////////////////////////////////////////////////////////////
-
-ValueError::ValueError(const std::string &msg) : std::logic_error{msg} {}
+auto ValueError::what() const noexcept -> str { return msg_.c_str(); }
 
 }

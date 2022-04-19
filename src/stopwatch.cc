@@ -13,26 +13,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/stopwatch.hh"
 
 namespace cbx {
 
-auto Stopwatch::start(bool force_restart) -> void {
-  if (not ticking_ or force_restart) {
-    start_point_ = clock::now().time_since_epoch();
-    ticking_ = true;
+// /////////////////////////////////////////////
+// Controls
+// /////////////////////////////////////////////
+
+auto Stopwatch::start(bool force_renew) noexcept -> void {
+  if (not is_ticking_ or force_renew) {
+    start_ = clock::now();
+    is_ticking_ = true;
   }
 }
 
-auto Stopwatch::stop() -> void {
-  if (ticking_) {
-    end_point_ = clock::now().time_since_epoch();
-    ticking_ = false;
+auto Stopwatch::resume() noexcept -> void {
+  if (not is_ticking_) {
+    auto now = clock::now();
+    auto diff = now - end_;
+    start_ += diff;
+    is_ticking_ = true;
   }
 }
 
-auto Stopwatch::is_ticking() const -> bool { return ticking_; }
+auto Stopwatch::stop() noexcept -> void {
+  if (is_ticking_) {
+    end_ = clock::now();
+    is_ticking_ = false;
+  }
+}
+
+// /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
+
+auto Stopwatch::is_ticking() const noexcept -> bool { return is_ticking_; }
 
 }

@@ -23,7 +23,6 @@
 #include <numeric>
 #include <random>
 #include <ranges>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -110,9 +109,9 @@ class Tensor {
   /// \throws ShapeError
   static constexpr auto _s_check_shape_equivalency(const Shape &a, const Shape &b) -> void {
     if (not a.is_equivalent(b)) {
-      custom_throw<ShapeError>("cbx::Tensor::_s_check_shape_equivalency: a = {} [total = {}] is not equivalent "
-                               "to b = {} [total = {}]",
-                               a.to_string(), a.total(), b.to_string(), b.total());
+      throw ShapeError{"cbx::Tensor::_s_check_shape_equivalency: a = {} [total = {}] is not equivalent to b = "
+                       "{} [total = {}]",
+                       a.to_string(), a.total(), b.to_string(), b.total()};
     }
   }
 
@@ -125,8 +124,8 @@ class Tensor {
   /// \throws ShapeError
   static constexpr auto _s_check_shape_equality(const Shape &a, const Shape &b) -> void {
     if (a != b) {
-      custom_throw<ShapeError>("cbx::Tensor::_s_check_shape_equality: a = {} must be equal to b = {}",
-                               a.to_string(), b.to_string());
+      throw ShapeError{"cbx::Tensor::_s_check_shape_equality: a = {} must be equal to b = {}", a.to_string(),
+                       b.to_string()};
     }
   }
 
@@ -139,9 +138,9 @@ class Tensor {
   /// \throws ShapeError
   constexpr auto _m_check_broadcastability(const Shape &other) -> void {
     if (other.rank() > rank() or not std::equal(other.rbegin(), other.rend(), shape_.rbegin())) {
-      custom_throw<ShapeError>(
+      throw ShapeError{
           "cbx::Tensor::_m_check_broadcastability: other = {} is not broadcastable to this->shape() = {}",
-          other.to_string(), shape_.to_string());
+          other.to_string(), shape_.to_string()};
     }
   }
 
@@ -156,9 +155,9 @@ class Tensor {
     auto is_compatible = a.rank() > b.rank() ? std::equal(b.rbegin(), b.rend(), a.rbegin())
                                              : std::equal(a.rbegin(), a.rend(), b.rbegin());
     if (not is_compatible) {
-      custom_throw<ShapeError>(
+      throw ShapeError{
           "cbx::Tensor::_s_check_broadcastability: a = {} and b = {} are not compatible for broadcasting",
-          a.to_string(), b.to_string());
+          a.to_string(), b.to_string()};
     }
   }
 
@@ -181,12 +180,12 @@ class Tensor {
   /// \details
   /// This function throws an exception if \p index is out of bounds.
   ///
-  /// \throws std::out_of_range
+  /// \throws IndexOutOfBounds
   constexpr auto _m_check_linear_bounds(size_type index) const -> void {
     auto total_elements = total();
     if (index >= total_elements) {
-      custom_throw<std::out_of_range>("cbx::Tensor::_m_check_linear_bounds: index = {} >= this->total() = {}",
-                                      index, total_elements);
+      throw IndexOutOfBoundsError{"cbx::Tensor::_m_check_linear_bounds: index = {} >= this->total() = {}",
+                                  index, total_elements};
     }
   }
 
@@ -203,9 +202,9 @@ class Tensor {
     auto indices_count = sizeof...(indices);
     auto cur_rank = rank();
     if (indices_count != cur_rank) {
-      custom_throw<RankError>(
+      throw RankError{
           "cbx::Tensor::_m_check_rank: indices [count = {}] are in contradiction with the rank = {}",
-          indices_count, cur_rank);
+          indices_count, cur_rank};
     }
   }
 
@@ -218,7 +217,7 @@ class Tensor {
   ///     * Any index is out of range w.r.t to its axis, provided that bounds checking is enabled.
   ///     * The number of indices contradicts the rank.
   ///
-  /// \throws RankError std::out_of_range
+  /// \throws RankError IndexOutOfBoundsError
   template <Integer... Args>
   auto _m_check_axes_bounds(Args... indices) const -> void {
     _m_check_rank(indices...);
@@ -228,9 +227,9 @@ class Tensor {
     auto il_indices = std::initializer_list<usize>{usize(indices)...};
     for (auto shape_it = shape_.begin(); auto axis_index : il_indices) {
       if (axis_index >= (*shape_it)) {
-        custom_throw<std::out_of_range>(
+        throw IndexOutOfBoundsError{
             "cbx::Tensor::_m_check_axes_bounds: axis_index = {} >= this->shape() [axis = {}] = {}", axis_index,
-            std::distance(shape_.begin(), shape_it), *shape_it);
+            std::distance(shape_.begin(), shape_it), *shape_it};
       }
       ++shape_it;
     }
@@ -245,7 +244,7 @@ class Tensor {
   ///     * Any index is out of range w.r.t to its axis, provided that bounds checking is enabled.
   ///     * The number of indices contradicts the rank.
   ///
-  /// \throws RankError std::out_of_range
+  /// \throws RankError IndexOutOfBoundsError
   template <Integer... Args>
   [[nodiscard]] auto _m_linear_index(Args... indices) const -> size_type {
     _m_check_axes_bounds(indices...);
@@ -354,7 +353,7 @@ class Tensor {
   /// \note This function does not respect dimensionality but performs bounds checking w.r.t. the total number
   /// of elements.
   ///
-  /// \throws std::out_of_range
+  /// \throws IndexOutOfBounds
   [[nodiscard]] constexpr auto at(size_type index) const -> const_reference {
     _m_check_linear_bounds(index);
     return data_[index];
@@ -367,7 +366,7 @@ class Tensor {
   /// \note This function does not respect dimensionality but performs bounds checking w.r.t. the total number
   /// of elements.
   ///
-  /// \throws std::out_of_range
+  /// \throws IndexOutOfBounds
   constexpr auto at(size_type index) -> reference {
     _m_check_linear_bounds(index);
     return data_[index];
@@ -378,9 +377,9 @@ class Tensor {
   /// \param[in] indices Coordinates of the element in an n-dimensional space.
   /// \return An immutable reference to the element at the specified coordinates.
   ///
-  /// \note This function performs bounds checking if bounds checking is enabled.
+  /// \note This function performs bounds checking if it is enabled.
   ///
-  /// \throws RankError std::out_of_range
+  /// \throws RankError IndexOutOfBoundsError
   template <Integer... Args>
   [[nodiscard]] constexpr auto operator()(Args... indices) const -> const_reference {
     return data_[_m_linear_index(indices...)];
@@ -391,9 +390,9 @@ class Tensor {
   /// \param[in] indices Coordinates of the element in an n-dimensional space.
   /// \return A mutable reference to the element at the specified coordinates.
   ///
-  /// \note This function performs bounds checking if bounds checking is enabled.
+  /// \note This function performs bounds checking if it is enabled.
   ///
-  /// \throws RankError std::out_of_range
+  /// \throws RankError IndexOutOfBoundsError
   template <Integer... Args>
   constexpr auto operator()(Args... indices) -> reference {
     return data_[_m_linear_index(indices...)];
