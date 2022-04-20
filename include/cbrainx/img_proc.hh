@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #ifndef CBRAINX__IMG_PROC_HH_
 #define CBRAINX__IMG_PROC_HH_
-
-#include <limits>
-#include <type_traits>
 
 #include "image.hh"
 #include "tensor.hh"
@@ -27,84 +24,149 @@
 
 namespace cbx {
 
-/**
- * @brief The <b>ImgProc</b> class contains functionality for image processing.
- */
-class ImgProc {
- private:
-  static auto has_channel_check(Image::Meta meta, Image::Channel target) -> void;
+// /////////////////////////////////////////////
+// Implementation Detail
+// /////////////////////////////////////////////
 
-  static auto model_compatibility_check(Image::Meta meta, Image::Model target) -> void;
+/// \cond impl_detail
+
+namespace _detail {
+
+/// \brief Provides a way to query properties of a given data type in the context of bit depth.
+/// \tparam B Bit depth of the image.
+template <BitDepth B>
+struct limits {
+  using size_type = usize;
+
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
+
+  /// \brief Returns the number of bits for the given bit depth.
+  /// \return Number of bits for the given bit depth.
+  static constexpr auto bits() noexcept -> size_type;
+
+  /// \brief Returns the smallest finite value of the given bit depth.
+  /// \return Smallest finite value for the given bit depth.
+  static constexpr auto min() noexcept -> B;
+
+  /// \brief Returns the largest finite value of the given bit depth.
+  /// \return Largest finite value for the given bit depth.
+  static constexpr auto max() noexcept -> B;
+};
+
+}
+
+/// \endcond
+
+/// \brief The `ImgProc` class contains functionality for image processing.
+///
+/// \details
+/// Image processing is a method of performing operations on an image to improve it or extract useful
+/// information. This class contains utilities for resizing, channel extraction, thresholding images, etc.
+class ImgProc {
+ public:
+  using size_type = usize;
+
+ private:
+  // /////////////////////////////////////////////
+  // Helpers
+  // /////////////////////////////////////////////
+
+  /// \brief Checks if the image has the channel \p channel.
+  /// \param[in] meta Metadata of the image.
+  /// \param[in] channel The channel to be looked up.
+  ///
+  /// \details
+  /// This function throws an exception if the image does not have the channel \p channel.
+  ///
+  /// \throws IncompatibleColorModelError
+  static auto _s_has_channel_check(Image::Meta meta, Image::Channel channel) -> void;
 
  public:
-  template <image_datatype T>
-  [[nodiscard]] static auto extract_channel(const Tensor<T> &img, Image::Channel channel) -> Tensor<T> {
-    auto meta = Image::Meta::decode_shape(img.shape());
-    ImgProc::has_channel_check(meta, channel);
-    auto mono_img = Image::make<T>({meta.width(), meta.height()});
-    auto src_it = img.begin() + meta.position_of(channel);
-    for (auto it = mono_img.begin(), end = mono_img.end(); it != end; ++it) {
-      *it = *src_it;
+  // /////////////////////////////////////////////
+  // Core Functionality
+  // /////////////////////////////////////////////
+
+  /// \brief Extracts the specified channel from the image.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] src Source image.
+  /// \param[in] channel The channel to be extracted.
+  /// \return A grayscale image formed from the extracted channel.
+  ///
+  /// \details
+  /// This function throws an exception if the image does not have the specified color channel.
+  ///
+  /// \throws IncompatibleColorModelError
+  template <BitDepth B>
+  [[nodiscard]] static auto extract_channel(const Tensor<B> &src, Image::Channel channel) -> Tensor<B> {
+    auto meta = Image::Meta::decode_shape(src.shape());
+    ImgProc::_s_has_channel_check(meta, channel);
+    auto mono_img = Image::make<B>(meta.width(), meta.height());
+    for (auto src_it = src.begin() + meta.position_of(channel); auto &pix : mono_img) {
+      pix = *src_it;
       src_it += meta.channels();
     }
     return mono_img;
   }
 
-  // /////////////////////////////////////////////////////////////
-
-  template <image_datatype T>
-  [[nodiscard]] static auto grayscale(const Tensor<T> &img) -> Tensor<T> {
-    auto meta = Image::Meta::decode_shape(img.shape());
+  /// \brief Converts the given image to grayscale.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] src Source image.
+  /// \return Grayscale image.
+  ///
+  /// \note If the image's color model is not compatible with `Image::Model::RGB`, it returns a copy of the
+  /// source image.
+  template <BitDepth B>
+  [[nodiscard]] static auto grayscale(const Tensor<B> &src) -> Tensor<B> {
+    auto meta = Image::Meta::decode_shape(src.shape());
     if (not meta.is_compatible(Image::Model::RGB)) {
-      return img;
+      return src;
     }
 
-    const u32 R = 0, G = 1, B = 2;
-    auto gray_img = Image::make<T>({meta.width(), meta.height()});
-    auto src_it = img.begin();
-    for (auto it = gray_img.begin(), end = gray_img.end(); it != end; ++it) {
-      *it = (0.3 * src_it[R]) + (0.59 * src_it[G]) + (0.11 * src_it[B]);
+    enum { Red, Green, Blue };
+    auto gray_img = Image::make<B>(meta.width(), meta.height());
+    for (auto src_it = src.begin(); auto &pix : gray_img) {
+      pix = (0.3 * src_it[Red]) + (0.59 * src_it[Green]) + (0.11 * src_it[Blue]);
       src_it += meta.channels();
     }
     return gray_img;
   }
 
-  // /////////////////////////////////////////////////////////////
+  /// \brief Inverts the given image.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] img The image to be inverted.
+  /// \return A reference to \p img.
+  template <BitDepth B>
+  static auto invert(Tensor<B> &img) noexcept -> Tensor<B> &;
 
-  template <image_datatype T>
-  static auto invert(Tensor<T> &img) -> Tensor<T> & {
-    const auto MAX_CHANNEL_VALUE = std::is_same_v<u8, T> ? std::numeric_limits<u8>::max() : 1.0;
-    for (auto &value : img) {
-      value = MAX_CHANNEL_VALUE - value;
-    }
-    return img;
+  /// \brief Binarizes the given image.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] img The image to be binarized.
+  /// \return A reference to \p img.
+  template <BitDepth B>
+  static auto binarize(Tensor<B> &img) noexcept -> Tensor<B> &;
+
+  /// \brief Resizes the given image.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] src Source image.
+  /// \param[in] new_width, new_height New dimensions of the image.
+  /// \return Resized image.
+  template <BitDepth B>
+  [[nodiscard]] static auto resize(const Tensor<B> &src, size_type new_width, size_type new_height)
+      -> Tensor<B>;
+
+  /// \brief Rescales the given image.
+  /// \tparam B Bit depth of the image.
+  /// \param[in] src Source image.
+  /// \param[in] factor The factor by which to rescale the image.
+  /// \return Rescaled image.
+  template <BitDepth B>
+  [[nodiscard]] static auto rescale(const Tensor<B> &src, f32 factor) -> Tensor<B> {
+    auto meta = Image::Meta::decode_shape(src.shape());
+    size_type new_width = meta.width() * factor, new_height = meta.height() * factor;
+    return ImgProc::resize(src, new_width, new_height);
   }
-
-  static auto invert(Tensor<u8> &img) -> Tensor<u8> &;
-
-  // /////////////////////////////////////////////////////////////
-
-  template <image_datatype T>
-  static auto binarize(Tensor<T> &img) -> Tensor<T> & {
-    const auto MAX_CHANNEL_VALUE = std::is_same_v<u8, T> ? std::numeric_limits<u8>::max() : 1.0;
-    auto pivot = MAX_CHANNEL_VALUE / 2;
-    for (auto &value : img) {
-      value = value > pivot ? MAX_CHANNEL_VALUE : 0;
-    }
-    return img;
-  }
-
-  static auto binarize(Tensor<u8> &img) -> Tensor<u8> &;
-
-  // /////////////////////////////////////////////////////////////
-
-  template <image_datatype T>
-  [[nodiscard]] static auto resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T>;
-
-  // /////////////////////////////////////////////////////////////
-
-  template <image_datatype T>
-  [[nodiscard]] static auto rescale(const Tensor<T> &img, f32 factor) -> Tensor<T>;
 };
 
 }

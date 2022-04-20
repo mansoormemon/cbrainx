@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/image.hh"
 
@@ -29,29 +29,45 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include <fmt/format.h>
-
 #include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
-Image::Meta::Meta(i32 width, i32 height, i32 channels) : width_{width}, height_{height}, channels_{channels} {}
+// /////////////////////////////////////////////
+// Constructors (and Destructors)
+// /////////////////////////////////////////////
 
-// /////////////////////////////////////////////////////////////
+Image::Meta::Meta(size_type width, size_type height, size_type channels)
+    : width_{width}, height_{height}, channels_{channels} {}
 
-auto Image::Meta::width() const -> const i32 & { return width_; }
+// /////////////////////////////////////////////
+// Accessors and Mutators
+// /////////////////////////////////////////////
 
-auto Image::Meta::width() -> i32 & { return width_; }
+auto Image::Meta::width() const noexcept -> size_type { return width_; }
 
-auto Image::Meta::height() const -> const i32 & { return height_; }
+auto Image::Meta::set_width(size_type new_width) -> Meta & {
+  width_ = new_width;
+  return *this;
+}
 
-auto Image::Meta::height() -> i32 & { return height_; }
+auto Image::Meta::height() const noexcept -> size_type { return height_; }
 
-auto Image::Meta::channels() const -> const i32 & { return channels_; }
+auto Image::Meta::set_height(size_type new_height) -> Meta & {
+  height_ = new_height;
+  return *this;
+}
 
-auto Image::Meta::channels() -> i32 & { return channels_; }
+auto Image::Meta::channels() const noexcept -> size_type { return channels_; }
 
-// /////////////////////////////////////////////////////////////
+auto Image::Meta::set_channels(size_type new_channels) -> Meta & {
+  channels_ = new_channels;
+  return *this;
+}
+
+// /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
 
 auto Image::Meta::model() const -> Model {
   switch (channels_) {
@@ -69,16 +85,18 @@ auto Image::Meta::model() const -> Model {
     }
     default: {
       throw UnrecognizedColorModelError{
-          fmt::format("cbx::Image::Meta::model: color model is not recognized(channels={})", channels_)};
+          "cbx::Image::Meta::model: color model is not recognized [channels = {}]", channels_};
     }
   }
 }
 
-auto Image::Meta::total() const -> usize { return width_ * height_ * channels_; }
+auto Image::Meta::pixels() const noexcept -> size_type { return width_ * height_; }
 
-auto Image::Meta::bitmask() const -> i32 {
-  auto model = this->model();
-  switch (model) {
+auto Image::Meta::total() const noexcept -> size_type { return width_ * height_ * channels_; }
+
+auto Image::Meta::bitmask() const -> u32 {
+  auto color_model = model();
+  switch (color_model) {
     case Model::Gray: {
       return Channel::Mono;
     }
@@ -91,13 +109,15 @@ auto Image::Meta::bitmask() const -> i32 {
     case Model::RGBA: {
       return Channel::Red | Channel::Green | Channel::Blue | Channel::Alpha;
     }
+    default: {
+      return {};
+    }
   }
-  return {};
 }
 
 auto Image::Meta::is_compatible(Model target) const -> bool {
-  auto model = this->model();
-  switch (model) {
+  auto color_model = model();
+  switch (color_model) {
     case Model::Gray: {
       return target & Model::Gray;
     }
@@ -110,18 +130,20 @@ auto Image::Meta::is_compatible(Model target) const -> bool {
     case Model::RGBA: {
       return target & (Model::RGB | Model::RGBA);
     }
+    default: {
+      return false;
+    }
   }
-  return false;
 }
 
-auto Image::Meta::has_channel(Channel channel) const -> bool { return this->bitmask() & channel; }
+auto Image::Meta::has_channel(Channel channel) const -> bool { return bitmask() & channel; }
 
-auto Image::Meta::position_of(Channel target) const -> i32 {
-  if (not this->has_channel(target)) {
+auto Image::Meta::position_of(Channel channel) const -> i32 {
+  if (not has_channel(channel)) {
     return -1;
   }
 
-  switch (target) {
+  switch (channel) {
     case Channel::Mono:
     case Channel::Red: {
       return 0;
@@ -133,89 +155,74 @@ auto Image::Meta::position_of(Channel target) const -> i32 {
       return 2;
     }
     default: {
-      return channels_ - 1;
+      return i32(channels_ - 1);
     }
   }
 }
 
+// /////////////////////////////////////////////
+// Informative
+// /////////////////////////////////////////////
+
 auto Image::Meta::to_shape() const -> Shape {
-  auto [w, h, c] = this->unwrap<Shape::value_type>();
-  return (c == Shape::SCALAR_SIZE) ? Shape{h, w} : Shape{h, w, c};
+  auto [w, h, c] = unwrap();
+  return c > Shape::SCALAR_SIZE ? Shape{h, w, c} : Shape{h, w};
 }
 
-// /////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////
+// Static Functions
+// /////////////////////////////////////////////////////////////
 
 auto Image::Meta::decode_shape(const Shape &shape) -> Meta {
   switch (shape.rank()) {
     case 2: {
-      auto [h, w] = shape.unwrap<2, i32>();
+      auto [h, w] = shape.unwrap<2>();
       return Meta{w, h, Shape::SCALAR_SIZE};
     }
     case 3: {
-      auto [h, w, c] = shape.unwrap<3, i32>();
+      auto [h, w, c] = shape.unwrap<3>();
       return Meta{w, h, c};
     }
     default: {
-      throw ShapeError{"cbx::Image::Meta::decode_shape: unsuitable shape for image"};
+      throw ShapeError{"cbx::Image::Meta::decode_shape: shape = {} is not suitable for an image",
+                       shape.to_string()};
     }
   }
 }
 
-// /////////////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// I/O Functions
+// /////////////////////////////////////////////
 
-template <image_datatype T>
-auto Image::morph_datatype(const Tensor<T> &img) -> Tensor<datatype_after_morph_t<T>> {
-  using type = datatype_after_morph_t<T>;
-
-  auto img_iter = img.begin();
-  auto morphed_img = Tensor<type>::custom(img.shape(), [&img_iter]() {
-    auto val = *(img_iter++);
-    return std::is_same_v<u8, type> ? val * UCHAR_MAX : val / static_cast<f32>(UCHAR_MAX);
-  });
-  return morphed_img;
-}
-
-// /////////////////////////////////////////////////////////////
-
-template auto Image::morph_datatype<u8>(const Tensor<u8> &img) -> Tensor<f32>;
-
-template auto Image::morph_datatype<f32>(const Tensor<f32> &img) -> Tensor<u8>;
-
-// /////////////////////////////////////////////////////////////
-
-template <image_datatype T>
-auto Image::read(const std::string &img_path) -> Tensor<T> {
-  using pointer = typename Tensor<T>::pointer;
+template <BitDepth B>
+auto Image::read(std::string_view img_path) -> Tensor<B> {
+  using pointer = typename Tensor<B>::pointer;
 
   auto abs_path = std::filesystem::absolute(img_path);
-  auto meta = Meta{};
-  void *temp_buf = {};
-  // Choose appropriate function between u8 and f32 based on T.
-  if constexpr (std::is_same_v<u8, T>) {
-    temp_buf =
-        stbi_load(abs_path.string().c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
+  void *temp_buf = nullptr;
+  i32 w = {}, h = {}, c = {};
+
+  // Choose the appropriate function based on B.
+  if constexpr (std::is_same_v<u8, B>) {
+    temp_buf = stbi_load(abs_path.string().c_str(), &w, &h, &c, STBI_default);
   } else {
-    temp_buf =
-        stbi_loadf(abs_path.string().c_str(), &meta.width(), &meta.height(), &meta.channels(), STBI_default);
+    temp_buf = stbi_loadf(abs_path.string().c_str(), &w, &h, &c, STBI_default);
   }
   if (not temp_buf) {
-    throw ImageIOError{"cbx::Image::read: could not read image"};
+    throw ImageIOError{"cbx::Image::read: could not read image [path = {}]", img_path};
   }
-  auto img = Tensor<T>{meta.to_shape(), pointer(temp_buf)};
+  auto meta = Meta(w, h, c);
+  auto img = Tensor<B>{meta.to_shape(), pointer(temp_buf)};
   stbi_image_free(temp_buf);
   return img;
 }
 
-// /////////////////////////////////////////////////////////////
+template auto Image::read<u8>(std::string_view img_path) -> Tensor<u8>;
 
-template auto Image::read<u8>(const std::string &img_path) -> Tensor<u8>;
-
-template auto Image::read<f32>(const std::string &img_path) -> Tensor<f32>;
-
-// /////////////////////////////////////////////////////////////
+template auto Image::read<f32>(std::string_view img_path) -> Tensor<f32>;
 
 template <>
-auto Image::write<u8>(const Tensor<u8> &img, const std::string &img_path, Format fmt) -> void {
+auto Image::write<u8>(const Tensor<u8> &img, std::string_view img_path, Format fmt) -> void {
   auto abs_path = std::filesystem::absolute(img_path);
   auto parent_path = abs_path.parent_path();
   if (not std::filesystem::exists(parent_path)) {
@@ -224,32 +231,30 @@ auto Image::write<u8>(const Tensor<u8> &img, const std::string &img_path, Format
 
   auto meta = Meta::decode_shape(img.shape());
   i32 ret_val = {};
+  auto [w, h, c] = meta.unwrap<i32>();
   switch (fmt) {
     case Format::BMP: {
-      ret_val =
-          stbi_write_bmp(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(), img.data());
+      ret_val = stbi_write_bmp(abs_path.string().c_str(), w, h, c, img.data());
       break;
     }
     case Format::JPG: {
-      ret_val = stbi_write_jpg(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(),
-                               img.data(), JPG_QUALITY);
+      ret_val = stbi_write_jpg(abs_path.string().c_str(), w, h, c, img.data(), JPG_QUALITY);
       break;
     }
     case Format::PNG: {
-      ret_val = stbi_write_png(abs_path.string().c_str(), meta.width(), meta.height(), meta.channels(),
-                               img.data(), meta.width() * meta.channels());
+      auto stride = w * c;
+      ret_val = stbi_write_png(abs_path.string().c_str(), w, h, c, img.data(), stride);
       break;
     }
   }
   if (ret_val == 0) {
-    throw ImageIOError{"cbx::Image::write: could not write image"};
+    throw ImageIOError{"cbx::Image::write: could not write image to disk [path = {}]", img_path};
   }
 }
 
 template <>
-auto Image::write<f32>(const Tensor<f32> &img, const std::string &img_path, Format fmt) -> void {
-  auto morphed_img = morph_datatype(img);
-  Image::write<u8>(morphed_img, img_path, fmt);
+auto Image::write<f32>(const Tensor<f32> &img, std::string_view img_path, Format fmt) -> void {
+  Image::write<u8>(morph(img), img_path, fmt);
 }
 
 }

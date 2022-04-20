@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/img_proc.hh"
 
@@ -22,51 +22,101 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb_image_resize.h>
 
-#include <fmt/format.h>
-
 #include "cbrainx/exceptions.hh"
 
 namespace cbx {
 
-auto ImgProc::has_channel_check(Image::Meta meta, Image::Channel target) -> void {
-  if (not meta.has_channel(target)) {
+// /////////////////////////////////////////////
+// Implementation Detail
+// /////////////////////////////////////////////
+
+namespace _detail {
+
+// /////////////////////
+// Bit depth: `u8`
+// /////////////////////
+
+template <>
+constexpr auto limits<u8>::bits() noexcept -> size_type {
+  return sizeof(u8) * CHAR_BIT;
+}
+
+template <>
+constexpr auto limits<u8>::min() noexcept -> u8 {
+  return std::numeric_limits<u8>::min();
+};
+
+template <>
+constexpr auto limits<u8>::max() noexcept -> u8 {
+  return std::numeric_limits<u8>::max();
+};
+
+// /////////////////////
+// Bit depth: `f32`
+// /////////////////////
+
+template <>
+constexpr auto limits<f32>::bits() noexcept -> size_type {
+  return sizeof(f32) * CHAR_BIT;
+}
+
+template <>
+constexpr auto limits<f32>::min() noexcept -> f32 {
+  return 0.0F;
+};
+
+template <>
+constexpr auto limits<f32>::max() noexcept -> f32 {
+  return 1.0F;
+};
+
+}
+
+// /////////////////////////////////////////////
+// Helpers
+// /////////////////////////////////////////////
+
+auto ImgProc::_s_has_channel_check(Image::Meta meta, Image::Channel channel) -> void {
+  if (not meta.has_channel(channel)) {
     throw IncompatibleColorModelError{
-        fmt::format("cbx::ImgProc::has_channel_check: channel(={}) is not available", target)};
+        "cbx::ImgProc::_s_has_channel_check: channel = {} is not present in the image", channel};
   }
 }
 
-auto ImgProc::model_compatibility_check(Image::Meta meta, Image::Model target) -> void {
-  if (not meta.is_compatible(target)) {
-    throw IncompatibleColorModelError{fmt::format(
-        "cbx::ImgProc::model_compatibility_check: color models are not compatible(current={}, target={})",
-        meta.model(), target)};
-  }
-}
+// /////////////////////////////////////////////
+// Core Functionality
+// /////////////////////////////////////////////
 
-// /////////////////////////////////////////////////////////////
+template <>
+auto ImgProc::invert(Tensor<u8> &img) noexcept -> Tensor<u8> & {
+  const auto MAX_VALUE = _detail::limits<u8>::max();
+  const auto CHANNEL_SIZE = MAX_VALUE + 1;
 
-auto ImgProc::invert(Tensor<u8> &img) -> Tensor<u8> & {
-  const auto MAX_CHANNEL_VALUE = std::numeric_limits<u8>::max();
-  const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
-
+  // Generate an inverted color lookup table.
   auto make_lookup_table = []() {
     auto table = std::array<u8, CHANNEL_SIZE>{};
-    std::generate(table.begin(), table.end(), [n = MAX_CHANNEL_VALUE]() mutable {
+    std::generate(table.begin(), table.end(), [n = MAX_VALUE]() mutable {
       return n--;
     });
     return table;
   };
 
+  // Assign values from the lookup table in constant time.
   auto lookup_table = make_lookup_table();
-  for (auto &val : img) {
-    val = lookup_table[val];
-  }
-  return img;
+  return img |= [&lookup_table](auto value) {
+    return lookup_table[value];
+  };
 }
 
-// /////////////////////////////////////////////////////////////
+template <>
+auto ImgProc::invert(Tensor<f32> &img) noexcept -> Tensor<f32> & {
+  return img |= [](auto value) {
+    return _detail::limits<f32>::max() - value;
+  };
+}
 
-auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
+template <>
+auto ImgProc::binarize(Tensor<u8> &img) noexcept -> Tensor<u8> & {
   // Algorithm: Otsu's Method
   // Otsu's thresholding method involves iterating through all the possible thresholds and calculating a
   // measure of spread for the pixel intensities in the foreground and background. The aim is to find a
@@ -84,15 +134,14 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   // The desired threshold corresponds to the maximum 𝜎B².
   //
   // Reference:
-  // 1. http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html#explained
+  // 1. http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
 
-  const auto MAX_CHANNEL_VALUE = std::numeric_limits<u8>::max();
-  const auto MIN_CHANNEL_VALUE = std::numeric_limits<u8>::min();
-  const auto CHANNEL_SIZE = MAX_CHANNEL_VALUE + 1;
+  const auto MAX_VALUE = _detail::limits<u8>::max(), MIN_VALUE = _detail::limits<u8>::min();
+  const auto CHANNEL_SIZE = MAX_VALUE + 1;
 
   auto make_histogram = [](const auto &container) {
-    auto hist = std::array<usize, CHANNEL_SIZE>{};
-    for (const auto &val : container) {
+    auto hist = std::array<size_type, CHANNEL_SIZE>{};
+    for (auto val : container) {
       hist[val] += 1;
     }
     return hist;
@@ -102,10 +151,10 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   auto total = img.total();
 
   // Calculate the sum of weights for all possible thresholds.
-  // Formula: summation[i = 0, MAX_CHANNEL_VALUE] (t * hist[t])
+  // Formula: summation[i = 0, MAX_VALUE] (t * hist[t])
   f32 sumT = {};
   for (auto t = 0; t < CHANNEL_SIZE; ++t) {
-    sumT += static_cast<f32>(t * hist[t]);
+    sumT += f32(t * hist[t]);
   }
 
   f32 sumB = {}, sumF = {};     // Accumulated weights for background and foreground.
@@ -117,21 +166,21 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
   for (auto t = 0; t < CHANNEL_SIZE; ++t) {
     // Calculate background weight for threshold `t`.
     // Formula: wB = summation[i = 0, t] hist[i]
-    wB += static_cast<f32>(hist[t]);
+    wB += f32(hist[t]);
     if (wB == 0) {
       continue;
     }
 
     // Calculate foreground weight for threshold `t`.
     // Formula: wF = totalPixels - wB.
-    wF = static_cast<f32>(total) - wB;
+    wF = f32(total) - wB;
     if (wF == 0) {
       break;
     }
 
     // Calculate mean (background) for threshold `t`.
     // Formula: mB = summation[i = 0, t] i * hist[i] / wB
-    sumB += static_cast<f32>(t * hist[t]);
+    sumB += f32(t * hist[t]);
     mB = sumB / wB;
 
     // Calculate mean (foreground) for threshold `t`.
@@ -149,44 +198,35 @@ auto ImgProc::binarize(Tensor<u8> &img) -> Tensor<u8> & {
     }
   }
 
-  for (auto &value : img) {
-    value = value > optThresh ? MAX_CHANNEL_VALUE : MIN_CHANNEL_VALUE;
-  }
-  return img;
+  return img |= [MAX_VALUE, MIN_VALUE, optThresh](auto value) {
+    return value > optThresh ? MAX_VALUE : MIN_VALUE;
+  };
 }
 
-// /////////////////////////////////////////////////////////////
+template <>
+auto ImgProc::binarize(Tensor<f32> &img) noexcept -> Tensor<f32> & {
+  const auto MAX_VALUE = _detail::limits<f32>::max(), MIN_VALUE = _detail::limits<f32>::min();
+  const auto PIVOT = MAX_VALUE / 2;
+  return img |= [MAX_VALUE, MIN_VALUE, PIVOT](auto value) {
+    return value > PIVOT ? MAX_VALUE : MIN_VALUE;
+  };
+}
 
-template <image_datatype T>
-auto ImgProc::resize(const Tensor<T> &img, const Image::Meta &meta) -> Tensor<T> {
-  auto src_meta = Image::Meta::decode_shape(img.shape());
-  auto resized_img = Image::make<T>({meta.width(), meta.height(), src_meta.channels()});
-  auto type = std::is_same_v<u8, T> ? STBIR_TYPE_UINT8 : STBIR_TYPE_FLOAT;
-  stbir_resize(img.data(), src_meta.width(), src_meta.height(), 0, resized_img.data(), meta.width(),
-               meta.height(), 0, type, src_meta.channels(), STBIR_ALPHA_CHANNEL_NONE, 0, STBIR_EDGE_CLAMP,
-               STBIR_EDGE_CLAMP, STBIR_FILTER_BOX, STBIR_FILTER_BOX, STBIR_COLORSPACE_SRGB, nullptr);
+template <BitDepth B>
+auto ImgProc::resize(const Tensor<B> &src, size_type new_width, size_type new_height) -> Tensor<B> {
+  auto src_meta = Image::Meta::decode_shape(src.shape());
+  auto resized_img = Image::make<B>(new_width, new_height, src_meta.channels());
+  constexpr auto TYPE = std::is_same_v<u8, B> ? STBIR_TYPE_UINT8 : STBIR_TYPE_FLOAT;
+  stbir_resize(src.data(), src_meta.width(), src_meta.height(), 0, resized_img.data(), new_width, new_height, 0,
+               TYPE, src_meta.channels(), STBIR_ALPHA_CHANNEL_NONE, 0, STBIR_EDGE_CLAMP, STBIR_EDGE_CLAMP,
+               STBIR_FILTER_BOX, STBIR_FILTER_BOX, STBIR_COLORSPACE_SRGB, nullptr);
   return resized_img;
 }
 
-// /////////////////////////////////////////////////////////////
+template auto ImgProc::resize<u8>(const Tensor<u8> &src, size_type new_width, size_type new_height)
+    -> Tensor<u8>;
 
-template auto ImgProc::resize<u8>(const Tensor<u8> &img, const Image::Meta &meta) -> Tensor<u8>;
-
-template auto ImgProc::resize<f32>(const Tensor<f32> &img, const Image::Meta &meta) -> Tensor<f32>;
-
-// /////////////////////////////////////////////////////////////
-
-template <image_datatype T>
-auto ImgProc::rescale(const Tensor<T> &img, f32 factor) -> Tensor<T> {
-  auto meta = Image::Meta::decode_shape(img.shape());
-  i32 new_width = meta.width() * factor, new_height = meta.height() * factor;
-  return ImgProc::resize(img, {new_width, new_height});
-}
-
-// /////////////////////////////////////////////////////////////
-
-template auto ImgProc::rescale<u8>(const Tensor<u8> &img, f32 factor) -> Tensor<u8>;
-
-template auto ImgProc::rescale<f32>(const Tensor<f32> &img, f32 factor) -> Tensor<f32>;
+template auto ImgProc::resize<f32>(const Tensor<f32> &src, size_type new_width, size_type new_height)
+    -> Tensor<f32>;
 
 }
