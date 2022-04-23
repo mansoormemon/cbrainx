@@ -24,6 +24,7 @@
 #include <random>
 #include <ranges>
 #include <string>
+#include <thread>
 #include <utility>
 
 #include <fmt/format.h>
@@ -88,7 +89,9 @@ class Tensor {
 
  private:
   /// \brief A flag for enabling or disabling bounds checking.
-  bool bounds_checking_ = true;
+  ///
+  /// \note This attribute is mutable and does not account for the constness of the tensor.
+  mutable bool bounds_checking_ = true;
 
   /// \brief Shape of data.
   Shape shape_ = {};
@@ -217,7 +220,8 @@ class Tensor {
   ///     * Any index is out of range w.r.t to its axis, provided that bounds checking is enabled.
   ///     * The number of indices contradicts the rank.
   ///
-  /// \throws RankError IndexOutOfBoundsError
+  /// \throws RankError
+  /// \throws IndexOutOfBoundsError
   template <Integer... Args>
   auto _m_check_axes_bounds(Args... indices) const -> void {
     _m_check_rank(indices...);
@@ -244,7 +248,8 @@ class Tensor {
   ///     * Any index is out of range w.r.t to its axis, provided that bounds checking is enabled.
   ///     * The number of indices contradicts the rank.
   ///
-  /// \throws RankError IndexOutOfBoundsError
+  /// \throws RankError
+  /// \throws IndexOutOfBoundsError
   template <Integer... Args>
   [[nodiscard]] auto _m_linear_index(Args... indices) const -> size_type {
     _m_check_axes_bounds(indices...);
@@ -263,6 +268,35 @@ class Tensor {
       ++shape_r_it;
     }
     return linear_index;
+  }
+
+  /// \brief Checks if the given rank represents a matrix.
+  /// \param[in] rank The rank to be checked.
+  ///
+  /// \details
+  /// This function throws an exception if the given rank does not represent a matrix.
+  ///
+  /// \throws RankError
+  static auto _s_matrix_rank_check(size_type rank) -> void {
+    if (rank != MATRIX_RANK) {
+      throw RankError{"cbx::Tensor::_s_matrix_rank_check: rank = {} does not represent a matrix", rank};
+    }
+  }
+
+  /// \brief Checks if two matrices are compatible for multiplication.
+  /// \param[in] c1 Columns of the first matrix.
+  /// \param[in] r2 Rows of the second matrix.
+  ///
+  /// \details
+  /// This function throws an exception if the two matrices are not compatible for multiplication.
+  ///
+  /// \throws ShapeError
+  static auto _s_matmul_compatibility_check(size_type c1, size_type r2) -> void {
+    if (c1 != r2) {
+      throw ShapeError{"cbx::Tensor::_s_matmul_compatibility_check: shapes are not compatible for matrix "
+                       "multiplication [c1 = {}, r2 = {}]",
+                       c1, r2};
+    }
   }
 
  public:
@@ -379,7 +413,8 @@ class Tensor {
   ///
   /// \note This function performs bounds checking if it is enabled.
   ///
-  /// \throws RankError IndexOutOfBoundsError
+  /// \throws RankError
+  /// \throws IndexOutOfBoundsError
   template <Integer... Args>
   [[nodiscard]] constexpr auto operator()(Args... indices) const -> const_reference {
     return data_[_m_linear_index(indices...)];
@@ -392,7 +427,8 @@ class Tensor {
   ///
   /// \note This function performs bounds checking if it is enabled.
   ///
-  /// \throws RankError IndexOutOfBoundsError
+  /// \throws RankError
+  /// \throws IndexOutOfBoundsError
   template <Integer... Args>
   constexpr auto operator()(Args... indices) -> reference {
     return data_[_m_linear_index(indices...)];
@@ -407,10 +443,10 @@ class Tensor {
   [[nodiscard]] constexpr auto is_bounds_checking_enabled() const noexcept -> bool { return bounds_checking_; }
 
   /// \brief Enables bounds checking.
-  constexpr auto enable_bounds_checking() noexcept -> void { bounds_checking_ = true; }
+  constexpr auto enable_bounds_checking() const noexcept -> void { bounds_checking_ = true; }
 
   /// \brief Disables bounds checking.
-  constexpr auto disable_bounds_checking() noexcept -> void { bounds_checking_ = false; }
+  constexpr auto disable_bounds_checking() const noexcept -> void { bounds_checking_ = false; }
 
   /// \brief Returns the shape of the tensor.
   /// \return An immutable reference to the shape of the tensor.
@@ -825,6 +861,111 @@ class Tensor {
     // provides fairly significant optimization when `this->shape()` is identical to `tensor.shape()`.
     return rank() > tensor.rank() ? transform(make_cyclic_iterator(tensor), modulus)
                                   : transform(tensor.begin(), modulus);
+  }
+
+  // /////////////////////////////////////////////
+  // Mathematical Operations
+  // /////////////////////////////////////////////
+
+  /// \brief Matrix multiplication.
+  /// \tparam U Data type of \p tensor.
+  /// \tparam resultant_value_t Data type of the resultant tensor.
+  /// \param[in] tensor A tensor operand.
+  /// \param[in] multithreading If true, this function will use multithreading.
+  /// \return The resultant tensor.
+  ///
+  /// \details
+  /// This function throws an exception if:
+  ///     * Either of the tensors do not represent a matrix.
+  ///     * The matrices are not compatible for multiplication.
+  ///
+  /// \throws RankError
+  /// \throws ShapeError
+  template <typename U, typename resultant_value_t = decltype(value_type{} * U{})>
+  auto matmul(const Tensor<U> &tensor, bool multithreading = true) const -> Tensor<resultant_value_t> {
+    _s_matrix_rank_check(rank());
+    _s_matrix_rank_check(tensor.rank());
+
+    auto [r1, c1] = shape_.template unwrap<2>();
+    auto [r2, c2] = tensor.shape().template unwrap<2>();
+
+    _s_matmul_compatibility_check(c1, r2);
+
+    auto rows = r1, cols = c2, common_axis = c1;
+    auto product = Tensor<resultant_value_t>::matrix(rows, cols);
+
+    // Based on the number of rows in the product matrix, estimate how many rows will be assigned to each
+    // thread.
+    auto calculate_rows_per_thread = [](auto rows) -> size_type {
+      // Arbitrarily establish a relation between thread count and matrix size.
+      const auto ARBITRARY_CONSTANT_A = sizeof(usize);
+      const auto ARBITRARY_CONSTANT_B = sizeof(i32) * (ARBITRARY_CONSTANT_A);
+      auto factor = std::log(rows + ARBITRARY_CONSTANT_A);
+      return std::floor(factor) * (ARBITRARY_CONSTANT_B - ARBITRARY_CONSTANT_A);
+    };
+
+    // Calculate how many threads will be required based on the number of total rows and rows assigned to each
+    // thread.
+    auto calculate_threads_required = [](f32 rows, auto rows_per_thread) -> size_type {
+      return std::ceil(rows / rows_per_thread);
+    };
+
+    // Disable bounds checking as the loop is counter controlled, so there is no need for bounds checking.
+    auto this_bounds_checking_enabled = this->is_bounds_checking_enabled();
+    auto tensor_bounds_checking_enabled = tensor.is_bounds_checking_enabled();
+
+    this->disable_bounds_checking();
+    tensor.disable_bounds_checking();
+    product.disable_bounds_checking();
+
+    // The actual implementation for matrix multiplication without any multithreading witchcraft. It's a primary
+    // schoolbook algorithm free from any optimization.
+    auto impl = [&a = *this, &b = tensor, &product, cols, common_axis](auto row_start, auto row_count) {
+      auto row_end = row_start + row_count;
+      for (auto r = row_start; r < row_end; ++r) {
+        for (size_type c = {}; c < cols; ++c) {
+          for (size_type k = {}; k < common_axis; ++k) {
+            product(r, c) += a(r, k) * b(k, c);
+          }
+        }
+      }
+    };
+
+    // If multithreading is unsought, simply call the implementation lambda and return the product.
+    if (not multithreading) {
+      impl(size_type{}, rows);
+      return product;
+    }
+
+    auto rows_per_thread = calculate_rows_per_thread(rows);
+    auto threads_required = calculate_threads_required(rows, rows_per_thread);
+
+    // Bookkeeping threads to call later for joining into the main thread.
+    auto threads = std::vector<std::thread>{};
+    threads.reserve(threads_required);
+
+    // Construct each thread with implementation lambda and its parameters.
+    for (size_type current_row = {}; current_row < rows; current_row += rows_per_thread) {
+      auto distance = rows - current_row;
+      auto num_of_rows = std::min(rows_per_thread, distance);
+      threads.emplace_back(impl, current_row, num_of_rows);
+    }
+
+    // Call all threads to join into the main thread.
+    for (auto &thread : threads) {
+      thread.join();
+    }
+
+    // Return bounds checking to previous state.
+    if (this_bounds_checking_enabled) {
+      this->enable_bounds_checking();
+    }
+    if (tensor_bounds_checking_enabled) {
+      tensor.disable_bounds_checking();
+    }
+    product.enable_bounds_checking();
+
+    return product;
   }
 
   // /////////////////////////////////////////////

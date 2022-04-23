@@ -30,7 +30,7 @@
 
 namespace cbx {
 
-class Matrix {
+class [[deprecated]] Matrix {
  public:
   static constexpr shape_size_t DIMENSIONS = 2;
 

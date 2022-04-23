@@ -83,7 +83,7 @@ class Shape {
   /// \details
   /// This function throws an exception if the \p index is out of bounds.
   ///
-  /// \throws std::out_of_range
+  /// \throws IndexOutOfBoundsError
   auto _m_check_bounds(size_type index) const -> void;
 
   /// \brief Performs rank checking.
@@ -202,7 +202,7 @@ class Shape {
   ///
   /// \note This function performs bounds checking.
   ///
-  /// \throws std::out_of_range
+  /// \throws IndexOutOfBoundsError
   [[nodiscard]] auto at(size_type index) const -> const_reference;
 
   /// \brief Accesses the first dimension.
@@ -265,7 +265,8 @@ class Shape {
   /// * the \p index is out of bounds.
   /// * the \p value is zero.
   ///
-  /// \throws std::out_of_range ValueError
+  /// \throws IndexOutOfBoundsError
+  /// \throws ValueError
   auto set_axis(size_type index, value_type value) -> Shape &;
 
   // /////////////////////////////////////////////

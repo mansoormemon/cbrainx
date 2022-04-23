@@ -55,7 +55,7 @@ auto main() -> cbx::i32 {
   fmt::print("t12 = {{ {} }}\n", fmt::join(t12, ", "));
 
   std::cout << "Rounding t12 to 2 decimal places..." << std::endl;
-  t12 |= [] (auto x) {
+  t12 |= [](auto x) {
     x *= 100;
     x += 0.5;
     x = cbx::i32(x);
@@ -63,6 +63,17 @@ auto main() -> cbx::i32 {
   };
 
   fmt::print("t12 = {{ {} }}\n", fmt::join(t12, ", "));
+
+  auto m0 = cbx::Tensor{{1, 5}, 2};
+  auto m1 = cbx::Tensor<double>::arange({5, 1}, 1, 2);
+  std::cout << m0.meta_info() << std::endl;
+  std::cout << m1.meta_info() << std::endl;
+  fmt::print("{}\n", fmt::join(m0, ", "));
+  fmt::print("{}\n", fmt::join(m1, ", "));
+
+  auto p = m0.matmul(m1);
+  std::cout << p.meta_info() << std::endl;
+  fmt::print("{}\n", fmt::join(p, ", "));
 
   return {};
 }
