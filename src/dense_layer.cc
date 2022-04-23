@@ -13,27 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/dense_layer.hh"
 
 #include <limits>
 
-#include <fmt/format.h>
-
-#include "cbrainx/matrix.hh"
+#include <fmt/core.h>
 
 namespace cbx {
 
-DenseLayer::DenseLayer(shape_value_t inputs, shape_value_t neurons) : AbstractLayer{"DNSL"} {
-  weights_ = Tensor<f32>::random({inputs, neurons}, {}, -1, 1);
-  biases_ = Tensor<f32>{{neurons}, std::numeric_limits<f32>::epsilon()};
+// /////////////////////////////////////////////
+// Constructors and Destructors
+// /////////////////////////////////////////////
+
+DenseLayer::DenseLayer(size_type inputs, size_type neurons) : AbstractLayer{"DNSL"} {
+  weights_ = container::random({inputs, neurons}, {}, -1, 1);
+  biases_ = container{{neurons}, std::numeric_limits<value_type>::epsilon()};
 }
 
 DenseLayer::DenseLayer(DenseLayer &&other) noexcept
     : weights_{std::move(other.weights_)}, biases_{std::move(other.biases_)} {}
 
-// /////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// Assignment Operators
+// /////////////////////////////////////////////
 
 auto DenseLayer::operator=(DenseLayer &&other) noexcept -> DenseLayer & {
   weights_ = std::move(other.weights_);
@@ -41,29 +45,39 @@ auto DenseLayer::operator=(DenseLayer &&other) noexcept -> DenseLayer & {
   return *this;
 }
 
-// /////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
 
 auto DenseLayer::neurons() const -> size_type { return biases_.total(); }
 
 auto DenseLayer::parameters() const -> size_type { return weights_.total() + biases_.total(); }
 
+auto DenseLayer::type() const -> LayerType { return LayerType::Dense; }
+
+// /////////////////////////////////////////////
+// Informative
+// /////////////////////////////////////////////
+
 auto DenseLayer::property() const -> std::string {
   return fmt::format("Shape: W={}, B={}", weights_.shape().to_string(), biases_.shape().to_string());
 }
 
-auto DenseLayer::type() const -> LayerType { return LayerType::Dense; }
+// /////////////////////////////////////////////
+// Core Functionality
+// /////////////////////////////////////////////
 
-auto DenseLayer::output() const -> const Tensor<f32> & { return output_; }
-
-// /////////////////////////////////////////////////////////////
-
-auto DenseLayer::forward_pass(const Tensor<f32> &input) -> AbstractLayer & {
-  output_ = Matrix::multiply(input, weights_);
-  auto [samples] = input.shape().unwrap<1>();
-  for (shape_value_t i = {}; i < samples; ++i) {
-    Matrix::add_row_wise(output_, biases_);
-  }
-  return *this;
+auto DenseLayer::forward_pass(const container &input) -> container {
+  // Formula: Ô = Î ⊙ Ŵ + Ƀ
+  //
+  // where:
+  //  Î - Input (Matrix)   : Shape => (m, n)
+  //  Ŵ - Weights (Matrix) : Shape => (n, o)
+  //  Ƀ - Biases (Vector)  : Shape => (o)
+  //  Ô - Output (Matrix)  : Shape => (m, o)
+  //
+  // and, the symbol `⊙` denotes dot product (typically matrix multiplication).
+  return input.matmul(weights_) + biases_;
 }
 
 }

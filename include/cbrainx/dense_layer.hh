@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #ifndef CBRAINX__DENSE_LAYER_HH_
 #define CBRAINX__DENSE_LAYER_HH_
@@ -24,42 +24,102 @@
 
 namespace cbx {
 
+/// \brief The `DenseLayer` class represents a fully connected dense layer.
+///
+/// \details
+/// A dense layer is a fully connected layer in which each neuron receives input from all the neurons in the
+/// previous layer. As a result, each neuron provides one output to the next layer.
+///
+/// The forward pass of this layer performs the subsequent operation.
+///
+/// Formula: Ô = Î ⊙ Ŵ + Ƀ
+///
+/// where:
+///  Î - Input (Matrix)   : Shape => (m, n)
+///  Ŵ - Weights (Matrix) : Shape => (n, o)
+///  Ƀ - Biases (Vector)  : Shape => (o)
+///  Ô - Output (Matrix)  : Shape => (m, o)
+///
+/// and, the symbol `⊙` denotes dot product (typically matrix multiplication).
+///
+/// \see LayerType AbstractLayer
 class DenseLayer : public AbstractLayer {
  private:
-  Tensor<f32> weights_ = {};
-  Tensor<f32> biases_ = {};
-  Tensor<f32> output_ = {};
+  /// \brief A tensor of trainable weights.
+  container weights_ = {};
+
+  /// \brief A tensor of trainable biases.
+  container biases_ = {};
 
  public:
-  DenseLayer(shape_value_t inputs, shape_value_t neurons);
+  // /////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////
 
-  DenseLayer(const DenseLayer &other) = delete;
+  /// \brief Parameterized constructor.
+  /// \param[in] input_size The number of neurons in the input layer.
+  /// \param[in] neurons The number of neurons in this layer.
+  DenseLayer(size_type input_size, size_type neurons);
 
+  /// \brief Default copy constructor.
+  /// \param[in] other Source layer.
+  DenseLayer(const DenseLayer &other) = default;
+
+  /// \brief Default move constructor.
+  /// \param[in] other Source layer.
   DenseLayer(DenseLayer &&other) noexcept;
 
+  /// \brief Default destructor.
   ~DenseLayer() override = default;
 
-  // /////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////
+  // Assignment Operators
+  // /////////////////////////////////////////////
 
-  auto operator=(const DenseLayer &other) -> DenseLayer & = delete;
+  /// \brief Default copy assignment operator.
+  /// \param[in] other Source layer.
+  /// \return A reference to self.
+  auto operator=(const DenseLayer &other) -> DenseLayer & = default;
 
+  /// \brief Default move assignment operator.
+  /// \param[in] other Source layer.
+  /// \return A reference to self.
   auto operator=(DenseLayer &&other) noexcept -> DenseLayer &;
 
-  // /////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
 
+  /// \brief Returns the number of neurons in the layer.
+  /// \return The number of neurons in the layer.
   [[nodiscard]] auto neurons() const -> size_type override;
 
+  /// \brief Returns the number of modifiable parameters in the layer.
+  /// \return The number of modifiable parameters in the layer.
   [[nodiscard]] auto parameters() const -> size_type override;
 
-  [[nodiscard]] auto property() const -> std::string override;
-
+  /// \brief Returns the type of the layer.
+  /// \return The type of the layer.
+  ///
+  /// \see LayerType
   [[nodiscard]] auto type() const -> LayerType override;
 
-  [[nodiscard]] auto output() const -> const Tensor<f32> & override;
+  // /////////////////////////////////////////////
+  // Informative
+  // /////////////////////////////////////////////
 
-  // /////////////////////////////////////////////////////////////
+  /// \brief Returns a string with information about the layer's properties.
+  /// \return Information about the layer's properties as a string.
+  [[nodiscard]] auto property() const -> std::string override;
 
-  [[nodiscard]] auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & override;
+  // /////////////////////////////////////////////
+  // Core Functionality
+  // /////////////////////////////////////////////
+
+  /// \brief Forward pass.
+  /// \param[in] input The input layer.
+  /// \return A reference to self.
+  [[nodiscard]] auto forward_pass(const container &input) -> container override;
 };
 
 }

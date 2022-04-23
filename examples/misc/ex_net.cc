@@ -34,5 +34,8 @@ auto main() -> cbx::i32 {
   std::cout << "out: " << out.meta_info() << " = ";
   print_mat(out);
 
+  std::cout << "out: " << out.meta_info() << " = ";
+  print_mat(out);
+
   return {};
 }

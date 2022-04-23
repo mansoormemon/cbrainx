@@ -13,26 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/abstract_layer.hh"
 
 #include <utility>
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 
 namespace cbx {
+
+// /////////////////////////////////////////////
+// Constructors (and Destructors)
+// /////////////////////////////////////////////
 
 AbstractLayer::AbstractLayer(AbstractLayer &&other) noexcept
     : id_{std::exchange(other.id_, {})}, name_{std::move(other.name_)} {}
 
 AbstractLayer::AbstractLayer(i32 id) : id_{id} {}
 
-AbstractLayer::AbstractLayer(std::string name) : name_{std::move(name)} {}
+AbstractLayer::AbstractLayer(std::string_view name) : name_{name} {}
 
-AbstractLayer::AbstractLayer(i32 id, std::string name) : id_{id}, name_{std::move(name)} {}
+AbstractLayer::AbstractLayer(i32 id, std::string_view name) : id_{id}, name_{name} {}
 
-// /////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// Assignment Operator(s)
+// /////////////////////////////////////////////
 
 auto AbstractLayer::operator=(AbstractLayer &&other) noexcept -> AbstractLayer & {
   id_ = std::exchange(other.id_, {});
@@ -40,7 +46,9 @@ auto AbstractLayer::operator=(AbstractLayer &&other) noexcept -> AbstractLayer &
   return *this;
 }
 
-// /////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// Accessors and Mutators
+// /////////////////////////////////////////////
 
 auto AbstractLayer::id() const -> i32 { return id_; }
 
@@ -51,17 +59,19 @@ auto AbstractLayer::set_id(i32 id) -> AbstractLayer & {
 
 auto AbstractLayer::name() const -> std::string { return name_; }
 
-auto AbstractLayer::set_name(std::string name) -> AbstractLayer & {
-  name_ = std::move(name);
+auto AbstractLayer::set_name(std::string_view name) -> AbstractLayer & {
+  name_ = name;
   return *this;
 }
 
-// /////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////
+// Informative
+// /////////////////////////////////////////////
 
 auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}", name_, id_); }
 
 [[nodiscard]] auto AbstractLayer::type_name() const -> std::string {
-  auto layer = this->type();
+  auto layer = type();
   switch (layer) {
     case LayerType::Dense: {
       return "Dense";
@@ -69,11 +79,13 @@ auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}"
     case LayerType::Activation: {
       return "Activation";
     }
-    case LayerType::SoftMax: {
-      return "SoftMax";
+    case LayerType::Softmax: {
+      return "Softmax";
+    }
+    default: {
+      return {};
     }
   }
-  return {};
 }
 
 }

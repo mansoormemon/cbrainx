@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #ifndef CBRAINX__ABSTRACT_LAYER_HH_
 #define CBRAINX__ABSTRACT_LAYER_HH_
@@ -26,71 +26,144 @@
 
 namespace cbx {
 
-enum class LayerType { Dense, Activation, SoftMax };
+// /////////////////////////////////////////////
+// Enumerations
+// /////////////////////////////////////////////
 
-// /////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief Supported layer types.
+enum class LayerType { Dense, Activation, Softmax };
 
+/// \brief The `AbstractLayer` class defines a standard interface for all layers.
+///
+/// \see LayerType
 class AbstractLayer {
  public:
-  using size_type = Tensor<f32>::size_type;
-  using difference_type = Tensor<f32>::difference_type;
+  using value_type = f32;
+
+  using container = Tensor<value_type>;
+
+  using size_type = container::size_type;
+  using difference_type = container::difference_type;
 
  private:
+  /// \brief Layer ID.
   i32 id_ = {};
+
+  /// \brief The name of the layer.
   std::string name_ = "LYR";
 
  public:
+  // /////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////
+
+  /// \brief Default constructor.
   AbstractLayer() = default;
 
-  AbstractLayer(const AbstractLayer &other) = delete;
+  /// \brief Default copy constructor.
+  /// \param[in] other Source layer.
+  AbstractLayer(const AbstractLayer &other) = default;
 
+  /// \brief Default move constructor.
+  /// \param[in] other Source layer.
   AbstractLayer(AbstractLayer &&other) noexcept;
 
+  /// \brief Parameterized constructor.
+  /// \param[in] id Layer ID.
   explicit AbstractLayer(i32 id);
 
-  explicit AbstractLayer(std::string name);
+  /// \brief Parameterized constructor.
+  /// \param[in] name The name of the layer.
+  explicit AbstractLayer(std::string_view name);
 
-  AbstractLayer(i32 id, std::string name);
+  /// \brief Parameterized constructor.
+  /// \param[in] id Layer ID.
+  /// \param[in] name The name of the layer.
+  AbstractLayer(i32 id, std::string_view name);
 
+  /// \brief Default destructor.
   virtual ~AbstractLayer() = default;
 
-  // /////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////
+  // Assignment Operators
+  // /////////////////////////////////////////////
 
-  auto operator=(const AbstractLayer &other) -> AbstractLayer & = delete;
+  /// \brief Default copy assignment operator.
+  /// \param[in] other Source layer.
+  /// \return A reference to self.
+  auto operator=(const AbstractLayer &other) -> AbstractLayer & = default;
 
+  /// \brief Default move assignment operator.
+  /// \param[in] other Source layer.
+  /// \return A reference to self.
   auto operator=(AbstractLayer &&other) noexcept -> AbstractLayer &;
 
-  // /////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////
+  // Accessors and Mutators
+  // /////////////////////////////////////////////
 
+  /// \brief Returns the ID of the layer.
+  /// \return Layer ID.
   [[nodiscard]] auto id() const -> i32;
 
+  /// \brief Sets layer ID.
+  /// \param[in] id The new ID of the layer.
+  /// \return A reference to self.
   auto set_id(i32 id) -> AbstractLayer &;
 
+  /// \brief Returns the name of the layer.
+  /// \return The name of the layer.
   [[nodiscard]] auto name() const -> std::string;
 
-  auto set_name(std::string name) -> AbstractLayer &;
+  /// \brief Sets the name of the layer.
+  /// \param[in] name The new name of the layer.
+  /// \return A reference to self.
+  auto set_name(std::string_view name) -> AbstractLayer &;
 
-  // /////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
 
+  /// \brief Returns the number of neurons in the layer.
+  /// \return The number of neurons in the layer.
   [[nodiscard]] virtual auto neurons() const -> size_type = 0;
 
+  /// \brief Returns the number of modifiable parameters in the layer.
+  /// \return The number of modifiable parameters in the layer.
   [[nodiscard]] virtual auto parameters() const -> size_type = 0;
 
-  [[nodiscard]] virtual auto property() const -> std::string = 0;
-
+  /// \brief Returns the type of the layer.
+  /// \return The type of the layer.
+  ///
+  /// \see LayerType
   [[nodiscard]] virtual auto type() const -> LayerType = 0;
 
-  [[nodiscard]] virtual auto output() const -> const Tensor<f32> & = 0;
+  // /////////////////////////////////////////////
+  // Informative
+  // /////////////////////////////////////////////
 
-  // /////////////////////////////////////////////////////////////
+  /// \brief Returns a string with information about the layer's properties.
+  /// \return Information about the layer's properties as a string.
+  [[nodiscard]] virtual auto property() const -> std::string = 0;
 
-  [[nodiscard]] virtual auto forward_pass(const Tensor<f32> &input) -> AbstractLayer & = 0;
-
-  // /////////////////////////////////////////////////////////////
-
+  /// \brief Returns a string with the layer's name and ID.
+  /// \return The layer's name and ID as a string.
   [[nodiscard]] virtual auto to_string() const -> std::string;
 
+  /// \brief Returns the layer's type as a string.
+  /// \return The layer's type as a string.
+  ///
+  /// \see LayerType
   [[nodiscard]] virtual auto type_name() const -> std::string;
+
+  // /////////////////////////////////////////////
+  // Core Functionality
+  // /////////////////////////////////////////////
+
+  /// \brief Forward pass.
+  /// \param[in] input The input layer.
+  /// \return A reference to self.
+  [[nodiscard]] virtual auto forward_pass(const container &input) -> container = 0;
 };
 
 }

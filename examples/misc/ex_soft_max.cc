@@ -22,7 +22,7 @@ auto main() -> cbx::i32 {
 
   // A cute little neural network.
   auto net = cbx::NeuralNetwork{7};
-  auto l1 = net.add<cbx::DenseLayer>(14);
+  net.add<cbx::DenseLayer>(14);
   net.add<cbx::ActivationLayer>(cbx::Activation::Gaussian);
   net.add<cbx::DenseLayer>(7);
   net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
@@ -39,9 +39,6 @@ auto main() -> cbx::i32 {
 
   std::cout << "out: " << out.meta_info() << " = ";
   print_mat(out);
-
-  std::cout << "l1: " << l1->to_string() << " = ";
-  print_mat(l1->output());
 
   std::cout << "Time taken: " << stopwatch.get_duration<std::chrono::microseconds>() << " microseconds."
             << std::endl;

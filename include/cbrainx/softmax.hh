@@ -15,41 +15,46 @@
 
 // Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
-#ifndef CBRAINX__ACTIVATION_LAYER_HH_
-#define CBRAINX__ACTIVATION_LAYER_HH_
+#ifndef CBRAINX__SOFT_MAX_HH_
+#define CBRAINX__SOFT_MAX_HH_
 
 #include "abstract_layer.hh"
-#include "activation_functions.hh"
+#include "tensor.hh"
 #include "type_aliases.hh"
 
 namespace cbx {
 
-/// \brief The `ActivationLayer` class represents a layer that encompasses the functionality of an activation
-/// function.
+/// \brief The `Softmax` class represents the softmax activation function implemented as a custom layer.
 ///
 /// \details
-/// The activation function is an essential component of neural network design. It determines whether or not a
-/// neuron activates. The goal of an activation function is to introduce non-linearity into the output of a
-/// neuron. The type of activation function in the hidden layer determines how well the network model will learn
-/// during training.
+/// The softmax (or softargmax) function is a multidimensional variant of the Sigmoid (or logistic) function.
+/// Based on Luce's choice axiom, it is used in multinomial logistic regression as the activation function of
+/// the final layer (or, in this case, as the final layer itself) in a neural network to normalize the network's
+/// output to a probability distribution over potential output classes.
 ///
 /// The forward pass of this layer performs the subsequent operation.
 ///
-/// Formula: Ô = ζ(Î)
+/// Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ
 ///
 /// where:
-///  ζ - Activation function
-///  Î - Input (Matrix)  : Shape => (m, n)
-///  Ô - Output (Matrix) : Shape => (m, n)
+///  σ - Softmax function
+///  Ƶ - Input (Vector) : Shape => (k)
+///  ʐ - ὶᵗʰ element in the vector
+///  ʑ - ʝᵗʰ element in the vector
+///  ƙ = Number of classes in the multi-class classifier
+///  Ō = Output (Vector) : Shape => (k)
 ///
-/// \see Activation
-class ActivationLayer : public AbstractLayer {
+/// It should be noted that the formula above only pertains to one sample (along the x-axis). The actual
+/// implementation iterates along the y-axis and applies the above formula to each sample individually.
+///
+/// \note Although softmax is an activation function, it is implemented as a custom layer due to design
+/// constraints.
+///
+/// \see LayerType AbstractLayer
+class SoftMax : public AbstractLayer {
  private:
   /// \brief The number of neurons in the layer.
   size_type neurons_ = {};
-
-  /// \brief The activation function to be applied.
-  ActFuncWrapper act_func_ = {};
 
  public:
   // /////////////////////////////////////////////
@@ -58,19 +63,18 @@ class ActivationLayer : public AbstractLayer {
 
   /// \brief Parameterized constructor.
   /// \param[in] inputs The number of neurons in the input layer.
-  /// \param[in] activation The activation to be applied.
-  ActivationLayer(size_type inputs, Activation activation);
+  explicit SoftMax(size_type inputs);
 
   /// \brief Default copy constructor.
   /// \param[in] other Source layer.
-  ActivationLayer(const ActivationLayer &other) = default;
+  SoftMax(const SoftMax &other) = default;
 
   /// \brief Default move constructor.
   /// \param[in] other Source layer.
-  ActivationLayer(ActivationLayer &&other) noexcept;
+  SoftMax(SoftMax &&other) noexcept;
 
   /// \brief Default destructor.
-  ~ActivationLayer() override = default;
+  ~SoftMax() override = default;
 
   // /////////////////////////////////////////////
   // Assignment Operators
@@ -79,12 +83,12 @@ class ActivationLayer : public AbstractLayer {
   /// \brief Default copy assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
-  auto operator=(const ActivationLayer &other) -> ActivationLayer & = default;
+  auto operator=(const SoftMax &other) -> SoftMax & = default;
 
   /// \brief Default move assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
-  auto operator=(ActivationLayer &&other) noexcept -> ActivationLayer &;
+  auto operator=(SoftMax &&other) noexcept -> SoftMax &;
 
   // /////////////////////////////////////////////
   // Query Functions

@@ -124,6 +124,7 @@ auto ImgProc::binarize(Tensor<u8> &img) noexcept -> Tensor<u8> & {
   // calculate the 'Between-Class Variance' of the image to find the optimal threshold.
   //
   // Formula: 𝜎B² = Wb * Wf (μb - μf)²
+  //
   // where:
   //  𝜎B - Between Class Variance (BCV)
   //  Wb - Weight (background)
@@ -151,7 +152,7 @@ auto ImgProc::binarize(Tensor<u8> &img) noexcept -> Tensor<u8> & {
   auto total = img.total();
 
   // Calculate the sum of weights for all possible thresholds.
-  // Formula: summation[i = 0, MAX_VALUE] (t * hist[t])
+  // Formula: ⅀ [i = 0, MAX_VALUE] (t * hist[t])
   f32 sumT = {};
   for (auto t = 0; t < CHANNEL_SIZE; ++t) {
     sumT += f32(t * hist[t]);
@@ -165,7 +166,7 @@ auto ImgProc::binarize(Tensor<u8> &img) noexcept -> Tensor<u8> & {
 
   for (auto t = 0; t < CHANNEL_SIZE; ++t) {
     // Calculate background weight for threshold `t`.
-    // Formula: wB = summation[i = 0, t] hist[i]
+    // Formula: wB = ⅀ [i = 0, t] hist[i]
     wB += f32(hist[t]);
     if (wB == 0) {
       continue;
@@ -179,7 +180,7 @@ auto ImgProc::binarize(Tensor<u8> &img) noexcept -> Tensor<u8> & {
     }
 
     // Calculate mean (background) for threshold `t`.
-    // Formula: mB = summation[i = 0, t] i * hist[i] / wB
+    // Formula: mB = ⅀ [i = 0, t] i * hist[i] / wB
     sumB += f32(t * hist[t]);
     mB = sumB / wB;
 

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/neural_network.hh"
 
@@ -91,7 +91,7 @@ auto NeuralNetwork::pop() -> void { layers_.pop_back(); }
 auto NeuralNetwork::forward_pass(const Tensor<f32> &input) -> Tensor<f32> {
   auto current = input;
   for (const auto &layer : layers_) {
-    current = layer->forward_pass(current).output();
+    current = layer->forward_pass(current);
   }
   return current;
 }

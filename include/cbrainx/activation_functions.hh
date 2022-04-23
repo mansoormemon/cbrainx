@@ -18,6 +18,7 @@
 #ifndef CBRAINX__ACTIVATION_FUNCTIONS_HH_
 #define CBRAINX__ACTIVATION_FUNCTIONS_HH_
 
+#include <memory>
 #include <string>
 
 #include "type_aliases.hh"
@@ -42,8 +43,6 @@ enum class Activation {
 struct ActivationFunction {
   using value_type = f32;
 
-  // /////////////////////////////////////////////////////////////
-
   [[nodiscard]] virtual auto operator()(value_type x) const -> value_type = 0;
 
   [[nodiscard]] virtual auto derivative(value_type) const -> value_type = 0;
@@ -53,6 +52,39 @@ struct ActivationFunction {
   [[nodiscard]] virtual auto to_string() const -> std::string = 0;
 
   [[nodiscard]] virtual auto type_name() const -> std::string = 0;
+};
+
+class ActFuncWrapper {
+ public:
+  using value_type = ActivationFunction::value_type;
+
+ private:
+  std::shared_ptr<ActivationFunction> func_ = {};
+
+ public:
+  ActFuncWrapper() = default;
+
+  explicit ActFuncWrapper(Activation activation);
+
+  ActFuncWrapper(const ActFuncWrapper &other) = default;
+
+  ActFuncWrapper(ActFuncWrapper &&other) noexcept;
+
+  ~ActFuncWrapper() = default;
+
+  auto operator=(const ActFuncWrapper &other) -> ActFuncWrapper & = default;
+
+  auto operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper &;
+
+  [[nodiscard]] auto operator()(value_type x) const -> value_type;
+
+  [[nodiscard]] auto derivative(value_type) const -> value_type;
+
+  [[nodiscard]] auto type() const -> Activation;
+
+  [[nodiscard]] auto to_string() const -> std::string;
+
+  [[nodiscard]] auto type_name() const -> std::string;
 };
 
 // /////////////////////////////////////////////////////////////

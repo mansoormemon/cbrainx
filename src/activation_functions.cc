@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Copyright (c) 2021 Mansoor Ahmed <mansoorahmed.one@gmail.com>
+// Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
 #include "cbrainx/activation_functions.hh"
 
@@ -36,7 +36,7 @@ auto ArcTan::type_name() const -> std::string { return "ArcTan"; }
 
 // /////////////////////////////////////////////////////////////
 
-auto BinaryStep::operator()(value_type x) const -> value_type { return static_cast<value_type>(x >= 0); }
+auto BinaryStep::operator()(value_type x) const -> value_type { return value_type(x >= 0); }
 
 auto BinaryStep::derivative(value_type) const -> value_type { return 0; }
 
@@ -117,7 +117,7 @@ auto Linear::type_name() const -> std::string { return "Linear"; }
 
 auto ReLU::operator()(value_type x) const -> value_type { return std::max(0.0F, x); }
 
-auto ReLU::derivative(value_type x) const -> value_type { return static_cast<value_type>(x >= 0); }
+auto ReLU::derivative(value_type x) const -> value_type { return value_type(x >= 0); }
 
 auto ReLU::type() const -> Activation { return Activation::ReLU; }
 
@@ -188,5 +188,77 @@ auto TanH::type() const -> Activation { return Activation::TanH; }
 auto TanH::to_string() const -> std::string { return "Function: TanH"; }
 
 auto TanH::type_name() const -> std::string { return "TanH"; }
+
+// /////////////////////////////////////////////////////////////
+
+ActFuncWrapper::ActFuncWrapper(Activation activation) {
+  switch (activation) {
+    case Activation::ArcTan: {
+      func_ = std::make_shared<ArcTan>();
+      break;
+    }
+    case Activation::BinaryStep: {
+      func_ = std::make_shared<BinaryStep>();
+      break;
+    }
+    case Activation::ELU: {
+      func_ = std::make_shared<ELU>();
+      break;
+    }
+    case Activation::Gaussian: {
+      func_ = std::make_shared<Gaussian>();
+      break;
+    }
+    case Activation::GELU: {
+      func_ = std::make_shared<GELU>();
+      break;
+    }
+    case Activation::LeakyReLU: {
+      func_ = std::make_shared<LeakyReLU>();
+      break;
+    }
+    case Activation::Linear: {
+      func_ = std::make_shared<Linear>();
+      break;
+    }
+    case Activation::ReLU: {
+      func_ = std::make_shared<ReLU>();
+      break;
+    }
+    case Activation::Sigmoid: {
+      func_ = std::make_shared<Sigmoid>();
+      break;
+    }
+    case Activation::SoftPlus: {
+      func_ = std::make_shared<SoftPlus>();
+      break;
+    }
+    case Activation::Swish: {
+      func_ = std::make_shared<Swish>();
+      break;
+    }
+    case Activation::TanH: {
+      func_ = std::make_shared<TanH>();
+      break;
+    }
+  }
+}
+
+ActFuncWrapper::ActFuncWrapper(ActFuncWrapper &&other) noexcept : func_{std::move(other.func_)} {}
+
+auto ActFuncWrapper::operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper & {
+  func_ = std::move(other.func_);
+  return *this;
+}
+
+auto ActFuncWrapper::operator()(value_type x) const -> value_type { return func_->operator()(x); }
+
+auto ActFuncWrapper::derivative(value_type x) const -> value_type { return func_->derivative(x); }
+
+auto ActFuncWrapper::type() const -> Activation { return func_->type(); }
+
+auto ActFuncWrapper::to_string() const -> std::string { return func_->to_string(); }
+
+auto ActFuncWrapper::type_name() const -> std::string { return func_->type_name(); }
 
 }

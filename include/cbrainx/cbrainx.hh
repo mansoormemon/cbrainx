@@ -31,7 +31,7 @@
 #include "matrix.hh"
 #include "neural_network.hh"
 #include "shape.hh"
-#include "soft_max.hh"
+#include "softmax.hh"
 #include "stopwatch.hh"
 #include "table.hh"
 #include "tensor.hh"
