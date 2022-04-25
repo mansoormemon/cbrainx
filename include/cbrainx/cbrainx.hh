@@ -28,7 +28,6 @@
 #include "exceptions.hh"
 #include "image.hh"
 #include "img_proc.hh"
-#include "matrix.hh"
 #include "neural_network.hh"
 #include "shape.hh"
 #include "softmax.hh"

@@ -10,7 +10,6 @@ set(CBRAINX_INCLUDES
     "cbrainx/exceptions.hh"
     "cbrainx/image.hh"
     "cbrainx/img_proc.hh"
-    "cbrainx/matrix.hh"
     "cbrainx/neural_network.hh"
     "cbrainx/shape.hh"
     "cbrainx/softmax.hh"
