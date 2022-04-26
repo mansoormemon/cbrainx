@@ -309,7 +309,7 @@ class Tensor {
   /// \details This constructor creates a scalar.
   constexpr Tensor() = default;
 
-  /// \brief Copy constructor.
+  /// \brief Default copy constructor.
   /// \param[in] other Source tensor.
   constexpr Tensor(const Tensor &other) = default;
 

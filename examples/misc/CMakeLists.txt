@@ -7,7 +7,7 @@ set(EXAMPLES
     "ex_matrix_fun.cc"
     "ex_net.cc"
     "ex_shape.cc"
-    "ex_soft_max.cc"
+    "ex_softmax.cc"
     "ex_table.cc"
     "ex_tensor.cc"
     "ex_tensor_fun.cc")

@@ -26,7 +26,7 @@ auto main() -> cbx::i32 {
   net.add<cbx::ActivationLayer>(cbx::Activation::Gaussian);
   net.add<cbx::DenseLayer>(7);
   net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
-  net.add<cbx::SoftMax>();
+  net.add<cbx::Softmax>();
   net.show_summary();
 
   auto stopwatch = cbx::Stopwatch{};

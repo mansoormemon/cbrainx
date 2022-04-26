@@ -29,7 +29,7 @@ auto main() -> cbx::i32 {
   net.add<cbx::ActivationLayer>(cbx::Activation::GELU);
   net.add<cbx::ActivationLayer>(cbx::Activation::Gaussian);
   net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
-  net.add<cbx::ActivationLayer>(cbx::Activation::SoftPlus);
+  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
   net.show_summary();
 
   auto out = net.forward_pass(in);

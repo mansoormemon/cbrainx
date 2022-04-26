@@ -65,7 +65,7 @@ class ActivationLayer : public AbstractLayer {
   /// \param[in] other Source layer.
   ActivationLayer(const ActivationLayer &other) = default;
 
-  /// \brief Default move constructor.
+  /// \brief Move constructor.
   /// \param[in] other Source layer.
   ActivationLayer(ActivationLayer &&other) noexcept;
 
@@ -81,7 +81,7 @@ class ActivationLayer : public AbstractLayer {
   /// \return A reference to self.
   auto operator=(const ActivationLayer &other) -> ActivationLayer & = default;
 
-  /// \brief Default move assignment operator.
+  /// \brief Move assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
   auto operator=(ActivationLayer &&other) noexcept -> ActivationLayer &;
@@ -118,7 +118,7 @@ class ActivationLayer : public AbstractLayer {
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return A reference to self.
+  /// \return The output layer.
   [[nodiscard]] auto forward_pass(const container &input) -> container override;
 };
 

@@ -27,15 +27,15 @@ namespace cbx {
 // Constructors and Destructors
 // /////////////////////////////////////////////
 
-SoftMax::SoftMax(size_type inputs) : AbstractLayer{"SFML"}, neurons_{inputs} {}
+Softmax::Softmax(size_type inputs) : AbstractLayer{"SFML"}, neurons_{inputs} {}
 
-SoftMax::SoftMax(SoftMax &&other) noexcept : neurons_{std::exchange(other.neurons_, {})} {}
+Softmax::Softmax(Softmax &&other) noexcept : neurons_{std::exchange(other.neurons_, {})} {}
 
 // /////////////////////////////////////////////
 // Assignment Operators
 // /////////////////////////////////////////////
 
-auto SoftMax::operator=(SoftMax &&other) noexcept -> SoftMax & {
+auto Softmax::operator=(Softmax &&other) noexcept -> Softmax & {
   neurons_ = std::exchange(other.neurons_, {});
   return *this;
 }
@@ -44,19 +44,19 @@ auto SoftMax::operator=(SoftMax &&other) noexcept -> SoftMax & {
 // Query Functions
 // /////////////////////////////////////////////
 
-auto SoftMax::neurons() const -> size_type { return neurons_; }
+auto Softmax::neurons() const -> size_type { return neurons_; }
 
-auto SoftMax::parameters() const -> size_type { return {}; }
+auto Softmax::parameters() const -> size_type { return {}; }
 
-auto SoftMax::property() const -> std::string { return "-"; }
+auto Softmax::property() const -> std::string { return "-"; }
 
-auto SoftMax::type() const -> LayerType { return LayerType::Softmax; }
+auto Softmax::type() const -> LayerType { return LayerType::Softmax; }
 
 // /////////////////////////////////////////////
 // Informative
 // /////////////////////////////////////////////
 
-auto SoftMax::forward_pass(const container &input) -> container {
+auto Softmax::forward_pass(const container &input) -> container {
   // The forward pass of this layer performs the subsequent operation.
   //
   // Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ

@@ -51,7 +51,7 @@ namespace cbx {
 /// constraints.
 ///
 /// \see LayerType AbstractLayer
-class SoftMax : public AbstractLayer {
+class Softmax : public AbstractLayer {
  private:
   /// \brief The number of neurons in the layer.
   size_type neurons_ = {};
@@ -63,18 +63,18 @@ class SoftMax : public AbstractLayer {
 
   /// \brief Parameterized constructor.
   /// \param[in] inputs The number of neurons in the input layer.
-  explicit SoftMax(size_type inputs);
+  explicit Softmax(size_type inputs);
 
   /// \brief Default copy constructor.
   /// \param[in] other Source layer.
-  SoftMax(const SoftMax &other) = default;
+  Softmax(const Softmax &other) = default;
 
-  /// \brief Default move constructor.
+  /// \brief Move constructor.
   /// \param[in] other Source layer.
-  SoftMax(SoftMax &&other) noexcept;
+  Softmax(Softmax &&other) noexcept;
 
   /// \brief Default destructor.
-  ~SoftMax() override = default;
+  ~Softmax() override = default;
 
   // /////////////////////////////////////////////
   // Assignment Operators
@@ -83,12 +83,12 @@ class SoftMax : public AbstractLayer {
   /// \brief Default copy assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
-  auto operator=(const SoftMax &other) -> SoftMax & = default;
+  auto operator=(const Softmax &other) -> Softmax & = default;
 
-  /// \brief Default move assignment operator.
+  /// \brief Move assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
-  auto operator=(SoftMax &&other) noexcept -> SoftMax &;
+  auto operator=(Softmax &&other) noexcept -> Softmax &;
 
   // /////////////////////////////////////////////
   // Query Functions
@@ -122,7 +122,7 @@ class SoftMax : public AbstractLayer {
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return A reference to self.
+  /// \return The output layer.
   [[nodiscard]] auto forward_pass(const container &input) -> container override;
 };
 

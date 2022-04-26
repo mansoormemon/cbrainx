@@ -64,7 +64,7 @@ class AbstractLayer {
   /// \param[in] other Source layer.
   AbstractLayer(const AbstractLayer &other) = default;
 
-  /// \brief Default move constructor.
+  /// \brief Move constructor.
   /// \param[in] other Source layer.
   AbstractLayer(AbstractLayer &&other) noexcept;
 
@@ -93,7 +93,7 @@ class AbstractLayer {
   /// \return A reference to self.
   auto operator=(const AbstractLayer &other) -> AbstractLayer & = default;
 
-  /// \brief Default move assignment operator.
+  /// \brief Move assignment operator.
   /// \param[in] other Source layer.
   /// \return A reference to self.
   auto operator=(AbstractLayer &&other) noexcept -> AbstractLayer &;
@@ -162,7 +162,7 @@ class AbstractLayer {
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return A reference to self.
+  /// \return The output layer.
   [[nodiscard]] virtual auto forward_pass(const container &input) -> container = 0;
 };
 

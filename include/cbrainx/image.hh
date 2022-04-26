@@ -168,8 +168,21 @@ class Image {
     /// \param[in] channels Number of channels in the image.
     Meta(size_type width, size_type height, size_type channels = 1);
 
+    /// \brief Default copy constructor.
+    /// \param meta Source `Meta` object.
+    Meta(const Meta &meta) = default;
+
     /// \brief Default destructor.
     ~Meta() = default;
+
+    // /////////////////////////////////////////////
+    // Assignment Operators
+    // /////////////////////////////////////////////
+
+    /// \brief Default copy assignment operator.
+    /// \param meta Source `Meta` object.
+    /// \return A reference to self.
+    auto operator=(const Meta &meta) -> Meta & = default;
 
     // /////////////////////////////////////////////
     // Accessors and Mutators

@@ -55,7 +55,9 @@ auto ActivationLayer::type() const -> LayerType { return LayerType::Activation; 
 // Informative
 // /////////////////////////////////////////////
 
-auto ActivationLayer::property() const -> std::string { return act_func_.to_string(); }
+auto ActivationLayer::property() const -> std::string {
+  return fmt::format("Function: {}", act_func_.to_string());
+}
 
 // /////////////////////////////////////////////
 // Core Functionality

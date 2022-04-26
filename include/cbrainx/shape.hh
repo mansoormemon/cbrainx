@@ -126,7 +126,7 @@ class Shape {
   /// \brief Default constructor.
   Shape() = default;
 
-  /// \brief Copy constructor.
+  /// \brief Default copy constructor.
   /// \param[in] other Source shape.
   Shape(const Shape &other) = default;
 
@@ -182,7 +182,7 @@ class Shape {
   /// \return A reference to self.
   auto operator=(const Shape &other) -> Shape & = default;
 
-  /// \brief Default move assignment operator.
+  /// \brief Move assignment operator.
   /// \param[in] other Source shape.
   /// \return A reference to self.
   auto operator=(Shape &&other) noexcept -> Shape &;
