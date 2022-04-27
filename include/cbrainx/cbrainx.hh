@@ -28,7 +28,7 @@
 #include "exceptions.hh"
 #include "image.hh"
 #include "img_proc.hh"
-#include "neural_network.hh"
+#include "neural_net.hh"
 #include "shape.hh"
 #include "softmax.hh"
 #include "stopwatch.hh"

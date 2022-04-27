@@ -123,7 +123,7 @@ class Softmax : public AbstractLayer {
   /// \brief Forward pass.
   /// \param[in] input The input layer.
   /// \return The output layer.
-  [[nodiscard]] auto forward_pass(const container &input) -> container override;
+  [[nodiscard]] auto forward_pass(const container &input) const -> container override;
 };
 
 }

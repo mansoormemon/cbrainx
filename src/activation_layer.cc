@@ -63,7 +63,7 @@ auto ActivationLayer::property() const -> std::string {
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto ActivationLayer::forward_pass(const container &input) -> container {
+auto ActivationLayer::forward_pass(const container &input) const -> container {
   // Formula: Ô = ζ(Î)
   //
   // where:

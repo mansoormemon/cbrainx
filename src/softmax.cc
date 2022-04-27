@@ -56,7 +56,7 @@ auto Softmax::type() const -> LayerType { return LayerType::Softmax; }
 // Informative
 // /////////////////////////////////////////////
 
-auto Softmax::forward_pass(const container &input) -> container {
+auto Softmax::forward_pass(const container &input) const -> container {
   // The forward pass of this layer performs the subsequent operation.
   //
   // Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ

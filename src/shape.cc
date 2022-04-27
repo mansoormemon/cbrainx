@@ -57,7 +57,7 @@ auto Shape::_s_validate_dimension(value_type value) -> void {
 Shape::Shape(Shape &&other) noexcept : data_{std::move(other.data_)} {}
 
 Shape::Shape(std::initializer_list<value_type> ilist) {
-  _validate_dimensions(ilist.begin(), ilist.end());
+  _s_validate_dimensions(ilist.begin(), ilist.end());
   data_ = ilist;
 }
 

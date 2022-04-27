@@ -67,7 +67,7 @@ auto DenseLayer::property() const -> std::string {
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto DenseLayer::forward_pass(const container &input) -> container {
+auto DenseLayer::forward_pass(const container &input) const -> container {
   // Formula: Ô = Î ⊙ Ŵ + Ƀ
   //
   // where:

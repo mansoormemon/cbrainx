@@ -21,7 +21,7 @@ auto main() -> cbx::i32 {
   auto in = cbx::Tensor<cbx::f32>{{2, 8}, v0.begin()};
 
   // A cute little neural network.
-  auto net = cbx::NeuralNetwork{8};
+  auto net = cbx::NeuralNet{{8}};
   net.add<cbx::DenseLayer>(4);
   net.add<cbx::DenseLayer>(1);
   net.show_summary();
@@ -30,9 +30,6 @@ auto main() -> cbx::i32 {
 
   std::cout << "in: " << in.meta_info() << " = ";
   print_mat(in);
-
-  std::cout << "out: " << out.meta_info() << " = ";
-  print_mat(out);
 
   std::cout << "out: " << out.meta_info() << " = ";
   print_mat(out);

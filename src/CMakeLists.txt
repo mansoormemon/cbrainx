@@ -11,7 +11,7 @@ set(CBRAINX_SOURCES
     "exceptions.cc"
     "image.cc"
     "img_proc.cc"
-    "neural_network.cc"
+    "neural_net.cc"
     "shape.cc"
     "softmax.cc"
     "stopwatch.cc"

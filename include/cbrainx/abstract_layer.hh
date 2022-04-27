@@ -163,7 +163,7 @@ class AbstractLayer {
   /// \brief Forward pass.
   /// \param[in] input The input layer.
   /// \return The output layer.
-  [[nodiscard]] virtual auto forward_pass(const container &input) -> container = 0;
+  [[nodiscard]] virtual auto forward_pass(const container &input) const -> container = 0;
 };
 
 }

@@ -112,8 +112,8 @@ class Shape {
   ///
   /// \throws ValueError
   template <std::input_iterator I_It>
-  static auto _validate_dimensions(I_It first, I_It last) -> void {
-    for (std::input_iterator auto it = first; it != last; ++it) {
+  static auto _s_validate_dimensions(I_It first, I_It last) -> void {
+    for (I_It it = first; it != last; ++it) {
       _s_validate_dimension(*it);
     }
   }
@@ -154,7 +154,7 @@ class Shape {
   /// \throws ValueError
   template <std::input_iterator I_It>
   Shape(I_It first, I_It last) {
-    _s_validate_dimension(first, last);
+    _s_validate_dimensions(first, last);
     data_.assign(first, last);
   }
 
@@ -166,7 +166,7 @@ class Shape {
   ///
   /// \throws ValueError
   explicit Shape(const std::ranges::range auto &range) {
-    _s_validate_dimension(range.begin(), range.end());
+    _s_validate_dimensions(range.begin(), range.end());
     data_.assign(range.begin(), range.end());
   }
 

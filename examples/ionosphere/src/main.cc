@@ -73,7 +73,7 @@ auto main() -> cbx::i32 {
 
   auto [_, neurons] = train_dataset.data().shape().unwrap<2>();
 
-  auto net = cbx::NeuralNetwork{neurons};
+  auto net = cbx::NeuralNet{{neurons}};
   net.add<cbx::DenseLayer>(34);
   net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
   net.add<cbx::DenseLayer>(1);

@@ -21,7 +21,7 @@ auto main() -> cbx::i32 {
   auto in = cbx::Tensor<cbx::f32>{{2, 8}, v0.begin()};
 
   // A cute little neural network.
-  auto net = cbx::NeuralNetwork{8};
+  auto net = cbx::NeuralNet{{8}};
   net.add<cbx::ActivationLayer>(cbx::Activation::ReLU);
   net.add<cbx::ActivationLayer>(cbx::Activation::Linear);
   net.add<cbx::ActivationLayer>(cbx::Activation::Sigmoid);

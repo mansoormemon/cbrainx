@@ -29,7 +29,7 @@
 
 namespace cbx {
 
-class Table {
+class [[deprecated]] Table {
  public:
   using item_type = std::string;
 
