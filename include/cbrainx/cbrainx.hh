@@ -32,7 +32,6 @@
 #include "shape.hh"
 #include "softmax.hh"
 #include "stopwatch.hh"
-#include "table.hh"
 #include "tensor.hh"
 #include "type_aliases.hh"
 #include "type_concepts.hh"

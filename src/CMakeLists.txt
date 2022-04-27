@@ -15,7 +15,7 @@ set(CBRAINX_SOURCES
     "shape.cc"
     "softmax.cc"
     "stopwatch.cc"
-    "table.cc")
+    )
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")
 add_library("${CBRAINX_ALIAS}" ALIAS "${CBRAINX}")

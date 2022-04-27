@@ -3,12 +3,9 @@ set(EXAMPLES
     "ex_act_funcs.cc"
     "ex_image.cc"
     "ex_img_proc.cc"
-    "ex_matrix.cc"
-    "ex_matrix_fun.cc"
     "ex_net.cc"
     "ex_shape.cc"
     "ex_softmax.cc"
-    "ex_table.cc"
     "ex_tensor.cc"
     "ex_tensor_fun.cc")
 

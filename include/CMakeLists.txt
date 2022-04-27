@@ -14,7 +14,6 @@ set(CBRAINX_INCLUDES
     "cbrainx/shape.hh"
     "cbrainx/softmax.hh"
     "cbrainx/stopwatch.hh"
-    "cbrainx/table.hh"
     "cbrainx/tensor.hh"
     "cbrainx/type_aliases.hh"
     "cbrainx/type_concepts.hh"
