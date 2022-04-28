@@ -149,7 +149,7 @@ class Shape {
   /// \details
   /// This constructor throws an exception if any value in the range [\p first, \p last) is zero.
   ///
-  /// \note Behaviour is undefined if the range is invalid.
+  /// \note Behavior is undefined if the range is invalid.
   ///
   /// \throws ValueError
   template <std::input_iterator I_It>
@@ -208,13 +208,13 @@ class Shape {
   /// \brief Accesses the first dimension.
   /// \return An immutable reference to the first dimension.
   ///
-  /// \note Behaviour is undefined for scalars.
+  /// \note Behavior is undefined for scalars.
   [[nodiscard]] auto front() const -> const_reference;
 
   /// \brief Accesses the last dimension.
   /// \return An immutable reference to the last dimension.
   ///
-  /// \note Behaviour is undefined for scalars.
+  /// \note Behavior is undefined for scalars.
   [[nodiscard]] auto back() const -> const_reference;
 
  private:

@@ -136,25 +136,25 @@ class NeuralNet {
   /// \brief Accesses the first layer.
   /// \return An immutable reference to the first layer.
   ///
-  /// \note Behaviour is undefined if the neural network has no layers.
+  /// \note Behavior is undefined if the neural network has no layers.
   [[nodiscard]] auto front() const -> const_reference;
 
   /// \brief Accesses the first layer.
   /// \return A mutable reference to the first layer.
   ///
-  /// \note Behaviour is undefined if the neural network has no layers.
+  /// \note Behavior is undefined if the neural network has no layers.
   auto front() -> reference;
 
   /// \brief Accesses the last layer.
   /// \return A immutable reference to the first layer.
   ///
-  /// \note Behaviour is undefined if the neural network has no layers.
+  /// \note Behavior is undefined if the neural network has no layers.
   [[nodiscard]] auto back() const -> const_reference;
 
   /// \brief Accesses the last layer.
   /// \return A mutable reference to the last layer.
   ///
-  /// \note Behaviour is undefined if the neural network has no layers.
+  /// \note Behavior is undefined if the neural network has no layers.
   auto back() -> reference;
 
   // /////////////////////////////////////////////
