@@ -6,7 +6,6 @@ set(CBRAINX_SOURCES
     "abstract_layer.cc"
     "activation_functions.cc"
     "activation_layer.cc"
-    "dataset.cc"
     "dense_layer.cc"
     "exceptions.cc"
     "image.cc"
@@ -14,8 +13,7 @@ set(CBRAINX_SOURCES
     "neural_net.cc"
     "shape.cc"
     "softmax.cc"
-    "stopwatch.cc"
-    )
+    "stopwatch.cc")
 
 add_library("${CBRAINX}" "${CBRAINX_SOURCES}")
 add_library("${CBRAINX_ALIAS}" ALIAS "${CBRAINX}")
