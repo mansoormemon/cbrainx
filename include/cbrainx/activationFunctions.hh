@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

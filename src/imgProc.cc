@@ -15,7 +15,7 @@
 
 // Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
-#include "cbrainx/img_proc.hh"
+#include "cbrainx/imgProc.hh"
 
 #include <array>
 

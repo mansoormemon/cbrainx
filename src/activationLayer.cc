@@ -15,7 +15,7 @@
 
 // Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
-#include "cbrainx/activation_layer.hh"
+#include "cbrainx/activationLayer.hh"
 
 #include <utility>
 

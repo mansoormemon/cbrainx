@@ -18,9 +18,9 @@
 #ifndef CBRAINX__ACTIVATION_LAYER_HH_
 #define CBRAINX__ACTIVATION_LAYER_HH_
 
-#include "abstract_layer.hh"
-#include "activation_functions.hh"
-#include "type_aliases.hh"
+#include "abstractLayer.hh"
+#include "activationFunctions.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

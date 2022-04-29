@@ -15,7 +15,7 @@
 
 // Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
-#include "cbrainx/neural_net.hh"
+#include "cbrainx/neuralNet.hh"
 
 #include <utility>
 

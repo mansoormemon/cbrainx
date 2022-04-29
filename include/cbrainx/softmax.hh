@@ -18,9 +18,9 @@
 #ifndef CBRAINX__SOFT_MAX_HH_
 #define CBRAINX__SOFT_MAX_HH_
 
-#include "abstract_layer.hh"
+#include "abstractLayer.hh"
 #include "tensor.hh"
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

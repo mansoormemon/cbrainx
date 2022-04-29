@@ -1,13 +1,13 @@
 set(EXAMPLES
-    "bm_matrix.cc"
-    "ex_act_funcs.cc"
-    "ex_image.cc"
-    "ex_img_proc.cc"
-    "ex_net.cc"
-    "ex_shape.cc"
-    "ex_softmax.cc"
-    "ex_tensor.cc"
-    "ex_tensor_fun.cc")
+    "bmMatrix.cc"
+    "exActFuncs.cc"
+    "exImage.cc"
+    "exImgProc.cc"
+    "exNet.cc"
+    "exShape.cc"
+    "exSoftmax.cc"
+    "exTensor.cc"
+    "exTensorFun.cc")
 
 set(LIBFMT "fmt")
 set(LIBFMT_INCLUDE_DIR "${CBRAINX_EXTERNAL_DIR}/${LIBFMT}/include")

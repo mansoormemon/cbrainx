@@ -20,7 +20,7 @@
 
 #include <type_traits>
 
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

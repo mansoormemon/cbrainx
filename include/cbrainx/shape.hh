@@ -24,7 +24,7 @@
 #include <tuple>
 #include <vector>
 
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

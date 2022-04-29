@@ -18,22 +18,22 @@
 #ifndef CBRAINX__CBRAINX_HH_
 #define CBRAINX__CBRAINX_HH_
 
-#include "abstract_layer.hh"
-#include "activation_functions.hh"
-#include "activation_layer.hh"
-#include "custom_views.hh"
-#include "dense_layer.hh"
+#include "abstractLayer.hh"
+#include "activationFunctions.hh"
+#include "activationLayer.hh"
+#include "customViews.hh"
+#include "denseLayer.hh"
 #include "exceptions.hh"
 #include "image.hh"
-#include "img_proc.hh"
+#include "imgProc.hh"
 #include "iterators.hh"
-#include "neural_net.hh"
+#include "neuralNet.hh"
 #include "shape.hh"
 #include "softmax.hh"
 #include "stopwatch.hh"
 #include "tensor.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
+#include "typeAliases.hh"
+#include "typeConcepts.hh"
 #include "version.hh"
 
 #endif

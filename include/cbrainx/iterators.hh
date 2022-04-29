@@ -22,7 +22,7 @@
 #include <iterator>
 #include <ranges>
 
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

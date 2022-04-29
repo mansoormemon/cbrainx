@@ -20,7 +20,7 @@
 
 #include "image.hh"
 #include "tensor.hh"
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

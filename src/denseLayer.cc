@@ -15,7 +15,7 @@
 
 // Copyright (c) 2021 Mansoor Ahmed Memon <mansoorahmed.one@gmail.com>
 
-#include "cbrainx/dense_layer.hh"
+#include "cbrainx/denseLayer.hh"
 
 #include <limits>
 

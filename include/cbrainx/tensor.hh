@@ -32,8 +32,8 @@
 #include "exceptions.hh"
 #include "iterators.hh"
 #include "shape.hh"
-#include "type_aliases.hh"
-#include "type_concepts.hh"
+#include "typeAliases.hh"
+#include "typeConcepts.hh"
 
 namespace cbx {
 

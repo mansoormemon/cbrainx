@@ -20,7 +20,7 @@
 
 #include <chrono>
 
-#include "type_aliases.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 

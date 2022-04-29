@@ -21,8 +21,8 @@
 #include <list>
 #include <memory>
 
-#include "abstract_layer.hh"
-#include "type_aliases.hh"
+#include "abstractLayer.hh"
+#include "typeAliases.hh"
 
 namespace cbx {
 
