@@ -25,7 +25,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 project(cbrainx
-        VERSION 0.1.0
+        VERSION 0.2.0
         DESCRIPTION "A C++ library for working with neural networks."
         HOMEPAGE_URL "https://github.com/mansoormemon/cbrainx"
         LANGUAGES CXX)
