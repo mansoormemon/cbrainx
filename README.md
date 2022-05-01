@@ -1,13 +1,27 @@
-![](res/img/cover.png)
+![Cover](res/img/cover.png)
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?size=24&color=3E8282&vCenter=true&width=640&height=24&lines=An+easy+to+use+library+for+neural+networks!">
+  <img src="https://readme-typing-svg.herokuapp.com?size=24&color=d11060&center=true&vCenter=true&width=640&height=24&lines=An+easy+to+use+library+for+neural+networks!;Provides+a+plethora+of+handy+functionality!">
+</p>
+
+<p align="center">
+   <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=F0F0F0">
+
+   <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=0A0A0A">
+
+   <img src="https://img.shields.io/badge/mac%20os-000000?style=for-the-badge&logo=macos&logoColor=F0F0F0">
+</p>
+
+<p align="center">
+   <a href="LICENSE.txt">
+      <img alt="GitHub license" src=".github/BADGES/license.svg">
+   </a>
 </p>
 
 ## Overview
 
-An open-source and cross-platform software library for working with neural networks that accentuates
-simplicity and ease of use.
+An open-source and cross-platform software library for working with neural networks that accentuates simplicity
+and ease of use.
 
 ### Links
 
