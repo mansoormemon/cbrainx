@@ -24,7 +24,7 @@
 namespace cbx {
 
 // /////////////////////////////////////////////
-// Constructors and Destructors
+// Constructors (and Destructors)
 // /////////////////////////////////////////////
 
 DenseLayer::DenseLayer(size_type inputs, size_type neurons) : AbstractLayer{"DNSL"} {

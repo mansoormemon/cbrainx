@@ -27,6 +27,7 @@
 #include "image.hh"
 #include "imgProc.hh"
 #include "iterators.hh"
+#include "lossFunctions.hh"
 #include "neuralNet.hh"
 #include "shape.hh"
 #include "softmax.hh"

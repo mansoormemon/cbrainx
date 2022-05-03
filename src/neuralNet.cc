@@ -38,7 +38,7 @@ auto NeuralNet::_s_validate_input_shape(const Shape &shape) -> void {
 }
 
 auto NeuralNet::_m_match_input_shape(const Shape &shape) -> void {
-  auto sliced_shape = Shape{shape.begin() + 1, shape.end()};
+  auto sliced_shape = shape.slice(1);
   if (input_shape_ != sliced_shape) {
     throw ShapeError{"cbx::NeuralNet::_m_match_input_shape: shapes mismatch [expected = {}, received = {}]",
                      input_shape_.to_string(), sliced_shape.to_string()};

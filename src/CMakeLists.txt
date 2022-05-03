@@ -10,6 +10,7 @@ set(CBRAINX_SOURCES
     "exceptions.cc"
     "image.cc"
     "imgProc.cc"
+    "lossFunctions.cc"
     "neuralNet.cc"
     "shape.cc"
     "softmax.cc"

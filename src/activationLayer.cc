@@ -22,7 +22,7 @@
 namespace cbx {
 
 // /////////////////////////////////////////////
-// Constructors and Destructors
+// Constructors (and Destructors)
 // /////////////////////////////////////////////
 
 ActivationLayer::ActivationLayer(size_type inputs, Activation activation)

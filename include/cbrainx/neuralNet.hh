@@ -85,10 +85,21 @@ class NeuralNet {
 
   /// \brief Validates the input shape.
   /// \param[in] shape The shape to be validated.
+  ///
+  /// \details
+  /// This function throws an exception if the input shape represents a scalar.
+  ///
+  /// \throws RankError
   static auto _s_validate_input_shape(const Shape &shape) -> void;
 
-  /// \brief Matches the input shape with \p shape.
+  /// \brief Matches the input shape of the network with \p shape.
   /// \param[in] shape The shape to be matched.
+  ///
+  /// \details
+  /// This function throws an exception if the input tensor's shape does not match the input shape of the
+  /// network.
+  ///
+  /// \throws ShapeError
   auto _m_match_input_shape(const Shape &shape) -> void;
 
  public:
@@ -98,6 +109,11 @@ class NeuralNet {
 
   /// \brief Parameterized constructor.
   /// \param[in] input_shape The shape of the input layer (excluding the samples axis).
+  ///
+  /// \details
+  /// This function throws an exception if the input shape represents a scalar.
+  ///
+  /// \throws RankError
   explicit NeuralNet(const Shape &input_shape);
 
   /// \brief Default copy constructor.
@@ -256,6 +272,12 @@ class NeuralNet {
   /// \brief Forward pass.
   /// \param[in] input The input layer.
   /// \return The output layer.
+  ///
+  /// \details
+  /// This function throws an exception if the input tensor's shape does not match the input shape of the
+  /// network.
+  ///
+  /// \throws ShapeError
   [[nodiscard]] auto forward_pass(const tensor_type &input) -> tensor_type;
 };
 

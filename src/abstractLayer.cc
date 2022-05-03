@@ -37,7 +37,7 @@ AbstractLayer::AbstractLayer(std::string_view name) : name_{name} {}
 AbstractLayer::AbstractLayer(i32 id, std::string_view name) : id_{id}, name_{name} {}
 
 // /////////////////////////////////////////////
-// Assignment Operator(s)
+// Assignment Operators
 // /////////////////////////////////////////////
 
 auto AbstractLayer::operator=(AbstractLayer &&other) noexcept -> AbstractLayer & {

@@ -63,7 +63,7 @@ class Shape {
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   // /////////////////////////////////////////////
-  // Constant(s)
+  // Constants
   // /////////////////////////////////////////////
 
   /// \brief Total number of elements in a scalar.
@@ -359,6 +359,21 @@ class Shape {
   /// \brief Clones the original shape.
   /// \return A clone of the original shape.
   [[nodiscard]] auto clone() const -> Shape;
+
+  /// \brief Returns a slice of the original shape.
+  /// \param start_pos The starting position of the range.
+  /// \param end_pos The ending index of the range.
+  /// \return A slice [\p start_pos, \p end_pos) of the original shape.
+  ///
+  /// \note The behaviour is undefined if the parameters form an invalid range.
+  [[nodiscard]] auto slice(size_type start_pos, size_type end_pos) const -> Shape;
+
+  /// \brief Returns a slice of the original shape.
+  /// \param start_pos The starting position of the range.
+  /// \return A slice [\p start_pos, `this->rank()`) of the original shape.
+  ///
+  /// \note The behaviour is undefined if the parameters form an invalid range.
+  [[nodiscard]] auto slice(size_type start_pos) const -> Shape;
 };
 
 // /////////////////////////////////////////////////////////////
@@ -388,12 +403,6 @@ auto operator==(const Shape &a, const Shape &b) noexcept -> bool;
 ///
 /// \relates Shape
 auto operator!=(const Shape &a, const Shape &b) noexcept -> bool;
-
-// @deprecated
-using shape_value_t = typename Shape::value_type;
-
-// @deprecated
-using shape_size_t = typename Shape::size_type;
 
 }
 

@@ -21,6 +21,10 @@
 
 namespace cbx {
 
+// /////////////////////////////////////////////
+// Constructors (and Destructors)
+// /////////////////////////////////////////////
+
 ActFuncWrapper::ActFuncWrapper(Activation activation) {
   switch (activation) {
     case Activation::ArcTan: {
@@ -76,10 +80,18 @@ ActFuncWrapper::ActFuncWrapper(Activation activation) {
 
 ActFuncWrapper::ActFuncWrapper(ActFuncWrapper &&other) noexcept : func_{std::move(other.func_)} {}
 
+// /////////////////////////////////////////////
+// Assignment Operators
+// /////////////////////////////////////////////
+
 auto ActFuncWrapper::operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper & {
   func_ = std::move(other.func_);
   return *this;
 }
+
+// /////////////////////////////////////////////
+// Wrapper Interface
+// /////////////////////////////////////////////
 
 auto ActFuncWrapper::type() const -> Activation { return func_->type(); }
 
@@ -95,6 +107,8 @@ auto ActFuncWrapper::derivative() const -> std::function<value_type(value_type)>
   };
 }
 
+// /////////////////////////////////////////////
+// Interface
 // /////////////////////////////////////////////
 
 auto ArcTan::type() const -> Activation { return Activation::ArcTan; }

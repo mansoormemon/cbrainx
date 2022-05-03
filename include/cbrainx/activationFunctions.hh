@@ -48,6 +48,10 @@ enum class Activation {
 struct ActivationFunction {
   using value_type = f32;
 
+  // /////////////////////////////////////////////
+  // Interface
+  // /////////////////////////////////////////////
+
   /// \brief Returns the type of the activation function.
   /// \return The type of the activation function.
   [[nodiscard]] virtual auto type() const -> Activation = 0;
@@ -121,7 +125,7 @@ class ActFuncWrapper {
   auto operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper &;
 
   // /////////////////////////////////////////////
-  // Interface
+  // Wrapper Interface
   // /////////////////////////////////////////////
 
   /// \brief Returns the type of the activation function.

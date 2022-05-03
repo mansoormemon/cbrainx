@@ -9,6 +9,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/image.hh"
     "cbrainx/imgProc.hh"
     "cbrainx/iterators.hh"
+    "cbrainx/lossFunctions.hh"
     "cbrainx/neuralNet.hh"
     "cbrainx/shape.hh"
     "cbrainx/softmax.hh"

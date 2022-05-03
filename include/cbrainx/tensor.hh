@@ -876,7 +876,7 @@ class Tensor {
   ///
   /// \details
   /// This function throws an exception if:
-  ///     * Either of the tensors do not represent a matrix.
+  ///     * Either of the tensors does not represent a matrix.
   ///     * The matrices are not compatible for multiplication.
   ///
   /// \throws RankError

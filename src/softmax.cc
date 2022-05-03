@@ -71,13 +71,12 @@ auto Softmax::forward_pass(const container &input) const -> container {
   ///
   // It should be noted that the formula above only pertains to one sample (along the x-axis).
   auto output = input.zeros_like();
-  auto [_, cols] = input.shape().unwrap<2, isize>();
   auto total = input.total();
   // Iterate along the y-axis.
-  for (size_type i = {}; i < total; i += cols) {
+  for (size_type i = {}; i < total; i += neurons_) {
     // Determine the boundaries of each sample.
     auto in_begin = input.begin() + i;
-    auto in_end = in_begin + cols;
+    auto in_end = in_begin + neurons_;
     auto out_begin = output.begin() + i;
     // Accumulate inputs along the x-axis.
     // Formula: ⅀ [ʝ = 1, ƙ] ęᶽ

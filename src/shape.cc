@@ -170,6 +170,12 @@ auto Shape::swap(Shape &other) noexcept -> Shape & {
 
 auto Shape::clone() const -> Shape { return *this; }
 
+auto Shape::slice(size_type start_pos, size_type end_pos) const -> Shape {
+  return Shape{begin() + start_pos, begin() + end_pos};
+}
+
+auto Shape::slice(size_type start_pos) const -> Shape { return slice(start_pos, rank()); }
+
 // /////////////////////////////////////////////////////////////
 // External Functions
 // /////////////////////////////////////////////////////////////

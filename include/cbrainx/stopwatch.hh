@@ -45,7 +45,7 @@ class Stopwatch {
 
  public:
   // /////////////////////////////////////////////
-  // Constructors and Destructors.
+  // Constructors and Destructors
   // /////////////////////////////////////////////
 
   /// \brief Default constructor.
