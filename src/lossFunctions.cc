@@ -40,6 +40,60 @@ auto LossFunction::_s_check_shape_equality(const Shape &a, const Shape &b) -> vo
 }
 
 // /////////////////////////////////////////////
+// Constructors (and Destructors)
+// /////////////////////////////////////////////
+
+LossFuncWrapper::LossFuncWrapper(Loss loss) {
+  switch (loss) {
+    case Loss::MeanSquaredError: {
+      func_ = std::make_shared<MeanSquaredError>();
+      break;
+    }
+    case Loss::BinaryCrossEntropy: {
+      func_ = std::make_shared<BinaryCrossEntropy>();
+      break;
+    }
+    case Loss::CategoricalCrossEntropy: {
+      func_ = std::make_shared<CategoricalCrossEntropy>();
+      break;
+    }
+    case Loss::SparseCrossEntropy: {
+      func_ = std::make_shared<SparseCrossEntropy>();
+      break;
+    }
+  }
+}
+
+LossFuncWrapper::LossFuncWrapper(LossFuncWrapper &&other) noexcept : func_{std::move(other.func_)} {}
+
+// /////////////////////////////////////////////
+// Assignment Operators
+// /////////////////////////////////////////////
+
+auto LossFuncWrapper::operator=(LossFuncWrapper &&other) noexcept -> LossFuncWrapper & {
+  func_ = std::move(other.func_);
+  return *this;
+}
+
+// /////////////////////////////////////////////
+// Wrapper Interface
+// /////////////////////////////////////////////
+
+auto LossFuncWrapper::type() const -> Loss { return func_->type(); }
+
+auto LossFuncWrapper::to_string() const -> std::string { return func_->to_string(); }
+
+auto LossFuncWrapper::type_name() const -> std::string { return func_->type_name(); }
+
+auto LossFuncWrapper::operator()(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type {
+  return func_->operator()(y_true, y_pred);
+}
+
+auto LossFuncWrapper::derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type {
+  return func_->derivative(y_true, y_pred);
+}
+
+// /////////////////////////////////////////////
 // Interface
 // /////////////////////////////////////////////
 
