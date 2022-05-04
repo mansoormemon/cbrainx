@@ -56,7 +56,7 @@ auto Softmax::type() const -> LayerType { return LayerType::Softmax; }
 // Informative
 // /////////////////////////////////////////////
 
-auto Softmax::forward_pass(const container &input) const -> container {
+auto Softmax::forward_pass(const container &input) const -> const AbstractLayer & {
   // The forward pass of this layer performs the subsequent operation.
   //
   // Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ
@@ -70,14 +70,17 @@ auto Softmax::forward_pass(const container &input) const -> container {
   //  Ō = Output (Vector) : Shape => (k)
   ///
   // It should be noted that the formula above only pertains to one sample (along the x-axis).
-  auto output = input.zeros_like();
+
+  // Applying forward pass and caching the input and output layers.
+  input_ = input;
+  output_ = input.zeros_like();
   auto total = input.total();
   // Iterate along the y-axis.
   for (size_type i = {}; i < total; i += neurons_) {
     // Determine the boundaries of each sample.
     auto in_begin = input.begin() + i;
     auto in_end = in_begin + neurons_;
-    auto out_begin = output.begin() + i;
+    auto out_begin = output_.begin() + i;
     // Accumulate inputs along the x-axis.
     // Formula: ⅀ [ʝ = 1, ƙ] ęᶽ
     auto acc = std::accumulate(in_begin, in_end, 0.0F, [](auto acc, auto x) {
@@ -89,7 +92,7 @@ auto Softmax::forward_pass(const container &input) const -> container {
       return std::exp(x) / acc;
     });
   }
-  return output;
+  return *this;
 }
 
 }

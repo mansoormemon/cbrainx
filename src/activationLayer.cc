@@ -63,7 +63,7 @@ auto ActivationLayer::property() const -> std::string {
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto ActivationLayer::forward_pass(const container &input) const -> container {
+auto ActivationLayer::forward_pass(const container &input) const -> const AbstractLayer & {
   // Formula: Ô = ζ(Î)
   //
   // where:
@@ -71,8 +71,10 @@ auto ActivationLayer::forward_pass(const container &input) const -> container {
   //  Î - Input (Matrix)  : Shape => (m, n)
   //  Ô - Output (Matrix) : Shape => (m, n)
 
-  // Apply the activation function to transform the input.
-  return input | act_func_;
+  // Applying forward pass and caching the input and output layers.
+  input_ = input;
+  output_ = input | act_func_;
+  return *this;
 }
 
 }

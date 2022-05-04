@@ -67,7 +67,7 @@ auto DenseLayer::property() const -> std::string {
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto DenseLayer::forward_pass(const container &input) const -> container {
+auto DenseLayer::forward_pass(const container &input) const -> const AbstractLayer & {
   // Formula: Ô = Î ⊙ Ŵ + Ƀ
   //
   // where:
@@ -77,7 +77,11 @@ auto DenseLayer::forward_pass(const container &input) const -> container {
   //  Ô - Output (Matrix)  : Shape => (m, o)
   //
   // and, the symbol `⊙` denotes dot product (typically matrix multiplication).
-  return input.matmul(weights_) + biases_;
+
+  // Applying forward pass and caching the input and output layers.
+  input_ = input;
+  output_ = input.matmul(weights_) + biases_;
+  return *this;
 }
 
 }

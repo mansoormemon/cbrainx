@@ -88,4 +88,14 @@ auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}"
   }
 }
 
+// /////////////////////////////////////////////
+// Core Functionality
+// /////////////////////////////////////////////
+
+auto AbstractLayer::input() const -> const container & { return input_; }
+
+auto AbstractLayer::output() const -> const container & { return output_; }
+
+auto AbstractLayer::drop_caches() const -> void { input_ = {}, output_ = {}; }
+
 }

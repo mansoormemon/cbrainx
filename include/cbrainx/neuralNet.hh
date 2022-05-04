@@ -278,7 +278,7 @@ class NeuralNet {
   /// network.
   ///
   /// \throws ShapeError
-  [[nodiscard]] auto forward_pass(const tensor_type &input) -> tensor_type;
+  [[nodiscard]] auto forward_pass(tensor_type input) -> tensor_type;
 };
 
 }

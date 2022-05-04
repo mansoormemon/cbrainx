@@ -194,13 +194,13 @@ auto NeuralNet::pop() -> void { layers_.pop_back(); }
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto NeuralNet::forward_pass(const tensor_type &input) -> tensor_type {
+auto NeuralNet::forward_pass(tensor_type input) -> tensor_type {
   _m_match_input_shape(input.shape());
-  auto current = input;
   for (const auto &layer : layers_) {
-    current = layer->forward_pass(current);
+    // The output of one layer becomes the input of the next.
+    input = layer->forward_pass(input).output();
   }
-  return current;
+  return input;
 }
 
 }

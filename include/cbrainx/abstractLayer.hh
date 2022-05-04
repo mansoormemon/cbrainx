@@ -52,6 +52,13 @@ class AbstractLayer {
   /// \brief The name of the layer.
   std::string name_ = "LYR";
 
+ protected:
+  /// \brief The input layer.
+  mutable container input_ = {};
+
+  /// \brief The output layer.
+  mutable container output_ = {};
+
  public:
   // /////////////////////////////////////////////
   // Constructors and Destructors
@@ -160,10 +167,21 @@ class AbstractLayer {
   // Core Functionality
   // /////////////////////////////////////////////
 
+  /// \brief Returns the cached input layer.
+  /// \return The cached input layer.
+  [[nodiscard]] auto input() const -> const container &;
+
+  /// \brief Returns the cached output layer.
+  /// \return The cached output layer.
+  [[nodiscard]] auto output() const -> const container &;
+
+  /// \brief Drops the cached input and output layers.
+  auto drop_caches() const -> void;
+
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return The output layer.
-  [[nodiscard]] virtual auto forward_pass(const container &input) const -> container = 0;
+  /// \return A reference to self.
+  [[nodiscard]] virtual auto forward_pass(const container &input) const -> const AbstractLayer & = 0;
 };
 
 }

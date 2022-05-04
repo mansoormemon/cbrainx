@@ -118,8 +118,8 @@ class ActivationLayer : public AbstractLayer {
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return The output layer.
-  [[nodiscard]] auto forward_pass(const container &input) const -> container override;
+  /// \return A reference to self.
+  [[nodiscard]] auto forward_pass(const container &input) const -> const AbstractLayer & override;
 };
 
 }
