@@ -158,7 +158,7 @@ auto Gaussian::type_name() const -> std::string { return "Gaussian"; }
 
 auto Gaussian::operator()(value_type x) const -> value_type { return std::exp(-x * x); }
 
-auto Gaussian::derivative(value_type x) const -> value_type { return -2 * x * this->operator()(x); }
+auto Gaussian::derivative(value_type x) const -> value_type { return -2 * x * operator()(x); }
 
 // /////////////////////////////////////////////
 
@@ -228,9 +228,7 @@ auto Sigmoid::operator()(value_type x) const -> value_type {
   return 1 / denominator;
 }
 
-auto Sigmoid::derivative(value_type x) const -> value_type {
-  return this->operator()(x) * (1 - this->operator()(x));
-}
+auto Sigmoid::derivative(value_type x) const -> value_type { return operator()(x) * (1 - operator()(x)); }
 
 // /////////////////////////////////////////////
 
@@ -262,7 +260,7 @@ auto Swish::operator()(value_type x) const -> value_type {
 
 auto Swish::derivative(value_type x) const -> value_type {
   auto sigmoid = Sigmoid{};
-  return this->operator()(x) + (sigmoid(x) * (1 - this->operator()(x)));
+  return operator()(x) + (sigmoid(x) * (1 - operator()(x)));
 }
 
 // /////////////////////////////////////////////
@@ -275,8 +273,6 @@ auto TanH::type_name() const -> std::string { return "TanH"; }
 
 auto TanH::operator()(value_type x) const -> value_type { return std::tanh(x); }
 
-auto TanH::derivative(value_type x) const -> value_type {
-  return 1 - (this->operator()(x) * this->operator()(x));
-}
+auto TanH::derivative(value_type x) const -> value_type { return 1 - (operator()(x) * operator()(x)); }
 
 }
