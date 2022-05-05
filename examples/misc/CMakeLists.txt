@@ -5,6 +5,7 @@ set(EXAMPLES
     "exImgProc.cc"
     "exLossFunctions.cc"
     "exNet.cc"
+    "exOptimizers.cc"
     "exShape.cc"
     "exSoftmax.cc"
     "exTensor.cc"

@@ -189,7 +189,7 @@ class LossFuncWrapper {
 ///
 /// And,
 ///
-/// Derivative: ẟĹ / ẟÝὶ = 1 / n ⅀ [ὶ = 1, n] 2 . (Ýὶ - Yὶ)
+/// Derivative: ẟ / ẟÝὶ Ĺ = 1 / n ⅀ [ὶ = 1, n] 2 . (Ýὶ - Yὶ)
 ///
 /// where:
 ///  Ĺ  - Loss function
@@ -247,7 +247,7 @@ struct MeanSquaredError : public LossFunction {
 ///
 /// And,
 ///
-/// Derivative: ẟĹ / ẟÝὶ = -1 / n ⅀ [ὶ = 1, n] Yὶ / Ýὶ + (1 - Yὶ) / (1 - Ýὶ)
+/// Derivative: ẟ / ẟÝὶ Ĺ = -1 / n ⅀ [ὶ = 1, n] Yὶ / Ýὶ + (1 - Yὶ) / (1 - Ýὶ)
 ///
 /// where:
 ///  Ĺ  - Loss function
@@ -305,7 +305,7 @@ struct BinaryCrossEntropy : public LossFunction {
 ///
 /// And,
 ///
-/// Derivative: ẟĹ / ẟÝ० = -1 / Ý०
+/// Derivative: ẟ / ẟÝ० Ĺ = -1 / Ý०
 ///
 /// where:
 ///  Ĺ  - Loss function
@@ -363,7 +363,7 @@ struct CategoricalCrossEntropy : public LossFunction {
 ///
 /// And,
 ///
-/// Derivative: ẟĹ / ẟÝ० = -1 / Ý०
+/// Derivative: ẟ / ẟÝ० Ĺ = -1 / Ý०
 ///
 /// where:
 ///  Ĺ  - Loss function

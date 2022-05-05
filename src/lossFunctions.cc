@@ -136,7 +136,7 @@ auto MeanSquaredError::operator()(const tensor_type &y_true, const tensor_type &
 auto MeanSquaredError::derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type {
   // This function implements the subsequent operation.
   //
-  // Derivative: ẟĹ / ẟÝὶ = 1 / n ⅀ [ὶ = 1, n] 2 . (Ýὶ - Yὶ)
+  // Derivative: ẟ / ẟÝὶ Ĺ = 1 / n ⅀ [ὶ = 1, n] 2 . (Ýὶ - Yὶ)
   //
   // where:
   //  Ĺ  - Loss function
@@ -206,7 +206,7 @@ auto BinaryCrossEntropy::operator()(const tensor_type &y_true, const tensor_type
 auto BinaryCrossEntropy::derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type {
   // This function implements the subsequent operation.
   //
-  // Derivative: ẟĹ / ẟÝὶ = -1 / n ⅀ [ὶ = 1, n] Yὶ / Ýὶ + (1 - Yὶ) / (1 - Ýὶ)
+  // Derivative: ẟ / ẟÝὶ Ĺ = -1 / n ⅀ [ὶ = 1, n] Yὶ / Ýὶ + (1 - Yὶ) / (1 - Ýὶ)
   //
   // where:
   //  Ĺ  - Loss function
@@ -282,7 +282,7 @@ auto CategoricalCrossEntropy::derivative(const tensor_type &y_true, const tensor
     -> value_type {
   // This function implements the subsequent operation.
   //
-  // Derivative: ẟĹ / ẟÝ० = -1 / Ý०
+  // Derivative: ẟ / ẟÝ० Ĺ = -1 / Ý०
   //
   // where:
   //  Ĺ  - Loss function
@@ -358,7 +358,7 @@ auto SparseCrossEntropy::operator()(const tensor_type &y_true, const tensor_type
 auto SparseCrossEntropy::derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type {
   // This function implements the subsequent operation.
   //
-  // Derivative: ẟĹ / ẟÝ० = -1 / Ý०
+  // Derivative: ẟ / ẟÝ० Ĺ = -1 / Ý०
   //
   // where:
   //  Ĺ  - Loss function

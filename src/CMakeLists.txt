@@ -12,6 +12,7 @@ set(CBRAINX_SOURCES
     "imgProc.cc"
     "lossFunctions.cc"
     "neuralNet.cc"
+    "optimizers.cc"
     "shape.cc"
     "softmax.cc"
     "stopwatch.cc")

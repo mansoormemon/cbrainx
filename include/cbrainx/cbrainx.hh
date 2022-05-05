@@ -29,6 +29,7 @@
 #include "iterators.hh"
 #include "lossFunctions.hh"
 #include "neuralNet.hh"
+#include "optimizers.hh"
 #include "shape.hh"
 #include "softmax.hh"
 #include "stopwatch.hh"

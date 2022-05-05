@@ -11,6 +11,7 @@ set(CBRAINX_INCLUDES
     "cbrainx/iterators.hh"
     "cbrainx/lossFunctions.hh"
     "cbrainx/neuralNet.hh"
+    "cbrainx/optimizers.hh"
     "cbrainx/shape.hh"
     "cbrainx/softmax.hh"
     "cbrainx/stopwatch.hh"
