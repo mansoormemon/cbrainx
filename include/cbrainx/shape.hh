@@ -361,15 +361,15 @@ class Shape {
   [[nodiscard]] auto clone() const -> Shape;
 
   /// \brief Returns a slice of the original shape.
-  /// \param start_pos The starting position of the range.
-  /// \param end_pos The ending index of the range.
+  /// \param[in] start_pos The starting position of the range.
+  /// \param[in] end_pos The ending index of the range.
   /// \return A slice [\p start_pos, \p end_pos) of the original shape.
   ///
   /// \note The behaviour is undefined if the parameters form an invalid range.
   [[nodiscard]] auto slice(size_type start_pos, size_type end_pos) const -> Shape;
 
   /// \brief Returns a slice of the original shape.
-  /// \param start_pos The starting position of the range.
+  /// \param[in] start_pos The starting position of the range.
   /// \return A slice [\p start_pos, `this->rank()`) of the original shape.
   ///
   /// \note The behaviour is undefined if the parameters form an invalid range.

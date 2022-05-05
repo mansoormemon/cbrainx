@@ -100,86 +100,6 @@ struct LossFunction {
       -> value_type = 0;
 };
 
-/// \brief The `LossFuncWrapper` class wraps a loss function and allows you to switch between different types at
-/// runtime.
-///
-/// \see Loss LossFunction
-class LossFuncWrapper {
- public:
-  using value_type = LossFunction::value_type;
-
-  using tensor_type = LossFunction::tensor_type;
-
- private:
-  /// \brief Shared pointer to the loss function.
-  std::shared_ptr<LossFunction> func_ = {};
-
- public:
-  // /////////////////////////////////////////////
-  // Constructors and Destructors
-  // /////////////////////////////////////////////
-
-  /// \brief Default constructor.
-  LossFuncWrapper() = default;
-
-  /// \brief Parameterized constructor.
-  /// \param[in] activation
-  explicit LossFuncWrapper(Loss loss);
-
-  /// \brief Default copy constructor.
-  /// \param[in] other Source wrapper.
-  LossFuncWrapper(const LossFuncWrapper &other) = default;
-
-  /// \brief Move constructor.
-  /// \param[in] other Source wrapper.
-  LossFuncWrapper(LossFuncWrapper &&other) noexcept;
-
-  /// \brief Default destructor.
-  ~LossFuncWrapper() = default;
-
-  // /////////////////////////////////////////////
-  // Assignment Operators
-  // /////////////////////////////////////////////
-
-  /// \brief Default copy assignment operator.
-  /// \param[in] other Source wrapper.
-  /// \return A reference to self.
-  auto operator=(const LossFuncWrapper &other) -> LossFuncWrapper & = default;
-
-  /// \brief Move assignment operator.
-  /// \param[in] other Source wrapper.
-  /// \return A reference to self.
-  auto operator=(LossFuncWrapper &&other) noexcept -> LossFuncWrapper &;
-
-  // /////////////////////////////////////////////
-  // Wrapper Interface
-  // /////////////////////////////////////////////
-
-  /// \brief Returns the type of the loss function.
-  /// \return The type of the loss function.
-  [[nodiscard]] auto type() const -> Loss;
-
-  /// \brief Returns the pretty name of the function as a string.
-  /// \return The pretty name of the function.
-  [[nodiscard]] auto to_string() const -> std::string;
-
-  /// \brief Returns the type name of the function as a string.
-  /// \return The type name of the function.
-  [[nodiscard]] auto type_name() const -> std::string;
-
-  /// \brief The function call operator.
-  /// \param[in] y_true The observed values.
-  /// \param[in] y_pred The predicted values.
-  /// \return The mean loss.
-  [[nodiscard]] auto operator()(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type;
-
-  /// \brief Returns the derivative of the function w.r.t. \p y_pred.
-  /// \param[in] y_true The observed values.
-  /// \param[in] y_pred The predicted values.
-  /// \return The derivative of the function w.r.t. \p y_pred.
-  [[nodiscard]] auto derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type;
-};
-
 /// \brief The `MeanSquaredError` loss function.
 ///
 /// \details
@@ -413,6 +333,94 @@ struct SparseCrossEntropy : public LossFunction {
   /// \throws ShapeError
   [[nodiscard]] auto derivative(const tensor_type &y_true, const tensor_type &y_pred) const
       -> value_type override;
+};
+
+/// \brief The `LossFuncWrapper` class wraps a loss function and allows you to switch between different types at
+/// runtime.
+///
+/// \see Loss LossFunction
+class LossFuncWrapper {
+ public:
+  using value_type = LossFunction::value_type;
+
+  using tensor_type = LossFunction::tensor_type;
+
+ private:
+  /// \brief Shared pointer to the loss function.
+  std::shared_ptr<LossFunction> func_ = {};
+
+ public:
+  // /////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////
+
+  /// \brief Default constructor.
+  LossFuncWrapper() = default;
+
+  /// \brief Parameterized constructor.
+  /// \param[in] activation
+  explicit LossFuncWrapper(Loss loss);
+
+  /// \brief Default copy constructor.
+  /// \param[in] other Source wrapper.
+  LossFuncWrapper(const LossFuncWrapper &other) = default;
+
+  /// \brief Move constructor.
+  /// \param[in] other Source wrapper.
+  LossFuncWrapper(LossFuncWrapper &&other) noexcept;
+
+  /// \brief Default destructor.
+  ~LossFuncWrapper() = default;
+
+  // /////////////////////////////////////////////
+  // Assignment Operators
+  // /////////////////////////////////////////////
+
+  /// \brief Default copy assignment operator.
+  /// \param[in] other Source wrapper.
+  /// \return A reference to self.
+  auto operator=(const LossFuncWrapper &other) -> LossFuncWrapper & = default;
+
+  /// \brief Move assignment operator.
+  /// \param[in] other Source wrapper.
+  /// \return A reference to self.
+  auto operator=(LossFuncWrapper &&other) noexcept -> LossFuncWrapper &;
+
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
+
+  /// \brief Returns whether or not the underlying shared pointer is null.
+  /// \return True if the underlying shared pointer is null.
+  [[nodiscard]] auto is_null() const -> bool;
+
+  // /////////////////////////////////////////////
+  // Wrapper Interface
+  // /////////////////////////////////////////////
+
+  /// \brief Returns the type of the loss function.
+  /// \return The type of the loss function.
+  [[nodiscard]] auto type() const -> Loss;
+
+  /// \brief Returns the pretty name of the function as a string.
+  /// \return The pretty name of the function.
+  [[nodiscard]] auto to_string() const -> std::string;
+
+  /// \brief Returns the type name of the function as a string.
+  /// \return The type name of the function.
+  [[nodiscard]] auto type_name() const -> std::string;
+
+  /// \brief The function call operator.
+  /// \param[in] y_true The observed values.
+  /// \param[in] y_pred The predicted values.
+  /// \return The mean loss.
+  [[nodiscard]] auto operator()(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type;
+
+  /// \brief Returns the derivative of the function w.r.t. \p y_pred.
+  /// \param[in] y_true The observed values.
+  /// \param[in] y_pred The predicted values.
+  /// \return The derivative of the function w.r.t. \p y_pred.
+  [[nodiscard]] auto derivative(const tensor_type &y_true, const tensor_type &y_pred) const -> value_type;
 };
 
 }

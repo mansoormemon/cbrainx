@@ -75,81 +75,6 @@ struct ActivationFunction {
   [[nodiscard]] virtual auto derivative(value_type x) const -> value_type = 0;
 };
 
-/// \brief The `ActFuncWrapper` class wraps an activation function and allows you to switch between different
-/// types at runtime.
-///
-/// \see Activation ActivationFunction
-class ActFuncWrapper {
- public:
-  using value_type = ActivationFunction::value_type;
-
- private:
-  /// \brief Shared pointer to the activation function.
-  std::shared_ptr<ActivationFunction> func_ = {};
-
- public:
-  // /////////////////////////////////////////////
-  // Constructors and Destructors
-  // /////////////////////////////////////////////
-
-  /// \brief Default constructor.
-  ActFuncWrapper() = default;
-
-  /// \brief Parameterized constructor.
-  /// \param[in] activation
-  explicit ActFuncWrapper(Activation activation);
-
-  /// \brief Default copy constructor.
-  /// \param[in] other Source wrapper.
-  ActFuncWrapper(const ActFuncWrapper &other) = default;
-
-  /// \brief Move constructor.
-  /// \param[in] other Source wrapper.
-  ActFuncWrapper(ActFuncWrapper &&other) noexcept;
-
-  /// \brief Default destructor.
-  ~ActFuncWrapper() = default;
-
-  // /////////////////////////////////////////////
-  // Assignment Operators
-  // /////////////////////////////////////////////
-
-  /// \brief Default copy assignment operator.
-  /// \param[in] other Source wrapper.
-  /// \return A reference to self.
-  auto operator=(const ActFuncWrapper &other) -> ActFuncWrapper & = default;
-
-  /// \brief Move assignment operator.
-  /// \param[in] other Source wrapper.
-  /// \return A reference to self.
-  auto operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper &;
-
-  // /////////////////////////////////////////////
-  // Wrapper Interface
-  // /////////////////////////////////////////////
-
-  /// \brief Returns the type of the activation function.
-  /// \return The type of the activation function.
-  [[nodiscard]] auto type() const -> Activation;
-
-  /// \brief Returns the pretty name of the function as a string.
-  /// \return The pretty name of the function.
-  [[nodiscard]] auto to_string() const -> std::string;
-
-  /// \brief Returns the type name of the function as a string.
-  /// \return The type name of the function.
-  [[nodiscard]] auto type_name() const -> std::string;
-
-  /// \brief The function call operator.
-  /// \param[in] x X coordinate.
-  /// \return The output of the function at \p x.
-  [[nodiscard]] auto operator()(value_type x) const -> value_type;
-
-  /// \brief Returns the derivative of the function.
-  /// \return Derivative function of the function.
-  [[nodiscard]] auto derivative() const -> std::function<value_type(value_type)>;
-};
-
 /// \brief `ArcTan` activation function.
 struct ArcTan : public ActivationFunction {
   /// \brief Returns the type of the activation function.
@@ -460,6 +385,89 @@ struct TanH : public ActivationFunction {
   /// \param[in] x X coordinate.
   /// \return The derivative of the function at \p x.
   [[nodiscard]] auto derivative(value_type x) const -> value_type override;
+};
+
+/// \brief The `ActFuncWrapper` class wraps an activation function and allows you to switch between different
+/// types at runtime.
+///
+/// \see Activation ActivationFunction
+class ActFuncWrapper {
+ public:
+  using value_type = ActivationFunction::value_type;
+
+ private:
+  /// \brief Shared pointer to the activation function.
+  std::shared_ptr<ActivationFunction> func_ = {};
+
+ public:
+  // /////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////
+
+  /// \brief Default constructor.
+  ActFuncWrapper() = default;
+
+  /// \brief Parameterized constructor.
+  /// \param[in] activation
+  explicit ActFuncWrapper(Activation activation);
+
+  /// \brief Default copy constructor.
+  /// \param[in] other Source wrapper.
+  ActFuncWrapper(const ActFuncWrapper &other) = default;
+
+  /// \brief Move constructor.
+  /// \param[in] other Source wrapper.
+  ActFuncWrapper(ActFuncWrapper &&other) noexcept;
+
+  /// \brief Default destructor.
+  ~ActFuncWrapper() = default;
+
+  // /////////////////////////////////////////////
+  // Assignment Operators
+  // /////////////////////////////////////////////
+
+  /// \brief Default copy assignment operator.
+  /// \param[in] other Source wrapper.
+  /// \return A reference to self.
+  auto operator=(const ActFuncWrapper &other) -> ActFuncWrapper & = default;
+
+  /// \brief Move assignment operator.
+  /// \param[in] other Source wrapper.
+  /// \return A reference to self.
+  auto operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper &;
+
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
+
+  /// \brief Returns whether or not the underlying shared pointer is null.
+  /// \return True if the underlying shared pointer is null.
+  [[nodiscard]] auto is_null() const -> bool;
+
+  // /////////////////////////////////////////////
+  // Wrapper Interface
+  // /////////////////////////////////////////////
+
+  /// \brief Returns the type of the activation function.
+  /// \return The type of the activation function.
+  [[nodiscard]] auto type() const -> Activation;
+
+  /// \brief Returns the pretty name of the function as a string.
+  /// \return The pretty name of the function.
+  [[nodiscard]] auto to_string() const -> std::string;
+
+  /// \brief Returns the type name of the function as a string.
+  /// \return The type name of the function.
+  [[nodiscard]] auto type_name() const -> std::string;
+
+  /// \brief The function call operator.
+  /// \param[in] x X coordinate.
+  /// \return The output of the function at \p x.
+  [[nodiscard]] auto operator()(value_type x) const -> value_type;
+
+  /// \brief Returns the derivative of the function.
+  /// \return Derivative function of the function.
+  [[nodiscard]] auto derivative() const -> std::function<value_type(value_type)>;
 };
 
 }

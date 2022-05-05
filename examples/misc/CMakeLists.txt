@@ -3,7 +3,7 @@ set(EXAMPLES
     "exActFuncs.cc"
     "exImage.cc"
     "exImgProc.cc"
-    "exLossFunctions.cc"
+    "exLossFuncs.cc"
     "exNet.cc"
     "exOptimizers.cc"
     "exShape.cc"

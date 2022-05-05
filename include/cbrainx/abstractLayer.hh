@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "optimizers.hh"
 #include "shape.hh"
 #include "tensor.hh"
 #include "typeAliases.hh"
@@ -161,7 +162,7 @@ class AbstractLayer {
   /// \return The layer's type as a string.
   ///
   /// \see LayerType
-  [[nodiscard]] virtual auto type_name() const -> std::string;
+  [[nodiscard]] virtual auto type_name() const -> std::string = 0;
 
   // /////////////////////////////////////////////
   // Core Functionality
@@ -180,8 +181,8 @@ class AbstractLayer {
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return A reference to self.
-  [[nodiscard]] virtual auto forward_pass(const container &input) const -> const AbstractLayer & = 0;
+  /// \return The output layer.
+  [[nodiscard]] virtual auto forward_pass(const container &input) const -> container = 0;
 };
 
 }

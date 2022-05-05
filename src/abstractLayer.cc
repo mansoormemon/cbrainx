@@ -70,24 +70,6 @@ auto AbstractLayer::set_name(std::string_view name) -> AbstractLayer & {
 
 auto AbstractLayer::to_string() const -> std::string { return fmt::format("{}{}", name_, id_); }
 
-[[nodiscard]] auto AbstractLayer::type_name() const -> std::string {
-  auto layer = type();
-  switch (layer) {
-    case LayerType::Dense: {
-      return "Dense";
-    }
-    case LayerType::Activation: {
-      return "Activation";
-    }
-    case LayerType::Softmax: {
-      return "Softmax";
-    }
-    default: {
-      return {};
-    }
-  }
-}
-
 // /////////////////////////////////////////////
 // Core Functionality
 // /////////////////////////////////////////////

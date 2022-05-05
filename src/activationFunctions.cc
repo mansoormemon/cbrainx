@@ -21,91 +21,9 @@
 
 namespace cbx {
 
-// /////////////////////////////////////////////
-// Constructors (and Destructors)
-// /////////////////////////////////////////////
-
-ActFuncWrapper::ActFuncWrapper(Activation activation) {
-  switch (activation) {
-    case Activation::ArcTan: {
-      func_ = std::make_shared<ArcTan>();
-      break;
-    }
-    case Activation::BinaryStep: {
-      func_ = std::make_shared<BinaryStep>();
-      break;
-    }
-    case Activation::ELU: {
-      func_ = std::make_shared<ELU>();
-      break;
-    }
-    case Activation::Gaussian: {
-      func_ = std::make_shared<Gaussian>();
-      break;
-    }
-    case Activation::GELU: {
-      func_ = std::make_shared<GELU>();
-      break;
-    }
-    case Activation::LeakyReLU: {
-      func_ = std::make_shared<LeakyReLU>();
-      break;
-    }
-    case Activation::Linear: {
-      func_ = std::make_shared<Linear>();
-      break;
-    }
-    case Activation::ReLU: {
-      func_ = std::make_shared<ReLU>();
-      break;
-    }
-    case Activation::Sigmoid: {
-      func_ = std::make_shared<Sigmoid>();
-      break;
-    }
-    case Activation::Softplus: {
-      func_ = std::make_shared<Softplus>();
-      break;
-    }
-    case Activation::Swish: {
-      func_ = std::make_shared<Swish>();
-      break;
-    }
-    case Activation::TanH: {
-      func_ = std::make_shared<TanH>();
-      break;
-    }
-  }
-}
-
-ActFuncWrapper::ActFuncWrapper(ActFuncWrapper &&other) noexcept : func_{std::move(other.func_)} {}
-
-// /////////////////////////////////////////////
-// Assignment Operators
-// /////////////////////////////////////////////
-
-auto ActFuncWrapper::operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper & {
-  func_ = std::move(other.func_);
-  return *this;
-}
-
-// /////////////////////////////////////////////
-// Wrapper Interface
-// /////////////////////////////////////////////
-
-auto ActFuncWrapper::type() const -> Activation { return func_->type(); }
-
-auto ActFuncWrapper::to_string() const -> std::string { return func_->to_string(); }
-
-auto ActFuncWrapper::type_name() const -> std::string { return func_->type_name(); }
-
-auto ActFuncWrapper::operator()(value_type x) const -> value_type { return func_->operator()(x); }
-
-auto ActFuncWrapper::derivative() const -> std::function<value_type(value_type)> {
-  return [this](value_type x) -> value_type {
-    return func_->derivative(x);
-  };
-}
+// /////////////////////////////////////////////////////////////
+// Activation Functions
+// /////////////////////////////////////////////////////////////
 
 // /////////////////////////////////////////////
 // Interface
@@ -274,5 +192,101 @@ auto TanH::type_name() const -> std::string { return "TanH"; }
 auto TanH::operator()(value_type x) const -> value_type { return std::tanh(x); }
 
 auto TanH::derivative(value_type x) const -> value_type { return 1 - (operator()(x) * operator()(x)); }
+
+// /////////////////////////////////////////////////////////////
+// ActFuncWrapper
+// /////////////////////////////////////////////////////////////
+
+// /////////////////////////////////////////////
+// Constructors (and Destructors)
+// /////////////////////////////////////////////
+
+ActFuncWrapper::ActFuncWrapper(Activation activation) {
+  switch (activation) {
+    case Activation::ArcTan: {
+      func_ = std::make_shared<ArcTan>();
+      break;
+    }
+    case Activation::BinaryStep: {
+      func_ = std::make_shared<BinaryStep>();
+      break;
+    }
+    case Activation::ELU: {
+      func_ = std::make_shared<ELU>();
+      break;
+    }
+    case Activation::Gaussian: {
+      func_ = std::make_shared<Gaussian>();
+      break;
+    }
+    case Activation::GELU: {
+      func_ = std::make_shared<GELU>();
+      break;
+    }
+    case Activation::LeakyReLU: {
+      func_ = std::make_shared<LeakyReLU>();
+      break;
+    }
+    case Activation::Linear: {
+      func_ = std::make_shared<Linear>();
+      break;
+    }
+    case Activation::ReLU: {
+      func_ = std::make_shared<ReLU>();
+      break;
+    }
+    case Activation::Sigmoid: {
+      func_ = std::make_shared<Sigmoid>();
+      break;
+    }
+    case Activation::Softplus: {
+      func_ = std::make_shared<Softplus>();
+      break;
+    }
+    case Activation::Swish: {
+      func_ = std::make_shared<Swish>();
+      break;
+    }
+    case Activation::TanH: {
+      func_ = std::make_shared<TanH>();
+      break;
+    }
+  }
+}
+
+ActFuncWrapper::ActFuncWrapper(ActFuncWrapper &&other) noexcept : func_{std::move(other.func_)} {}
+
+// /////////////////////////////////////////////
+// Assignment Operators
+// /////////////////////////////////////////////
+
+auto ActFuncWrapper::operator=(ActFuncWrapper &&other) noexcept -> ActFuncWrapper & {
+  func_ = std::move(other.func_);
+  return *this;
+}
+
+// /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
+
+auto ActFuncWrapper::is_null() const -> bool { return func_ == nullptr; }
+
+// /////////////////////////////////////////////
+// Wrapper Interface
+// /////////////////////////////////////////////
+
+auto ActFuncWrapper::type() const -> Activation { return func_->type(); }
+
+auto ActFuncWrapper::to_string() const -> std::string { return func_->to_string(); }
+
+auto ActFuncWrapper::type_name() const -> std::string { return func_->type_name(); }
+
+auto ActFuncWrapper::operator()(value_type x) const -> value_type { return func_->operator()(x); }
+
+auto ActFuncWrapper::derivative() const -> std::function<value_type(value_type)> {
+  return [this](value_type x) -> value_type {
+    return func_->derivative(x);
+  };
+}
 
 }

@@ -79,13 +79,31 @@ class AbstractOptimizer {
   /// \return The number of iterations.
   [[nodiscard]] auto iterations() const -> u32;
 
+  /// \brief Returns the type of the optimizer.
+  /// \return The type of the optimizer.
+  ///
+  /// \see Optimizer
+  [[nodiscard]] virtual auto type() const -> Optimizer = 0;
+
   // /////////////////////////////////////////////
   // Informative
   // /////////////////////////////////////////////
 
+  /// \brief Returns a string with information about the optimizer's properties.
+  /// \return Information about the optimizer's properties as a string.
+  [[nodiscard]] virtual auto property() const -> std::string = 0;
+
+  /// \brief Returns the pretty name of the optimizer as a string.
+  /// \return The pretty name of the optimizer.
+  [[nodiscard]] virtual auto to_string() const -> std::string = 0;
+
+  /// \brief Returns the type name of the optimizer as a string.
+  /// \return The type name of the optimizer.
+  [[nodiscard]] virtual auto type_name() const -> std::string = 0;
+
   /// \brief Returns meta-information about the optimizer as a string.
   /// \return A string containing meta-information about the optimizer.
-  virtual auto meta_info() -> std::string;
+  [[nodiscard]] virtual auto meta_info() const -> std::string;
 
   // /////////////////////////////////////////////
   // Interface
@@ -175,12 +193,34 @@ class GradientDescent : public AbstractOptimizer {
   auto operator=(const GradientDescent &other) -> GradientDescent & = default;
 
   // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
+
+  /// \brief Returns the type of the optimizer.
+  /// \return The type of the optimizer.
+  ///
+  /// \see Optimizer
+  [[nodiscard]] auto type() const -> Optimizer override;
+
+  // /////////////////////////////////////////////
   // Informative
   // /////////////////////////////////////////////
 
+  /// \brief Returns a string with information about the optimizer's properties.
+  /// \return Information about the optimizer's properties as a string.
+  [[nodiscard]] auto property() const -> std::string override;
+
+  /// \brief Returns the pretty name of the optimizer as a string.
+  /// \return The pretty name of the optimizer.
+  [[nodiscard]] auto to_string() const -> std::string override;
+
+  /// \brief Returns the type name of the optimizer as a string.
+  /// \return The type name of the optimizer.
+  [[nodiscard]] auto type_name() const -> std::string override;
+
   /// \brief Returns meta-information about the optimizer as a string.
   /// \return A string containing meta-information about the optimizer.
-  auto meta_info() -> std::string override;
+  [[nodiscard]] auto meta_info() const -> std::string override;
 
   // /////////////////////////////////////////////
   // Interface
@@ -203,7 +243,7 @@ class GradientDescent : public AbstractOptimizer {
 /// \brief The `OptimizerWrapper` class wraps an optimizer and allows you to switch between different types at
 /// runtime.
 ///
-/// \see Optimizer AbstractFunction
+/// \see Optimizer AbstractOptimizer
 class OptimizerWrapper {
  public:
   using value_type = AbstractOptimizer::value_type;
@@ -226,7 +266,10 @@ class OptimizerWrapper {
   template <typename... Args>
   explicit OptimizerWrapper(Optimizer optimizer, Args... args) {
     switch (optimizer) {
-      case Optimizer::GradientDescent: optimizer_ = std::make_shared<GradientDescent>(args...);
+      case Optimizer::GradientDescent: {
+        optimizer_ = std::make_shared<GradientDescent>(args...);
+        break;
+      }
     }
   }
 
@@ -254,16 +297,38 @@ class OptimizerWrapper {
   /// \return The number of iterations.
   [[nodiscard]] auto iterations() const -> u32;
 
+  /// \brief Returns the type of the optimizer.
+  /// \return The type of the optimizer.
+  ///
+  /// \see Optimizer
+  [[nodiscard]] auto type() const -> Optimizer;
+
+  /// \brief Returns whether or not the underlying shared pointer is null.
+  /// \return True if the underlying shared pointer is null.
+  [[nodiscard]] auto is_null() const -> bool;
+
   // /////////////////////////////////////////////
   // Informative
   // /////////////////////////////////////////////
 
+  /// \brief Returns a string with information about the optimizer's properties.
+  /// \return Information about the optimizer's properties as a string.
+  [[nodiscard]] auto property() const -> std::string;
+
+  /// \brief Returns the pretty name of the optimizer as a string.
+  /// \return The pretty name of the optimizer.
+  [[nodiscard]] auto to_string() const -> std::string;
+
+  /// \brief Returns the type name of the optimizer as a string.
+  /// \return The type name of the optimizer.
+  [[nodiscard]] auto type_name() const -> std::string;
+
   /// \brief Returns meta-information about the optimizer as a string.
   /// \return A string containing meta-information about the optimizer.
-  auto meta_info() -> std::string;
+  [[nodiscard]] auto meta_info() const -> std::string;
 
   // /////////////////////////////////////////////
-  // Interface
+  // Wrapper Interface
   // /////////////////////////////////////////////
 
   /// \brief Updates iteration count.

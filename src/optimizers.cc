@@ -35,7 +35,9 @@ auto AbstractOptimizer::iterations() const -> u32 { return iterations_; }
 // Informative
 // /////////////////////////////////////////////
 
-auto AbstractOptimizer::meta_info() -> std::string { return fmt::format("{{ iterations = {} }}", iterations_); }
+auto AbstractOptimizer::meta_info() const -> std::string {
+  return fmt::format("{{ iterations = {} }}", iterations_);
+}
 
 // /////////////////////////////////////////////
 // Interface
@@ -52,7 +54,7 @@ auto AbstractOptimizer::reset() -> AbstractOptimizer & {
 }
 
 // /////////////////////////////////////////////////////////////
-// GradientDescent
+// Optimizers
 // /////////////////////////////////////////////////////////////
 
 // /////////////////////////////////////////////
@@ -63,10 +65,24 @@ GradientDescent::GradientDescent(f32 learning_rate, f32 decay_rate)
     : learning_rate_{learning_rate}, alpha_{learning_rate}, decay_rate_{decay_rate} {}
 
 // /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
+
+auto GradientDescent::type() const -> Optimizer { return Optimizer::GradientDescent; }
+
+// /////////////////////////////////////////////
 // Informative
 // /////////////////////////////////////////////
 
-auto GradientDescent::meta_info() -> std::string {
+auto GradientDescent::property() const -> std::string {
+  return fmt::format("Initial={}, Alpha={}, Decay={}", learning_rate_, alpha_, decay_rate_);
+}
+
+auto GradientDescent::to_string() const -> std::string { return "Gradient Descent"; }
+
+auto GradientDescent::type_name() const -> std::string { return "GradientDescent"; }
+
+auto GradientDescent::meta_info() const -> std::string {
   return fmt::format("{{ iterations={}, learning_rate={}, alpha={}, decay_rate={} }}", iterations_,
                      learning_rate_, alpha_, decay_rate_);
 }
@@ -120,14 +136,24 @@ auto GradientDescent::update_params(tensor_type &params, const tensor_type &grad
 
 auto OptimizerWrapper::iterations() const -> u32 { return optimizer_->iterations(); }
 
+auto OptimizerWrapper::type() const -> Optimizer { return optimizer_->type(); }
+
+auto OptimizerWrapper::is_null() const -> bool { return optimizer_ == nullptr; }
+
 // /////////////////////////////////////////////
 // Informative
 // /////////////////////////////////////////////
 
-auto OptimizerWrapper::meta_info() -> std::string { return optimizer_->meta_info(); }
+auto OptimizerWrapper::property() const -> std::string { return optimizer_->property(); }
+
+auto OptimizerWrapper::to_string() const -> std::string { return optimizer_->to_string(); }
+
+auto OptimizerWrapper::type_name() const -> std::string { return optimizer_->type_name(); }
+
+auto OptimizerWrapper::meta_info() const -> std::string { return optimizer_->meta_info(); }
 
 // /////////////////////////////////////////////
-// Interface
+// Wrapper Interface
 // /////////////////////////////////////////////
 
 auto OptimizerWrapper::operator++() -> OptimizerWrapper & {

@@ -198,7 +198,7 @@ auto NeuralNet::forward_pass(tensor_type input) -> tensor_type {
   _m_match_input_shape(input.shape());
   for (const auto &layer : layers_) {
     // The output of one layer becomes the input of the next.
-    input = layer->forward_pass(input).output();
+    input = layer->forward_pass(input);
   }
   return input;
 }

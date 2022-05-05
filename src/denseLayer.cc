@@ -63,11 +63,13 @@ auto DenseLayer::property() const -> std::string {
   return fmt::format("Shape: W={}, B={}", weights_.shape().to_string(), biases_.shape().to_string());
 }
 
+auto DenseLayer::type_name() const -> std::string { return "Dense"; }
+
 // /////////////////////////////////////////////
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto DenseLayer::forward_pass(const container &input) const -> const AbstractLayer & {
+auto DenseLayer::forward_pass(const container &input) const -> container {
   // Formula: Ô = Î ⊙ Ŵ + Ƀ
   //
   // where:
@@ -81,7 +83,7 @@ auto DenseLayer::forward_pass(const container &input) const -> const AbstractLay
   // Applying forward pass and caching the input and output layers.
   input_ = input;
   output_ = input.matmul(weights_) + biases_;
-  return *this;
+  return output_;
 }
 
 }

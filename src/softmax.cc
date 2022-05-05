@@ -48,15 +48,21 @@ auto Softmax::neurons() const -> size_type { return neurons_; }
 
 auto Softmax::parameters() const -> size_type { return {}; }
 
-auto Softmax::property() const -> std::string { return "-"; }
-
 auto Softmax::type() const -> LayerType { return LayerType::Softmax; }
 
 // /////////////////////////////////////////////
 // Informative
 // /////////////////////////////////////////////
 
-auto Softmax::forward_pass(const container &input) const -> const AbstractLayer & {
+auto Softmax::property() const -> std::string { return "-"; }
+
+auto Softmax::type_name() const -> std::string { return "Softmax"; }
+
+// /////////////////////////////////////////////
+// Core Functionality
+// /////////////////////////////////////////////
+
+auto Softmax::forward_pass(const container &input) const -> container {
   // The forward pass of this layer performs the subsequent operation.
   //
   // Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ
@@ -92,7 +98,7 @@ auto Softmax::forward_pass(const container &input) const -> const AbstractLayer 
       return std::exp(x) / acc;
     });
   }
-  return *this;
+  return output_;
 }
 
 }

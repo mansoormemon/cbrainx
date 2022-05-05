@@ -112,14 +112,20 @@ class ActivationLayer : public AbstractLayer {
   /// \return Information about the layer's properties as a string.
   [[nodiscard]] auto property() const -> std::string override;
 
+  /// \brief Returns the layer's type as a string.
+  /// \return The layer's type as a string.
+  ///
+  /// \see LayerType
+  [[nodiscard]] auto type_name() const -> std::string override;
+
   // /////////////////////////////////////////////
   // Core Functionality
   // /////////////////////////////////////////////
 
   /// \brief Forward pass.
   /// \param[in] input The input layer.
-  /// \return A reference to self.
-  [[nodiscard]] auto forward_pass(const container &input) const -> const AbstractLayer & override;
+  /// \return The output layer.
+  [[nodiscard]] auto forward_pass(const container &input) const -> container override;
 };
 
 }

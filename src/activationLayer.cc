@@ -59,11 +59,13 @@ auto ActivationLayer::property() const -> std::string {
   return fmt::format("Function: {}", act_func_.to_string());
 }
 
+auto ActivationLayer::type_name() const -> std::string { return "Activation"; }
+
 // /////////////////////////////////////////////
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto ActivationLayer::forward_pass(const container &input) const -> const AbstractLayer & {
+auto ActivationLayer::forward_pass(const container &input) const -> container {
   // Formula: Ô = ζ(Î)
   //
   // where:
@@ -74,7 +76,7 @@ auto ActivationLayer::forward_pass(const container &input) const -> const Abstra
   // Applying forward pass and caching the input and output layers.
   input_ = input;
   output_ = input | act_func_;
-  return *this;
+  return output_;
 }
 
 }
