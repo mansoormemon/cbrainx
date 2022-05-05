@@ -21,31 +21,39 @@
 
 namespace cbx {
 
+// /////////////////////////////////////////////////////////////
+// AbstractOptimizer
+// /////////////////////////////////////////////////////////////
+
 // /////////////////////////////////////////////
 // Query Functions
 // /////////////////////////////////////////////
 
-auto Optimizer::iterations() const -> u32 { return iterations_; }
+auto AbstractOptimizer::iterations() const -> u32 { return iterations_; }
 
 // /////////////////////////////////////////////
 // Informative
 // /////////////////////////////////////////////
 
-auto Optimizer::meta_info() -> std::string { return fmt::format("{{ iterations = {} }}", iterations_); }
+auto AbstractOptimizer::meta_info() -> std::string { return fmt::format("{{ iterations = {} }}", iterations_); }
 
 // /////////////////////////////////////////////
 // Interface
 // /////////////////////////////////////////////
 
-auto Optimizer::operator++() -> Optimizer & {
+auto AbstractOptimizer::operator++() -> AbstractOptimizer & {
   ++iterations_;
   return *this;
 };
 
-auto Optimizer::reset() -> Optimizer & {
+auto AbstractOptimizer::reset() -> AbstractOptimizer & {
   iterations_ = {};
   return *this;
 }
+
+// /////////////////////////////////////////////////////////////
+// GradientDescent
+// /////////////////////////////////////////////////////////////
 
 // /////////////////////////////////////////////
 // Constructors (and Destructors)
@@ -67,7 +75,7 @@ auto GradientDescent::meta_info() -> std::string {
 // Interface
 // /////////////////////////////////////////////
 
-auto GradientDescent::operator++() -> Optimizer & {
+auto GradientDescent::operator++() -> AbstractOptimizer & {
   // With each iteration, the learning rate decays using the following rule.
   //
   // Rule: ⍺ = ȹ . 1 / (1 + Ɣ . ὶ)
@@ -78,13 +86,13 @@ auto GradientDescent::operator++() -> Optimizer & {
   //  Ɣ - Decay rate
   //  ὶ - Iterations
 
-  Optimizer::operator++();
+  AbstractOptimizer::operator++();
   alpha_ = learning_rate_ * (1 / (1 + decay_rate_ * iterations_));
   return *this;
 }
 
-auto GradientDescent::reset() -> Optimizer & {
-  Optimizer::reset();
+auto GradientDescent::reset() -> AbstractOptimizer & {
+  AbstractOptimizer::reset();
   alpha_ = learning_rate_;
   return *this;
 }
@@ -100,6 +108,40 @@ auto GradientDescent::update_params(tensor_type &params, const tensor_type &grad
   //  ẟ / ẟŴ Ĺ - Gradient of the loss function w.r.t. Ŵ
 
   params -= alpha_ * gradient;
+}
+
+// /////////////////////////////////////////////////////////////
+// OptimizerWrapper
+// /////////////////////////////////////////////////////////////
+
+// /////////////////////////////////////////////
+// Query Functions
+// /////////////////////////////////////////////
+
+auto OptimizerWrapper::iterations() const -> u32 { return optimizer_->iterations(); }
+
+// /////////////////////////////////////////////
+// Informative
+// /////////////////////////////////////////////
+
+auto OptimizerWrapper::meta_info() -> std::string { return optimizer_->meta_info(); }
+
+// /////////////////////////////////////////////
+// Interface
+// /////////////////////////////////////////////
+
+auto OptimizerWrapper::operator++() -> OptimizerWrapper & {
+  optimizer_->operator++();
+  return *this;
+}
+
+auto OptimizerWrapper::reset() -> OptimizerWrapper & {
+  optimizer_->reset();
+  return *this;
+}
+
+auto OptimizerWrapper::update_params(tensor_type &params, const tensor_type &gradient) -> void {
+  optimizer_->update_params(params, gradient);
 }
 
 }

@@ -18,17 +18,24 @@
 #ifndef CBRAINX__OPTIMIZERS_HH_
 #define CBRAINX__OPTIMIZERS_HH_
 
+#include <memory>
+
 #include "tensor.hh"
 #include "typeAliases.hh"
 
 namespace cbx {
 
-/// \brief The `Optimizer` class defines a standard interface for all optimizers.
+/// \brief Supported optimizers.
+enum class Optimizer { GradientDescent };
+
+/// \brief The `AbstractOptimizer` class defines a standard interface for all optimizers.
 ///
 /// \details
 /// The goal of optimizers is to diminish the loss by updating weights and biases, including other trainable
 /// parameters of the model. This process is known as minimizing the cost function or training.
-class Optimizer {
+///
+/// \see Optimizer
+class AbstractOptimizer {
  public:
   using value_type = f32;
 
@@ -46,14 +53,14 @@ class Optimizer {
   // /////////////////////////////////////////////
 
   /// \brief Default constructor.
-  Optimizer() = default;
+  AbstractOptimizer() = default;
 
   /// \brief Default copy constructor.
   /// \param[in] other Source optimizer.
-  Optimizer(const Optimizer &other) = default;
+  AbstractOptimizer(const AbstractOptimizer &other) = default;
 
   /// \brief Default destructor.
-  virtual ~Optimizer() = default;
+  virtual ~AbstractOptimizer() = default;
 
   // /////////////////////////////////////////////
   // Assignment Operators
@@ -62,7 +69,7 @@ class Optimizer {
   /// \brief Default copy assignment operator.
   /// \param[in] other Source optimizer.
   /// \return A reference to self.
-  auto operator=(const Optimizer &other) -> Optimizer & = default;
+  auto operator=(const AbstractOptimizer &other) -> AbstractOptimizer & = default;
 
   // /////////////////////////////////////////////
   // Query Functions
@@ -86,11 +93,11 @@ class Optimizer {
 
   /// \brief Updates iteration count.
   /// \return A reference to self.
-  virtual auto operator++() -> Optimizer &;
+  virtual auto operator++() -> AbstractOptimizer &;
 
   /// \brief Resets the optimizer to its initial state.
   /// \return A reference to self.
-  virtual auto reset() -> Optimizer &;
+  virtual auto reset() -> AbstractOptimizer &;
 
   /// \brief Updates the given set of parameters.
   /// \param[in] params The parameters to be updated.
@@ -126,8 +133,8 @@ class Optimizer {
 ///  Ɣ - Decay rate
 ///  ὶ - Iterations
 ///
-/// \see Optimizer
-class GradientDescent : public Optimizer {
+/// \see Optimizer AbstractOptimizer
+class GradientDescent : public AbstractOptimizer {
  private:
   /// \brief The initial learning rate.
   f32 learning_rate_ = {};
@@ -181,16 +188,96 @@ class GradientDescent : public Optimizer {
 
   /// \brief Updates iteration count.
   /// \return A reference to self.
-  auto operator++() -> Optimizer & override;
+  auto operator++() -> AbstractOptimizer & override;
 
   /// \brief Resets the optimizer to its initial state.
   /// \return A reference to self.
-  auto reset() -> Optimizer & override;
+  auto reset() -> AbstractOptimizer & override;
 
   /// \brief Updates the given set of parameters.
   /// \param[in] params The parameters to be updated.
   /// \param[in] gradient The gradient of \p params w.r.t. the loss function.
   auto update_params(tensor_type &params, const tensor_type &gradient) -> void override;
+};
+
+/// \brief The `OptimizerWrapper` class wraps an optimizer and allows you to switch between different types at
+/// runtime.
+///
+/// \see Optimizer AbstractFunction
+class OptimizerWrapper {
+ public:
+  using value_type = AbstractOptimizer::value_type;
+
+  using tensor_type = AbstractOptimizer::tensor_type;
+
+ private:
+  /// \brief Shared pointer to the optimizer.
+  std::shared_ptr<AbstractOptimizer> optimizer_ = {};
+
+ public:
+  // /////////////////////////////////////////////
+  // Constructors and Destructors
+  // /////////////////////////////////////////////
+
+  /// \brief Parameterized constructor.
+  /// \tparam Args The data type of arguments.
+  /// \param[in] optimizer The type of optimizer.
+  /// \param[in] args Parameter list for the constructor of \p optimizer.
+  template <typename... Args>
+  explicit OptimizerWrapper(Optimizer optimizer, Args... args) {
+    switch (optimizer) {
+      case Optimizer::GradientDescent: optimizer_ = std::make_shared<GradientDescent>(args...);
+    }
+  }
+
+  /// \brief Default copy constructor.
+  /// \param[in] other Source wrapper.
+  OptimizerWrapper(const OptimizerWrapper &other) = default;
+
+  /// \brief Default destructor.
+  virtual ~OptimizerWrapper() = default;
+
+  // /////////////////////////////////////////////
+  // Assignment Operators
+  // /////////////////////////////////////////////
+
+  /// \brief Default copy assignment operator.
+  /// \param[in] other Source wrapper.
+  /// \return A reference to self.
+  auto operator=(const OptimizerWrapper &other) -> OptimizerWrapper & = default;
+
+  // /////////////////////////////////////////////
+  // Query Functions
+  // /////////////////////////////////////////////
+
+  /// \brief Returns the number of iterations.
+  /// \return The number of iterations.
+  [[nodiscard]] auto iterations() const -> u32;
+
+  // /////////////////////////////////////////////
+  // Informative
+  // /////////////////////////////////////////////
+
+  /// \brief Returns meta-information about the optimizer as a string.
+  /// \return A string containing meta-information about the optimizer.
+  auto meta_info() -> std::string;
+
+  // /////////////////////////////////////////////
+  // Interface
+  // /////////////////////////////////////////////
+
+  /// \brief Updates iteration count.
+  /// \return A reference to self.
+  auto operator++() -> OptimizerWrapper &;
+
+  /// \brief Resets the optimizer to its initial state.
+  /// \return A reference to self.
+  auto reset() -> OptimizerWrapper &;
+
+  /// \brief Updates the given set of parameters.
+  /// \param[in] params The parameters to be updated.
+  /// \param[in] gradient The gradient of \p params w.r.t. the loss function.
+  auto update_params(tensor_type &params, const tensor_type &gradient) -> void;
 };
 
 }
