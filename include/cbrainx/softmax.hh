@@ -34,18 +34,43 @@ namespace cbx {
 ///
 /// The forward pass of this layer performs the subsequent operation.
 ///
-/// Formula: Ō = σ(Ƶ)ὶ [ὶ = 1, ƙ] = ęᶼ / ⅀ [ʝ = 1, ƙ] ęᶽ
+/// Formula: Ō = σ(Ƶ)i [i = 1, n] = ęᶼ / ⅀ [j = 1, n] ęᶽ
+///
+/// Whereas the backward pass performs the following operation.
+///
+/// Formula: ΔḒ = ΔÛ ⎊ Ĵ
 ///
 /// where:
-///  σ - Softmax function
-///  Ƶ - Input (Vector) : Shape => (k)
-///  ʐ - ὶᵗʰ element in the vector
-///  ʑ - ʝᵗʰ element in the vector
-///  ƙ = Number of classes in the multi-class classifier
-///  Ō = Output (Vector) : Shape => (k)
+///  σ   - Softmax function
+///  Ƶ   - Input (Vector) => Shape = (n)
+///  ʐ   - iᵗʰ element in the vector
+///  ʑ   - jᵗʰ element in the vector
+///  n   - Number of classes in the multi-class classifier
+///  Ō   - Output (Vector)                   => Shape = (n)
+///  Ĵ   - Local gradient (Jacobian Matrix)  => Shape = (n, n)
+///  ΔḒ  - Downstream gradient (Matrix)      => Shape = (1, n)
+///  ΔÛ  - Upstream gradient (Matrix)        => Shape = (1, n)
 ///
-/// It should be noted that the formula above only pertains to one sample (along the x-axis). The actual
-/// implementation iterates along the y-axis and applies the above formula to each sample individually.
+/// and, the symbol `⎊` denotes dot product (typically matrix multiplication).
+///
+/// *Computing the Jacobian matrix*
+///
+/// The Jacobian matrix is computed as follows:
+///
+///  Ĵ = [[ ẟ / ẟ𝓍₁  𝑦₁    ẟ / ẟ𝓍₂  𝑦₁    ...       ẟ / ẟ𝓍ⱼ  𝑦₁ ],
+///       [ ẟ / ẟ𝓍₁  𝑦₂    ẟ / ẟ𝓍₂  𝑦₂    ...       ẟ / ẟ𝓍ⱼ  𝑦₂ ],
+///        ⋮              ⋮               ⋱       ⋮
+///       [ ẟ / ẟ𝓍₁  𝑦ᵢ    ẟ / ẟ𝓍₂  𝑦ᵢ    ...       ẟ / ẟ𝓍ⱼ  𝑦ᵢ ]
+///
+/// where:
+///  𝓍           - Input (Vector)                => Shape = (n)
+///  𝑦           - Output (Vector)               => Shape = (n)
+///  Ĵ           -  Jacobian Matrix              => Shape = (n, n)
+///  ẟ / ẟ𝓍ⱼ  𝑦ᵢ - Derivative of  𝑦ᵢ w.r.t. 𝓍ⱼ  => Formula: yᵢ . (ƍ - yⱼ)
+///  ƍ           - Kronecker delta               => Formula: ƍᵢⱼ = [i = j]
+///
+/// It should be noted that the formulas above only pertain to one sample (along the x-axis). The actual
+/// implementation iterates along the y-axis and applies the above formulas to each sample individually.
 ///
 /// \note Although softmax is an activation function, it is implemented as a custom layer due to design
 /// constraints.
@@ -130,6 +155,13 @@ class Softmax : public AbstractLayer {
   /// \param[in] input The input layer.
   /// \return The output layer.
   [[nodiscard]] auto forward_pass(const container &input) const -> container override;
+
+  /// \brief Backward pass.
+  /// \param[in] upstream_gradient The upstream gradient.
+  /// \param[in] optimizer The optimizer.
+  /// \return The downstream gradient.
+  [[nodiscard]] auto backward_pass(const container &upstream_gradient, OptimizerWrapper optimizer)
+      -> container override;
 };
 
 }

@@ -70,20 +70,79 @@ auto DenseLayer::type_name() const -> std::string { return "Dense"; }
 // /////////////////////////////////////////////
 
 auto DenseLayer::forward_pass(const container &input) const -> container {
-  // Formula: Ô = Î ⊙ Ŵ + Ƀ
+  // Formula: Ô = Î ⎊ Ŵ + Ƀ
   //
   // where:
-  //  Î - Input (Matrix)   : Shape => (m, n)
-  //  Ŵ - Weights (Matrix) : Shape => (n, o)
-  //  Ƀ - Biases (Vector)  : Shape => (o)
-  //  Ô - Output (Matrix)  : Shape => (m, o)
+  //  Î - Input (Matrix)   => Shape = (m, n)
+  //  Ŵ - Weights (Matrix) => Shape = (n, o)
+  //  Ƀ - Biases (Vector)  => Shape = (o)
+  //  Ô - Output (Matrix)  => Shape = (m, o)
   //
-  // and, the symbol `⊙` denotes dot product (typically matrix multiplication).
+  // and, the symbol `⎊` denotes dot product (typically matrix multiplication).
+  //
+  // Note: The cached input and output will be used during back-propagation.
 
-  // Applying forward pass and caching the input and output layers.
   input_ = input;
   output_ = input.matmul(weights_) + biases_;
   return output_;
+}
+
+auto DenseLayer::backward_pass(const container &upstream_gradient, OptimizerWrapper optimizer) -> container {
+  // Formula: ΔŴ = Î.T ⎊ ΔÛ         :> Ʊ(Ŵ, ΔŴ)
+  //          ΔɃ = sum(ΔÛ, axis=y)  :> Ʊ(Ƀ, ΔɃ)
+  //          ΔḒ = ΔÛ ⎊ Ŵ.T
+  //
+  // where:
+  //  Î   - Input (Matrix)                 => Shape = (m, n)
+  //  Î.T - Transpose of input (Matrix)    => Shape = (n, m)
+  //  Ŵ   - Weights (Matrix)               => Shape = (n, o)
+  //  Ŵ.T - Transpose of weights (Matrix)  => Shape = (o, n)
+  //  ΔŴ  - Weights gradient (Matrix)      => Shape = (n, o)
+  //  Ƀ   - Biases (Vector)                => Shape = (o)
+  //  ΔɃ  - Biases gradient (Vector)       => Shape = (o)
+  //  ΔḒ  - Downstream gradient (Matrix)   => Shape = (m, n)
+  //  ΔÛ  - Upstream gradient (Matrix)     => Shape = (m, o)
+  //  Ʊ   - Optimizer
+  //
+  // and, the symbol `⎊` denotes dot product (typically matrix multiplication).
+
+  // Returns the transpose of the given matrix.
+  auto transpose = [](const container &matrix) -> container {
+    auto [rows, cols] = matrix.shape().unwrap<2>();
+    auto result = container{{cols, rows}};
+    for (size_type r = {}; r < rows; ++r) {
+      for (size_type c = {}; c < cols; ++c) {
+        result(c, r) = matrix(r, c);
+      }
+    }
+    return result;
+  };
+
+  // Reduces the given matrix by summing it along the y-axis.
+  auto sum_y = [](const container &matrix) -> container {
+    auto [rows, cols] = matrix.shape().unwrap<2>();
+    auto result = container{{cols}};
+    for (size_type c = {}; c < cols; ++c) {
+      for (size_type r = {}; r < rows; ++r) {
+        result[c] += matrix(r, c);
+      }
+    }
+    return result;
+  };
+
+  // Compute the gradient of weights and update the parameters.
+  // Formula: ΔŴ = Î.T ⎊ ΔÛ  :> Ʊ(Ŵ, ΔŴ)
+  auto weights_gradient = transpose(input_).matmul(upstream_gradient);
+  optimizer.update_params(weights_, weights_gradient);
+
+  // Compute the gradient of biases and update the parameters.
+  // Formula: ΔɃ = sum(ΔÛ, axis=y)  :> Ʊ(Ƀ, ΔɃ)
+  auto biases_gradient = sum_y(upstream_gradient);
+  optimizer.update_params(biases_, biases_gradient);
+
+  // Return the downstream gradient.
+  // Formula: ΔḒ = ΔÛ ⎊ Ŵ.T
+  return upstream_gradient.matmul(transpose(weights_));
 }
 
 }

@@ -32,15 +32,28 @@ namespace cbx {
 ///
 /// The forward pass of this layer performs the subsequent operation.
 ///
-/// Formula: Ô = Î ⊙ Ŵ + Ƀ
+/// Formula: Ô = Î ⎊ Ŵ + Ƀ
+///
+/// Whereas the backward pass performs the following operation.
+///
+/// Formula: ΔŴ = Î.T ⎊ ΔÛ         :> Ʊ(Ŵ, ΔŴ)
+///          ΔɃ = sum(ΔÛ, axis=y)  :> Ʊ(Ƀ, ΔɃ)
+///          ΔḒ = ΔÛ ⎊ Ŵ.T
 ///
 /// where:
-///  Î - Input (Matrix)   : Shape => (m, n)
-///  Ŵ - Weights (Matrix) : Shape => (n, o)
-///  Ƀ - Biases (Vector)  : Shape => (o)
-///  Ô - Output (Matrix)  : Shape => (m, o)
+///  Î   - Input (Matrix)                 => Shape = (m, n)
+///  Î.T - Transpose of input (Matrix)    => Shape = (n, m)
+///  Ŵ   - Weights (Matrix)               => Shape = (n, o)
+///  Ŵ.T - Transpose of weights (Matrix)  => Shape = (o, n)
+///  ΔŴ  - Weights gradient (Matrix)      => Shape = (n, o)
+///  Ƀ   - Biases (Vector)                => Shape = (o)
+///  ΔɃ  - Biases gradient (Vector)       => Shape = (o)
+///  Ô   - Output (Matrix)                => Shape = (m, o)
+///  ΔḒ  - Downstream gradient (Matrix)   => Shape = (m, n)
+///  ΔÛ  - Upstream gradient (Matrix)     => Shape = (m, o)
+///  Ʊ   - Optimizer
 ///
-/// and, the symbol `⊙` denotes dot product (typically matrix multiplication).
+/// and, the symbol `⎊` denotes dot product (typically matrix multiplication).
 ///
 /// \see LayerType AbstractLayer
 class DenseLayer : public AbstractLayer {
@@ -126,6 +139,13 @@ class DenseLayer : public AbstractLayer {
   /// \param[in] input The input layer.
   /// \return The output layer.
   [[nodiscard]] auto forward_pass(const container &input) const -> container override;
+
+  /// \brief Backward pass.
+  /// \param[in] upstream_gradient The upstream gradient.
+  /// \param[in] optimizer The optimizer.
+  /// \return The downstream gradient.
+  [[nodiscard]] auto backward_pass(const container &upstream_gradient, OptimizerWrapper optimizer)
+      -> container override;
 };
 
 }

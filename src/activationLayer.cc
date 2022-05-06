@@ -70,13 +70,36 @@ auto ActivationLayer::forward_pass(const container &input) const -> container {
   //
   // where:
   //  ζ - Activation function
-  //  Î - Input (Matrix)  : Shape => (m, n)
-  //  Ô - Output (Matrix) : Shape => (m, n)
+  //  Î - Input (Matrix)  => Shape = (m, n)
+  //  Ô - Output (Matrix) => Shape = (m, n)
+  //
+  // Note: Cached input and output will be used during back-propagation.
 
-  // Applying forward pass and caching the input and output layers.
   input_ = input;
+
+  // Apply the activation function as a transformation.
   output_ = input | act_func_;
   return output_;
+}
+
+auto ActivationLayer::backward_pass(const container &upstream_gradient, OptimizerWrapper) -> container {
+  // Formula: ΔḒ = ζ'(Î) . ΔÛ
+  //
+  // where:
+  //  ζ  - Activation function
+  //  ζ' - Derivative of the activation function
+  //  Î  - Input (Matrix)                => Shape = (m, n)
+  //  Ô  - Output (Matrix)               => Shape = (m, n)
+  //  ΔḒ - Downstream gradient (Matrix)  => Shape = (m, n)
+  //  ΔÛ - Upstream gradient (Matrix)    => Shape = (m, n)
+
+  // Calculate the local gradient.
+  // Formula: ζ'(Î)
+  auto local_gradient = input_ | act_func_.derivative();
+
+  // Return the downstream gradient.
+  // Formula: ΔḒ = ζ'(Î) . ΔÛ
+  return local_gradient * upstream_gradient;
 }
 
 }

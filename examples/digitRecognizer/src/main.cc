@@ -71,7 +71,7 @@ auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
   cbx::u32 img_height = read_int(file);
 
   // Create a tensor after normalizing samples.
-  return cbx::Tensor<cbx::f32>::custom({sample_num, img_height * img_width}, [&file]() {
+  return tensorF32::custom({sample_num, img_height * img_width}, [&file]() {
     cbx::u8 byte = {};
     file >> byte;
     return byte / 255.0;
@@ -91,7 +91,7 @@ auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
 // The labels values are 0 to 9.
 //
 // Reference: http://yann.lecun.com/exdb/mnist
-auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorU8 {
+auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
   auto file = std::fstream{path, std::ios::in | std::ios::binary};
 
   // Ignore magic number.
@@ -99,17 +99,18 @@ auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorU8 {
 
   cbx::u32 sample_num = std::min(max_samples, read_int(file));
 
-  return cbx::Tensor<cbx::u8>::custom({sample_num}, [&file]() {
+  return tensorF32::custom({sample_num}, [&file]() {
     return file.get();
   });
 }
 
-auto print_info(cbx::str msg, const tensorF32 &images, const tensorU8 &labels) -> void {
+auto print_info(cbx::str msg, const tensorF32 &images, const tensorF32 &labels) -> void {
   fmt::print("{} => [\nimages = {},\nlabels = {}\n]\n", msg, images.meta_info(), labels.meta_info());
 }
 
-auto print(const tensorF32 &tensor, cbx::i32 count) -> void {
-  auto [_, dim] = tensor.shape().unwrap<2, cbx::i32>();
+template <typename T>
+auto print(const cbx::Tensor<T> &tensor, cbx::i32 count) -> void {
+  auto [_, dim] = tensor.shape().template unwrap<2, cbx::i32>();
   cbx::i32 i = {};
   for (auto x : std::ranges::take_view{tensor, count * dim}) {
     fmt::print("{:<{}}", x, 16);
@@ -120,8 +121,30 @@ auto print(const tensorF32 &tensor, cbx::i32 count) -> void {
   }
 }
 
+auto argmax(const tensorF32 &input) -> tensorU8 {
+  auto samples = input.is_matrix() ? input.shape().front() : 1;
+  auto neurons = input.shape().back();
+  auto result = tensorU8{{samples}};
+  for (cbx::usize i = {}; i < samples; i += 1) {
+    auto begin = input.begin() + (neurons * i);
+    auto end = begin + neurons;
+    auto it = std::max_element(begin, end);
+    result[i] = std::distance(begin, it);
+  }
+  return result;
+}
+
+template <typename T, typename U>
+auto measure_accuracy(const cbx::Tensor<T> &truth, const cbx::Tensor<U> &predictions) {
+  cbx::usize correct = {};
+  for (cbx::usize i = {}; i < truth.total(); ++i) {
+    correct += truth[i] == predictions[i];
+  }
+  return cbx::f32(correct) / truth.total();
+}
+
 auto main() -> cbx::i32 {
-  const auto MAX_TRAINING_SAMPLES = 512;
+  const auto MAX_TRAINING_SAMPLES = 128;
   const auto MAX_TESTING_SAMPLES = 256;
 
   auto train_images_path = "res/train/images.idx3-ubyte";
@@ -152,19 +175,28 @@ auto main() -> cbx::i32 {
   net.add<cbx::DenseLayer>(512);
   net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
   net.add<cbx::DenseLayer>(256);
-  net.add<cbx::ActivationLayer>(cbx::Activation::ReLU);
+  net.add<cbx::ActivationLayer>(cbx::Activation::Gaussian);
   net.add<cbx::DenseLayer>(128);
   net.add<cbx::ActivationLayer>(cbx::Activation::ArcTan);
+  net.add<cbx::DenseLayer>(64);
+  net.add<cbx::ActivationLayer>(cbx::Activation::TanH);
   net.add<cbx::DenseLayer>(10);
+  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
   net.add<cbx::Softmax>();
-
   net.show_summary();
 
   std::cout << "Running forward pass..." << std::endl;
   watch.start();
-  auto out = net.forward_pass(train_images);
+  auto out = net.forward_pass(test_images);
   watch.stop();
   std::cout << "Forward pass complete!" << std::endl;
+  std::cout << "Time taken: " << watch.get_duration<std::chrono::seconds>() << "s." << std::endl;
+
+  auto lossFunc = cbx::SparseCrossEntropy{};
+  std::cout << "Loss: " << lossFunc(test_labels, out) << std::endl;
+
+  auto predictions = argmax(out).reshape(2);
+  std::cout << "Accuracy: " << measure_accuracy(test_labels, predictions) << std::endl;
 
   std::cout << "Output => " << out.meta_info() << std::endl;
 
@@ -172,6 +204,5 @@ auto main() -> cbx::i32 {
   std::cout << "Printing first " << n << " outputs..." << std::endl;
   print(out, n);
 
-  std::cout << "Time taken: " << watch.get_duration<std::chrono::seconds>() << "s." << std::endl;
   return {};
 }

@@ -183,6 +183,13 @@ class AbstractLayer {
   /// \param[in] input The input layer.
   /// \return The output layer.
   [[nodiscard]] virtual auto forward_pass(const container &input) const -> container = 0;
+
+  /// \brief Backward pass.
+  /// \param[in] upstream_gradient The upstream gradient.
+  /// \param[in] optimizer The optimizer.
+  /// \return The downstream gradient.
+  [[nodiscard]] virtual auto backward_pass(const container &upstream_gradient, OptimizerWrapper optimizer)
+      -> container = 0;
 };
 
 }

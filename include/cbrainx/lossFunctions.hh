@@ -105,18 +105,18 @@ struct LossFunction {
 /// \details
 /// This functor performs the subsequent operation.
 ///
-/// Formula: Ĺ = 1 / n  ⅀ [ὶ = 1, n] (Ýὶ - Yὶ)²
+/// Formula: Ĺ = 1 / n  ⅀ [i = 1, n] (Ýi - Yi)²
 ///
 /// And,
 ///
-/// Derivative: ẟ / ẟÝὶ Ĺ = 1 / n ⅀ [ὶ = 1, n] 2 . (Ýὶ - Yὶ)
+/// Derivative: ẟ / ẟÝi Ĺ = 1 / n ⅀ [i = 1, n] 2 . (Ýi - Yi)
 ///
 /// where:
 ///  Ĺ  - Loss function
 ///  Y  - Observations
 ///  Ý  - Predictions
-///  Yὶ - ὶᵗʰ observed value   => Range = (-∞, ∞; 𝟄 R)
-///  Ýὶ - ὶᵗʰ predicted value  => Range = (-∞, ∞; 𝟄 R)
+///  Yi - iᵗʰ observed value   => Range = (-∞, ∞; 𝟄 R)
+///  Ýi - iᵗʰ predicted value  => Range = (-∞, ∞; 𝟄 R)
 ///  n  - Number of observations
 ///
 /// For a batch of samples, the mean loss is returned.
@@ -163,18 +163,18 @@ struct MeanSquaredError : public LossFunction {
 /// \details
 /// This functor performs the subsequent operation.
 ///
-/// Formula: Ĺ = -1 / n  ⅀ [ὶ = 1, n] Yὶ . ln(Ýὶ) + (1 - Yὶ) . ln(1 - Ýὶ)
+/// Formula: Ĺ = -1 / n  ⅀ [i = 1, n] Yi . ln(Ýi) + (1 - Yi) . ln(1 - Ýi)
 ///
 /// And,
 ///
-/// Derivative: ẟ / ẟÝὶ Ĺ = -1 / n ⅀ [ὶ = 1, n] Yὶ / Ýὶ + (1 - Yὶ) / (1 - Ýὶ)
+/// Derivative: ẟ / ẟÝi Ĺ = -1 / n ⅀ [i = 1, n] Yi / Ýi + (1 - Yi) / (1 - Ýi)
 ///
 /// where:
 ///  Ĺ  - Loss function
 ///  Y  - Observations
 ///  Ý  - Predicted probabilities
-///  Yὶ - Label of the ὶᵗʰ class                  => Range = {0, 1}
-///  Ýὶ - Predicted probability of the ὶᵗʰ class  => Range = [0, 1; 𝟄 R]
+///  Yi - Label of the iᵗʰ class                  => Range = {0, 1}
+///  Ýi - Predicted probability of the iᵗʰ class  => Range = [0, 1; 𝟄 R]
 ///  n  - Number of classes
 ///
 /// For a batch of samples, the mean loss is returned.
@@ -292,8 +292,8 @@ struct CategoricalCrossEntropy : public LossFunction {
 ///                                                                  Y.rank is one lower than Ý.rank
 ///                                                                }
 ///  Ý  - Predicted probabilities                               => Criteria = {Accumulates to 1.0}
-///  ὶ० - Index of the positive class                           => Range = [0, n; 𝟄 Z)
-///  Ý० - Predicted probability of the positive class (=Ý[ὶ०])  => Range = [0, 1; 𝟄 R]
+///  i० - Index of the positive class                           => Range = [0, n; 𝟄 Z)
+///  Ý० - Predicted probability of the positive class (=Ý[i०])  => Range = [0, 1; 𝟄 R]
 ///  n  - Number of classes
 ///
 /// For a batch of samples, the mean loss is returned.

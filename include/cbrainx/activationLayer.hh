@@ -37,12 +37,19 @@ namespace cbx {
 ///
 /// Formula: Ô = ζ(Î)
 ///
-/// where:
-///  ζ - Activation function
-///  Î - Input (Matrix)  : Shape => (m, n)
-///  Ô - Output (Matrix) : Shape => (m, n)
+/// Whereas the backward pass performs the following operation.
 ///
-/// \see Activation
+/// Formula: ΔḒ = ζ'(Î) . ΔÛ
+///
+/// where:
+///  ζ  - Activation function
+///  ζ' - Derivative of the activation function
+///  Î  - Input (Matrix)                => Shape = (m, n)
+///  Ô  - Output (Matrix)               => Shape = (m, n)
+///  ΔḒ - Downstream gradient (Matrix)  => Shape = (m, n)
+///  ΔÛ - Upstream gradient (Matrix)    => Shape = (m, n)
+///
+/// \see Activation AbstractLayer
 class ActivationLayer : public AbstractLayer {
  private:
   /// \brief The number of neurons in the layer.
@@ -126,6 +133,13 @@ class ActivationLayer : public AbstractLayer {
   /// \param[in] input The input layer.
   /// \return The output layer.
   [[nodiscard]] auto forward_pass(const container &input) const -> container override;
+
+  /// \brief Backward pass.
+  /// \param[in] upstream_gradient The upstream gradient.
+  /// \param[in] optimizer The optimizer.
+  /// \return The downstream gradient.
+  [[nodiscard]] auto backward_pass(const container &upstream_gradient, OptimizerWrapper optimizer)
+      -> container override;
 };
 
 }
