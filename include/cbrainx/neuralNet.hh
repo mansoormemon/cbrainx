@@ -22,6 +22,8 @@
 #include <memory>
 
 #include "abstractLayer.hh"
+#include "lossFunctions.hh"
+#include "optimizers.hh"
 #include "typeAliases.hh"
 
 namespace cbx {
@@ -100,7 +102,7 @@ class NeuralNet {
   /// network.
   ///
   /// \throws ShapeError
-  auto _m_match_input_shape(const Shape &shape) -> void;
+  auto _m_match_input_shape(const Shape &shape) const -> void;
 
  public:
   // /////////////////////////////////////////////
@@ -278,7 +280,17 @@ class NeuralNet {
   /// network.
   ///
   /// \throws ShapeError
-  [[nodiscard]] auto forward_pass(tensor_type input) -> tensor_type;
+  [[nodiscard]] auto forward_pass(tensor_type input) const -> tensor_type;
+
+  /// \brief Backward pass.
+  /// \param[in] x The input data.
+  /// \param[in] y The truth values.
+  /// \param[in] epochs The number of epochs.
+  /// \param[in] batch_size The size of each batch.
+  /// \param[in] loss_type The type of the loss function.
+  /// \param[in] optimizer The optimizer.
+  auto backward_pass(tensor_type x, tensor_type y, usize epochs, usize batch_size, Loss loss_type,
+                     OptimizerWrapper optimizer) -> void;
 };
 
 }

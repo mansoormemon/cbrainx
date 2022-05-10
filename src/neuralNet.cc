@@ -17,6 +17,7 @@
 
 #include "cbrainx/neuralNet.hh"
 
+#include <iostream>
 #include <utility>
 
 #include <fmt/color.h>
@@ -37,7 +38,7 @@ auto NeuralNet::_s_validate_input_shape(const Shape &shape) -> void {
   }
 }
 
-auto NeuralNet::_m_match_input_shape(const Shape &shape) -> void {
+auto NeuralNet::_m_match_input_shape(const Shape &shape) const -> void {
   auto sliced_shape = shape.slice(1);
   if (input_shape_ != sliced_shape) {
     throw ShapeError{"cbx::NeuralNet::_m_match_input_shape: shapes mismatch [expected = {}, received = {}]",
@@ -194,13 +195,75 @@ auto NeuralNet::pop() -> void { layers_.pop_back(); }
 // Core Functionality
 // /////////////////////////////////////////////
 
-auto NeuralNet::forward_pass(tensor_type input) -> tensor_type {
+auto NeuralNet::forward_pass(tensor_type input) const -> tensor_type {
   _m_match_input_shape(input.shape());
   for (const auto &layer : layers_) {
     // The output of one layer becomes the input of the next.
     input = layer->forward_pass(input);
   }
   return input;
+}
+
+auto NeuralNet::backward_pass(tensor_type x, tensor_type y, usize epochs, usize batch_size, Loss loss_type,
+                              OptimizerWrapper optimizer) -> void {
+  const auto PROGRESS_BAR_WIDTH = 36;
+
+  auto loss_func = LossFuncWrapper{loss_type};
+  auto [samples] = x.shape().unwrap<1, f32>();
+  size_type batches = std::ceil(samples / batch_size);
+  size_type x_stride = x.total() / samples, y_stride = y.total() / samples;
+
+  // Initializes the metrics for an epoch.
+  auto init_metrics = [epochs, PROGRESS_BAR_WIDTH](auto epoch) {
+    fmt::print("Epoch {} of {}: [{: ^{}}] 0%", epoch, epochs, "", PROGRESS_BAR_WIDTH);
+    std::cout << std::flush;
+  };
+
+  // Updates the metrics for an epoch.
+  auto update_metrics = [this, epochs, batches, PROGRESS_BAR_WIDTH](auto epoch, auto batch, auto total_loss) {
+    f32 ratio = f32(batch) / batches;
+    f32 percentage = i32(ratio * 100.0);
+    size_type filled = ratio * PROGRESS_BAR_WIDTH;
+
+    fmt::print("\rEpoch {} of {}: [{}{}] {}%, mean_loss = {:.6f}", epoch, epochs, std::string(filled, '#'),
+               std::string(PROGRESS_BAR_WIDTH - filled, ' '), percentage, total_loss / batch);
+    std::cout << std::flush;
+  };
+
+  // Closing clause for an epoch's metrics.
+  auto end_metrics = []() {
+    fmt::print("\n");
+  };
+
+  for (size_type e = {}; e < epochs; ++e) {
+    f32 total_loss = {};
+    init_metrics(e + 1);
+    for (size_type b = {}; b < batches; ++b) {
+      // Offset of the current batch.
+      size_type offset = b * batch_size;
+      // The number of elements in the current batch.
+      size_type n = std::min(batch_size, size_type(samples - offset));
+
+      // Determine the boundaries of the current batch.
+      auto x_begin = x.begin() + (offset * x_stride), y_begin = y.begin() + (offset * y_stride);
+
+      auto x_in = tensor_type{{n, x_stride}, x_begin};
+      auto y_hat = forward_pass(x_in);
+      tensor_type y_true = {(loss_type == Loss::SparseCrossEntropy ? Shape{n} : Shape{n, y_stride}), y_begin};
+      total_loss += loss_func(y_true, y_hat);
+      auto dL = loss_func.derivative(y_true, y_hat);
+      auto gradient = dL * y_hat;
+      for (auto &layer : layers_ | std::views::reverse) {
+        // Downstream gradient of one layer becomes the upstream gradient of the next.
+        gradient = layer->backward_pass(gradient, optimizer);
+      }
+      // Update the optimizer's state.
+      ++optimizer;
+      // Update the metrics.
+      update_metrics(e + 1, b + 1, total_loss);
+    }
+    end_metrics();
+  }
 }
 
 }

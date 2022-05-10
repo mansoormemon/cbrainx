@@ -8,3 +8,7 @@ endif()
 set(DIGIT_RECOGNIZER "digitRecognizer")
 
 add_subdirectory("${DIGIT_RECOGNIZER}")
+
+set(ESTATE_AGENT "estateAgent")
+
+add_subdirectory("${ESTATE_AGENT}")

@@ -144,7 +144,7 @@ auto measure_accuracy(const cbx::Tensor<T> &truth, const cbx::Tensor<U> &predict
 }
 
 auto main() -> cbx::i32 {
-  const auto MAX_TRAINING_SAMPLES = 128;
+  const auto MAX_TRAINING_SAMPLES = 512;
   const auto MAX_TESTING_SAMPLES = 256;
 
   auto train_images_path = "res/train/images.idx3-ubyte";
@@ -173,15 +173,13 @@ auto main() -> cbx::i32 {
 
   auto net = cbx::NeuralNet{{input_size}};
   net.add<cbx::DenseLayer>(512);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Swish);
+  net.add<cbx::ActivationLayer>(cbx::Activation::LeakyReLU);
   net.add<cbx::DenseLayer>(256);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Gaussian);
+  net.add<cbx::ActivationLayer>(cbx::Activation::ELU);
   net.add<cbx::DenseLayer>(128);
   net.add<cbx::ActivationLayer>(cbx::Activation::ArcTan);
-  net.add<cbx::DenseLayer>(64);
-  net.add<cbx::ActivationLayer>(cbx::Activation::TanH);
   net.add<cbx::DenseLayer>(10);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
+  net.add<cbx::ActivationLayer>(cbx::Activation::TanH);
   net.add<cbx::Softmax>();
   net.show_summary();
 
@@ -201,6 +199,17 @@ auto main() -> cbx::i32 {
   std::cout << "Output => " << out.meta_info() << std::endl;
 
   auto n = 5;
+  std::cout << "Printing first " << n << " outputs..." << std::endl;
+  print(out, n);
+
+  net.backward_pass(train_images, train_labels, 10, 128, cbx::Loss::SparseCrossEntropy,
+                    cbx::OptimizerWrapper{cbx::Optimizer::GradientDescent, 1e-4});
+
+  out = net.forward_pass(test_images);
+  std::cout << "Loss: " << lossFunc(test_labels, out) << std::endl;
+  predictions = argmax(out).reshape(2);
+  std::cout << "Accuracy: " << measure_accuracy(test_labels, predictions) << std::endl;
+
   std::cout << "Printing first " << n << " outputs..." << std::endl;
   print(out, n);
 
