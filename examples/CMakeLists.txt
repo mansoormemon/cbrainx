@@ -12,3 +12,7 @@ add_subdirectory("${DIGIT_RECOGNIZER}")
 set(ESTATE_AGENT "estateAgent")
 
 add_subdirectory("${ESTATE_AGENT}")
+
+set(PIMA_INDIANS_DIABETES "pimaIndiansDiabetes")
+
+add_subdirectory("${PIMA_INDIANS_DIABETES}")
