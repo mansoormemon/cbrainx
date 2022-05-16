@@ -172,14 +172,8 @@ auto main() -> cbx::i32 {
   auto [_, input_size] = train_images.shape().unwrap<2>();
 
   auto net = cbx::NeuralNet{{input_size}};
-  net.add<cbx::DenseLayer>(256);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Linear);
   net.add<cbx::DenseLayer>(128);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Linear);
-  net.add<cbx::DenseLayer>(64);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Softplus);
+  net.add<cbx::ActivationLayer>(cbx::Activation::LeakyReLU);
   net.add<cbx::ActivationLayer>(cbx::Activation::Linear);
   net.add<cbx::DenseLayer>(10);
   net.add<cbx::Softmax>();

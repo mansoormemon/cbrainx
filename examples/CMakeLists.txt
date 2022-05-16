@@ -13,6 +13,10 @@ set(ESTATE_AGENT "estateAgent")
 
 add_subdirectory("${ESTATE_AGENT}")
 
+set(IONOSPHERE "ionosphere")
+
+add_subdirectory("${IONOSPHERE}")
+
 set(PIMA_INDIANS_DIABETES "pimaIndiansDiabetes")
 
 add_subdirectory("${PIMA_INDIANS_DIABETES}")

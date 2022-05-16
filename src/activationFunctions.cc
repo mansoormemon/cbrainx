@@ -117,9 +117,9 @@ auto Linear::to_string() const -> std::string { return "Linear"; }
 
 auto Linear::type_name() const -> std::string { return "Linear"; }
 
-auto Linear::operator()(value_type x) const -> value_type { return 0.01F * x; }
+auto Linear::operator()(value_type x) const -> value_type { return 0.1F * x; }
 
-auto Linear::derivative(value_type) const -> value_type { return 0.01F; }
+auto Linear::derivative(value_type) const -> value_type { return 0.1F; }
 
 // /////////////////////////////////////////////
 
