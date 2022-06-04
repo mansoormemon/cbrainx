@@ -39,7 +39,7 @@ enum class LayerType { Dense, Activation, Softmax };
 /// \see LayerType
 class AbstractLayer {
  public:
-  using value_type = f32;
+  using value_type = f64;
 
   using container = Tensor<value_type>;
 

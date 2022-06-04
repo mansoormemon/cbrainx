@@ -46,7 +46,7 @@ enum class Activation {
 ///
 /// \see Activation
 struct ActivationFunction {
-  using value_type = f32;
+  using value_type = f64;
 
   // /////////////////////////////////////////////
   // Interface

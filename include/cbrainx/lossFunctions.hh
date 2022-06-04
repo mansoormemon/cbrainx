@@ -65,7 +65,7 @@ struct LossFunction {
   static auto _s_check_shape_equality(const Shape &a, const Shape &b) -> void;
 
  public:
-  using value_type = f32;
+  using value_type = f64;
 
   using tensor_type = Tensor<value_type>;
 

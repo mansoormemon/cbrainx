@@ -129,7 +129,7 @@ auto ReLU::to_string() const -> std::string { return "ReLU"; }
 
 auto ReLU::type_name() const -> std::string { return "ReLU"; }
 
-auto ReLU::operator()(value_type x) const -> value_type { return std::max(0.0F, x); }
+auto ReLU::operator()(value_type x) const -> value_type { return std::max(0.0, x); }
 
 auto ReLU::derivative(value_type x) const -> value_type { return value_type(x >= 0); }
 

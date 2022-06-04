@@ -72,7 +72,7 @@ class NeuralNet {
   using reverse_iterator = typename container::reverse_iterator;
   using const_reverse_iterator = typename container::const_reverse_iterator;
 
-  using tensor_type = Tensor<f32>;
+  using tensor_type = Tensor<f64>;
 
  private:
   /// \brief The shape of the input layer (excluding the samples axis).

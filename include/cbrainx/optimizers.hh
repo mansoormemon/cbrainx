@@ -37,7 +37,7 @@ enum class Optimizer { GradientDescent };
 /// \see Optimizer
 class AbstractOptimizer {
  public:
-  using value_type = f32;
+  using value_type = f64;
 
   using tensor_type = Tensor<value_type>;
 

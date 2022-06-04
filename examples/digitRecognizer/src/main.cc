@@ -26,7 +26,7 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 
-using tensorF32 = cbx::Tensor<cbx::f32>;
+using tensorF64 = cbx::Tensor<cbx::f64>;
 using tensorU8 = cbx::Tensor<cbx::u8>;
 
 auto read_int(std::fstream &file) -> cbx::i32 {
@@ -60,7 +60,7 @@ auto read_int(std::fstream &file) -> cbx::i32 {
 // The training set contains 60000 samples, and the test set 10000 samples.
 //
 // Reference: http://yann.lecun.com/exdb/mnist
-auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
+auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF64 {
   auto file = std::fstream{path, std::ios::in | std::ios::binary};
 
   // Ignore magic number.
@@ -71,7 +71,7 @@ auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
   cbx::u32 img_height = read_int(file);
 
   // Create a tensor after normalizing samples.
-  return tensorF32::custom({sample_num, img_height * img_width}, [&file]() {
+  return tensorF64::custom({sample_num, img_height * img_width}, [&file]() {
     cbx::u8 byte = {};
     file >> byte;
     return byte / 255.0;
@@ -91,7 +91,7 @@ auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
 // The labels values are 0 to 9.
 //
 // Reference: http://yann.lecun.com/exdb/mnist
-auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
+auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorF64 {
   auto file = std::fstream{path, std::ios::in | std::ios::binary};
 
   // Ignore magic number.
@@ -99,12 +99,12 @@ auto read_labels(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
 
   cbx::u32 sample_num = std::min(max_samples, read_int(file));
 
-  return tensorF32::custom({sample_num}, [&file]() {
+  return tensorF64::custom({sample_num}, [&file]() {
     return file.get();
   });
 }
 
-auto print_info(cbx::str msg, const tensorF32 &images, const tensorF32 &labels) -> void {
+auto print_info(cbx::str msg, const tensorF64 &images, const tensorF64 &labels) -> void {
   fmt::print("{} => [\nimages = {},\nlabels = {}\n]\n", msg, images.meta_info(), labels.meta_info());
 }
 
@@ -113,7 +113,7 @@ auto print(const cbx::Tensor<T> &tensor, cbx::i32 count) -> void {
   auto [_, dim] = tensor.shape().template unwrap<2, cbx::i32>();
   cbx::i32 i = {};
   for (auto x : std::ranges::take_view{tensor, count * dim}) {
-    fmt::print("{:<{}}", x, 16);
+    fmt::print("{:<{}}", x, 24);
     i += 1;
     if (i % dim == 0) {
       fmt::print("\n");
@@ -121,7 +121,7 @@ auto print(const cbx::Tensor<T> &tensor, cbx::i32 count) -> void {
   }
 }
 
-auto argmax(const tensorF32 &input) -> tensorU8 {
+auto argmax(const tensorF64 &input) -> tensorU8 {
   auto samples = input.is_matrix() ? input.shape().front() : 1;
   auto neurons = input.shape().back();
   auto result = tensorU8{{samples}};
@@ -198,7 +198,7 @@ auto main() -> cbx::i32 {
   std::cout << "Printing first " << n << " outputs..." << std::endl;
   print(out, n);
 
-  net.backward_pass(train_images, train_labels, 10, -1, cbx::Loss::SparseCrossEntropy,
+  net.backward_pass(train_images, train_labels, 10, 1, cbx::Loss::SparseCrossEntropy,
                     cbx::OptimizerWrapper{cbx::Optimizer::GradientDescent, 1e-3});
 
   out = net.forward_pass(test_images);
