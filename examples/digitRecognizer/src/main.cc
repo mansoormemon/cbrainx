@@ -70,11 +70,13 @@ auto read_images(cbx::str path, cbx::i32 max_samples) -> tensorF32 {
   cbx::u32 img_width = read_int(file);
   cbx::u32 img_height = read_int(file);
 
+  std::cout << sample_num << ", " << img_width << ", " << img_height << std::endl;
+
+  std::cout << file.tellg() << std::endl;
+
   // Create a tensor after normalizing samples.
   return tensorF32::custom({sample_num, img_height * img_width}, [&file]() {
-    cbx::u8 byte = {};
-    file >> byte;
-    return byte / 255.0;
+    return file.get() / 255.0;
   });
 }
 
@@ -144,7 +146,7 @@ auto measure_accuracy(const cbx::Tensor<T> &truth, const cbx::Tensor<U> &predict
 }
 
 auto main() -> cbx::i32 {
-  const auto MAX_TRAINING_SAMPLES = 512;
+  const auto MAX_TRAINING_SAMPLES = 20480;
   const auto MAX_TESTING_SAMPLES = 256;
 
   auto train_images_path = "res/train/images.idx3-ubyte";
@@ -173,8 +175,7 @@ auto main() -> cbx::i32 {
 
   auto net = cbx::NeuralNet{{input_size}};
   net.add<cbx::DenseLayer>(128);
-  net.add<cbx::ActivationLayer>(cbx::Activation::LeakyReLU);
-  net.add<cbx::ActivationLayer>(cbx::Activation::Linear);
+  net.add<cbx::ActivationLayer>(cbx::Activation::Sigmoid);
   net.add<cbx::DenseLayer>(10);
   net.add<cbx::Softmax>();
   net.show_summary();
@@ -198,7 +199,7 @@ auto main() -> cbx::i32 {
   std::cout << "Printing first " << n << " outputs..." << std::endl;
   print(out, n);
 
-  net.backward_pass(train_images, train_labels, 10, -1, cbx::Loss::SparseCrossEntropy,
+  net.backward_pass(train_images, train_labels, 2, 1, cbx::Loss::SparseCrossEntropy,
                     cbx::OptimizerWrapper{cbx::Optimizer::GradientDescent, 1e-3});
 
   out = net.forward_pass(test_images);
